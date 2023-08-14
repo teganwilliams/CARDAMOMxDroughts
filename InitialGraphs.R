@@ -23,8 +23,7 @@ obs_data <- read.csv("~/Desktop/Dissertation/Data/DE-Hai-2000-2020-weekly_timese
   str(met_data) # Compactly displays the structure of the dataset (type of variable e.g., character, logistic, numeric etc) 
   glimpse(met_data) # Similar to str() but provides all columns
   
-  
-# Delete 2021 data since weird values (-9999?)
+# Delete 2021 data since weird values (-9999?) -> ask david about this
 rows_to_delete <- c(3, 7, 10)
 my_data <- my_data[-rows_to_delete, ]
   
