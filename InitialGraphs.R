@@ -48,6 +48,7 @@ ggplot(met2010to2020, aes(x = full_date, y = airt_C)) +
   ylab("Air Temperature [°C]")
 
 # Now filter for even less years
+met2015to2020 <- met_data[met_data$year >= 2015 & met_data$year <= 2020, ]
 met2018to2020 <- met_data[met_data$year >= 2018 & met_data$year <= 2020, ]
 met2019 <- met_data[met_data$year >= 2019 & met_data$year <= 2019, ]
 
@@ -66,6 +67,34 @@ ggplot(met2019, aes(x = full_date, y = airt_C)) +
   theme(plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
   xlab("Time [year]") + 
   ylab("Air Temperature [°C]")
+
+# Let's look at max temperature instead since droughts are characterised by these
+ggplot(met_data, aes(x = full_date, y = maxt_C)) +
+  geom_line(colour="red2") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+  labs(title="Maximum Temperature trends 2000-2020") + 
+  theme(plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
+  xlab("Time [year]") + 
+  ylab("Max Temperature [°C]")
+
+ggplot(met2010to2020, aes(x = full_date, y = maxt_C)) +
+  geom_line(colour="red2") +
+  geom_smooth(method = lm, colour = "darkred") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+  labs(title="Maximum Temperature trends 2000-2020") + 
+  theme(plot.title=element_text(size=13, hjust=0.5)) + 
+  xlab("Time [year]") + 
+  ylab("Max Temperature [°C]")
+
+ggplot(met2015to2020, aes(x = full_date, y = maxt_C)) +
+  geom_line(colour="red2") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+  labs(title="Maximum Temperature trends 2015-2020") + 
+  xlab("Time [year]") + 
+  scale_y_continuous(name = "Max Temperature [°C]", 
+                     # limits=c(15, 30)
+                     )
+
 
 # Now let's look at Precipitation over Time
 ggplot(met_data, aes(x = full_date, y = precip_kgm2s)) +
@@ -185,6 +214,28 @@ ggplot(all_data, aes(x = precip_kgm2s, y = obs_data$Reco_gCm2day)) +
   ylab("Reco [gC/m^2/day]")
 
 
+
+# Let's try overlapping the years to get a better idea of the variation
+met_data$year <- as.factor(met_data$year)
+met_data$doy <- as.factor(met_data$doy)
+
+ggplot(met2010to2020, aes(x = doy, y = maxt_C, colour = year)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE) +
+  labs(x = "Day of Year", y = "Max Temperature",
+       title = "Overlapping Temperature Data",
+       colour = "Year") +
+  theme_minimal() 
+dev.off()
+# + facet_wrap(~ year, ncol = 2)
+
+ggplot(met2019, aes(x = doy, y = maxt_C)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE) +
+  labs(x = "Day of Year", y = "Max Temperature",
+       title = "Max Temperature Data for 2019",
+       colour = "Year") +
+  theme_minimal() 
 
 
 
