@@ -10,6 +10,9 @@ library(ggplot2)
 # Load FLUXNET Data
 met_data <- read.csv("~/Desktop/Dissertation/Data/DE-Hai-2000-2020-weekly_timeseries_met.csv", header = TRUE)
 obs_data <- read.csv("~/Desktop/Dissertation/Data/DE-Hai-2000-2020-weekly_timeseries_obs.csv", header = TRUE)
+# or when using a uni desktop:
+met_data <- read_csv("DE-Hai-2000-2020-weekly_timeseries_met.csv")
+obs_data <- read_csv("DE-Hai-2000-2020-weekly_timeseries_obs.csv")
 
 # Explore data
 head(met_data) # Gives first few variables (6 first rows) e.g. to check data imported OK, get familiar with the variables 
@@ -18,9 +21,9 @@ summary(met_data$doy) # Gives length of the "day of year" column and variable ty
 str(met_data) # Compactly displays the structure of the dataset (type of variable e.g., character, logistic, numeric etc) 
 glimpse(met_data) # Similar to str() but provides all columns
   
-# Delete 2021 data from Met data set since only NA values (-9999?) -> ask david about this
-rows_to_delete <- c(3, 7, 10)
-my_data <- my_data[-rows_to_delete, ]
+# Delete 2021 data from Met data set since only NA values (-9999)
+rows_to_delete <- c(1093:1144)
+met_data <- met_data[-rows_to_delete, ]
   
 # Create new column for full dates 
 rows_per_year <- 52
@@ -48,6 +51,7 @@ ggplot(met2010to2020, aes(x = full_date, y = airt_C)) +
   ylab("Air Temperature [°C]")
 
 # Now filter for even less years
+met_data$year <- as.numeric(met_data$year)
 met2015to2020 <- met_data[met_data$year >= 2015 & met_data$year <= 2020, ]
 met2018to2020 <- met_data[met_data$year >= 2018 & met_data$year <= 2020, ]
 met2019 <- met_data[met_data$year >= 2019 & met_data$year <= 2019, ]
@@ -101,7 +105,7 @@ ggplot(met_data, aes(x = full_date, y = precip_kgm2s)) +
   geom_line(colour="blue2") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
-  labs(title="Temperature trends 2000-2020") + 
+  labs(title="Precipitation trends 2000-2020") + 
   xlab("Time [year]") + 
   ylab("Precipitation [kg/m^2/s]")
 
@@ -110,7 +114,7 @@ ggplot(met2010to2020, aes(x = full_date, y = precip_kgm2s)) +
   geom_line(colour="blue2") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
-  labs(title="Temperature trends 2010-2020") + 
+  labs(title="Precipitation trends 2010-2020") + 
   xlab("Time [year]") + 
   ylab("Precipitation [kg/m^2/s]")
 
@@ -118,7 +122,7 @@ ggplot(met2018to2020, aes(x = full_date, y = precip_kgm2s)) +
   geom_line(colour="blue2") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
-  labs(title="Temperature trends 2018-2020") + 
+  labs(title="Precipitation trends 2018-2020") + 
   xlab("Time [year]") + 
   ylab("Precipitation [kg/m^2/s]")
 
@@ -126,7 +130,7 @@ ggplot(met2019, aes(x = full_date, y = precip_kgm2s)) +
   geom_line(colour="blue2") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
-  labs(title="Temperature trends 2019") + 
+  labs(title="Precipitation trends 2019") + 
   xlab("Time [year]") + 
   ylab("Precipitation [kg/m^2/s]")
 
@@ -226,8 +230,15 @@ ggplot(met2010to2020, aes(x = doy, y = maxt_C, colour = year)) +
        title = "Overlapping Temperature Data",
        colour = "Year") +
   theme_minimal() 
-dev.off()
 # + facet_wrap(~ year, ncol = 2)
+
+ggplot(met_data, aes(x = doy, y = maxt_C)) +
+  geom_point() +
+  geom_smooth(method = "loess", se = FALSE) +
+  labs(x = "Day of Year", y = "Max Temperature",
+       title = "Overlapping Temperature Data") +
+  scale_x_continuous(limits = c(0,400), breaks = seq(0,400, by = 50)) +
+  theme(panel.background = element_blank(), axis.line = element_line(colour = "black"))
 
 ggplot(met2019, aes(x = doy, y = maxt_C)) +
   geom_point() +
@@ -239,7 +250,27 @@ ggplot(met2019, aes(x = doy, y = maxt_C)) +
 
 
 
+# Creating seasonal climate averages
 
+met_data$full_date <- as.Date(met_data$full_date)
+met_data$month <- month(met_data$full_date, label = TRUE)
+
+seasonal_data <- met_data %>%
+  group_by(year, season = case_when(
+    month %in% c(12, 1, 2) ~ 'Winter',
+    month %in% c(3, 4, 5) ~ 'Spring',
+    month %in% c(6, 7, 8) ~ 'Summer',
+    month %in% c(9, 10, 11) ~ 'Autumn')) %>%
+  summarise(avg_temp = mean(airt_C))
+
+ggplot(seasonal_data, aes(x=, y = avg_temp, colour = season)) +
+  geom_line() +
+  geom_point() +
+  labs(x = 'Year', y ='Average Temperature', title = 'Seasonal Climate Averages')+
+  scale_color_manual(values = c('Winter'='blue', 'Spring'='green', 'Summer'='red', 'Autumn'='orange'))
+
+
+  
 
 
 
