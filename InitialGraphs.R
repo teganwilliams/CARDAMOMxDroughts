@@ -50,6 +50,7 @@ ggplot(met2010to2020, aes(x = full_date, y = airt_C)) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
   labs(title="Temperature trends 2010-2020") + 
   theme(plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
+  scale_y_continuous(limits = c(5, 23)) +
   xlab("Time [year]") + 
   ylab("Air Temperature [°C]")
 
@@ -58,6 +59,7 @@ met_data$year <- as.numeric(met_data$year)
 met2015to2020 <- met_data[met_data$year >= 2015 & met_data$year <= 2020, ]
 met2018to2020 <- met_data[met_data$year >= 2018 & met_data$year <= 2020, ]
 met2019 <- met_data[met_data$year >= 2019 & met_data$year <= 2019, ]
+met2013 <- met_data[met_data$year >= 2013 & met_data$year <= 2013, ]
 
 ggplot(met2018to2020, aes(x = full_date, y = airt_C)) +
   geom_line(colour="red2") +
@@ -101,7 +103,6 @@ ggplot(met2015to2020, aes(x = full_date, y = maxt_C)) +
   scale_y_continuous(name = "Max Temperature [°C]", 
                      # limits=c(15, 30)
                      )
-
 
 # Now let's look at Precipitation over Time
 ggplot(met_data, aes(x = full_date, y = precip_kgm2s)) +
@@ -211,7 +212,6 @@ ggplot(all_data, aes(x = airt_C, y = obs_data$Reco_gCm2day)) +
   xlab("Temperature [°C]") + 
   ylab("Reco [gC/m^2/day]")
 
-
 ggplot(all_data, aes(x = precip_kgm2s, y = obs_data$Reco_gCm2day)) +
   geom_point(colour="orange") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
@@ -219,7 +219,6 @@ ggplot(all_data, aes(x = precip_kgm2s, y = obs_data$Reco_gCm2day)) +
   labs(title="Reco against Precipitation") + 
   xlab("Precipitation [kg/m2/s]") + 
   ylab("Reco [gC/m^2/day]")
-
 
 
 # Let's try overlapping the years to get a better idea of the variation
@@ -235,29 +234,10 @@ ggplot(met2010to2020, aes(x = doy, y = maxt_C, colour = year)) +
   theme_minimal() 
 # + facet_wrap(~ year, ncol = 2)
 
-ggplot(met_data, aes(x = doy, y = maxt_C)) +
-  geom_point() +
-  geom_smooth(method = "loess", se = FALSE) +
-  labs(x = "Day of Year", y = "Max Temperature",
-       title = "Overlapping Temperature Data") +
-  scale_x_continuous(limits = c(0,400), breaks = seq(0,400, by = 50)) +
-  theme(panel.background = element_blank(), axis.line = element_line(colour = "black"))
-
-ggplot(met2019, aes(x = doy, y = maxt_C)) +
-  geom_point() +
-  geom_smooth(method = "loess", se = FALSE) +
-  labs(x = "Day of Year", y = "Max Temperature",
-       title = "Max Temperature Data for 2019",
-       colour = "Year") +
-  theme_minimal() 
-
-
 
 # Creating seasonal climate averages
-
 met_data$full_date <- as.Date(met_data$full_date)
 met_data$month <- month(met_data$full_date, label = TRUE)
-
 seasonal_data <- met_data %>%
   group_by(year, season = case_when(
     month %in% c(12, 1, 2) ~ 'Winter',
@@ -265,14 +245,13 @@ seasonal_data <- met_data %>%
     month %in% c(6, 7, 8) ~ 'Summer',
     month %in% c(9, 10, 11) ~ 'Autumn')) %>%
   summarise(avg_temp = mean(airt_C))
-
-ggplot(seasonal_data, aes(x=, y = avg_temp, colour = season)) +
+ggplot(seasonal_data, aes(x=year, y = avg_temp, colour = season)) +
   geom_line() +
   geom_point() +
   labs(x = 'Year', y ='Average Temperature', title = 'Seasonal Climate Averages')+
   scale_color_manual(values = c('Winter'='blue', 'Spring'='green', 'Summer'='red', 'Autumn'='orange'))
 
-highlight_years <- c(2003, 2006, 2010, 2015, 2018)
+highlight_years <- c(2003, 2006, 2010, 2015, 2018, 2019, 2020)
 filtered_data <- avg_monthly_temp %>%
   filter(year %in% highlight_years)
 
@@ -281,33 +260,24 @@ avg_monthly_temp <- met_data %>%
   summarise(monthlyT = mean(airt_C, na.rm = TRUE))
 
 met_data_with_avg_temp <- left_join(met_data, avg_monthly_temp, by = c("year", "month"))
-met_data_with_avg_temp$year <- factor(met_data_with_avg_temp$year, levels = c(highlight_years, setdiff(unique(met_data_with_avg_temp$year), highlight_years)))
 
-  
-ggplot(met_data_with_avg_temp, aes(x = month, y = monthlyT, colour = as.factor(year))) +
-  geom_line(size = 0.7, aes(group = interaction(highlight_years, year, lex.order = TRUE))) +
+ggplot(met_data_with_avg_temp, aes(x = month, y = monthlyT, colour = as.factor(year), group = year)) +
+  geom_line(size = 0.7, 
+            #aes(group = interaction(highlight_years, year, lex.order = TRUE))
+            ) +
   geom_smooth(method = 'loess', aes(group=1), colour = "black", size = 0.7) +
-  scale_color_manual(values = c("grey", "grey","grey", "#FAEF17","grey","grey", "#FFD700","grey","grey","grey","#FFA500" ,"grey","grey","grey","grey","#FF8C00","grey","grey","#D9534F","grey","grey")) +
-  labs(x = "Month", y = "Air Temperature (°C)",
-       title = "Air temperature over a year with drought years highlighted",
-       color = "Year") +
+  scale_color_manual(values = c("grey", "pink","grey", "#FAEF17","grey","grey", "#FFD700","grey","grey","grey","#FFA500" ,"grey","grey","grey","grey","#FF8C00","grey","grey","#D9534F","#FF4640","#FF001A")) +
+  labs(x = "Month", y = "Air Temperature (°C)", title = "Air temperature over a year with drought years highlighted", colour = "Year") +
+  scale_x_discrete(limits = c("May", "Jun", "Jul", "Aug", "Sep")) +
+  scale_y_continuous(limits = c(9, 22)) +
   theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
 
 # create table with average value calculated for all the same doy across 20 years
-
 mean_month_temp <- avg_monthly_temp %>%
   group_by(month) %>%
-  summarise(monthlyT = mean(monthlyT, na.rm = TRUE)) 
-
-# %>% mutate(year = as.numeric(as.character(year))) 
-
-
-mean_month_temp$year <- as.numeric(mean_month_temp$year)
-
+  summarise(monthlyT = mean(monthlyT, na.rm = TRUE))
 filtered_data2 <- rbind(filtered_data, mean_month_temp)
-
 filtered_data2$year <- as.character(filtered_data2$year)
-
 filtered_data2 <- filtered_data2 %>%
   mutate(year = replace_na(year, '2020'))
 
@@ -317,31 +287,133 @@ ggplot(data = filtered_data2, aes(x = month, y = monthlyT, group = year, colour 
   geom_line() +
   scale_color_manual(values = c("#FAEF17", "#FFD700", "#FFA500", "#FF8C00", "#D9534F", "black")) +
   labs(x = "Month", y = "Air Temperature (°C)",
-       title = "Air temperature over a year with drought years highlighted",
-       color = "Year") +
+       title = "Air temperature over a year with drought years highlighted", colour = "Year") +
+  theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+# let's do the same thing for precipitation trends 
+
+highlight_years <- c(2003, 2006, 2010, 2015, 2018, 2019, 2020)
+precip_filtered_data <- avg_monthly_precip %>%
+  filter(year %in% highlight_years)
+
+avg_monthly_precip <- met_data %>%
+  group_by(year, month) %>%
+  summarise(monthlyPrecip = mean(precip_kgm2s, na.rm = TRUE))
+
+met_data_with_avg_precip <- left_join(met_data, avg_monthly_precip, by = c("year", "month"))
+
+ggplot(met_data_with_avg_precip, aes(x = month, y = monthlyPrecip, colour = as.factor(year), group = year)) +
+  geom_line(size = 0.7) +
+  geom_smooth(method = 'loess', aes(group=1), colour = "black", size = 0.7) +
+  scale_color_manual(values = c("grey", "pink","grey", "#84E1EB","grey","grey", "#40BDEB","grey","grey","grey","#3E91D1" ,"grey","grey","grey","grey","#1979FF","grey","grey","#2B34E3","#6853E0","darkblue")) +
+  labs(x = "Month", y = "Precipitation (kg/m^2/s)", title = "Precipitation during drought years compared to average", colour = "Year") +
+  scale_x_discrete(limits = c("May", "Jun", "Jul", "Aug", "Sep")) +
+  theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+mean_month_precip <- avg_monthly_precip %>%
+  group_by(month) %>%
+  summarise(monthlyPrecip = mean(monthlyPrecip, na.rm = TRUE)) 
+
+precip_filtered_data2 <- rbind(precip_filtered_data, mean_month_precip)
+precip_filtered_data2$year <- as.character(precip_filtered_data2$year)
+precip_filtered_data2 <- precip_filtered_data2 %>%
+  mutate(year = replace_na(year, '2000'))
+
+ggplot(data = precip_filtered_data2, aes(x = month, y = monthlyPrecip, group = year, colour = as.factor(year))) +
+  geom_line(size = 0.7) +
+  scale_color_manual(values = c("black", "#84E1EB", "#40BDEB", "#3E91D1","#1979FF", "#2B34E3","#6853E0","darkblue")) +
+  labs(x = "Month", y = "Precipitation (kg/m^2/s)",
+       title = "Precipitation during drought years compared to average", colour = "Year") +
+  scale_x_discrete(limits = c("May", "Jun", "Jul", "Aug", "Sep")) +
   theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
 
 
-ggplot(mean_month_temp, aes(x = month, y = avgmonthlyT)) +
-  geom_line() +
-  labs(x = "Month", y = "Air Temperature (°C)",
-       title = "Monthly air temperature averages for 2000-2020 period") +
-  theme(panel.background = element_blank(), axis.line = element_line(colour = "black"))
+# interesting comparison: 2003 vs 2018 droughts
 
-ggplot(mean_month_temp, aes(x = month, y = avgmonthlyT, group = year, colour = as.factor(year))) +
-  geom_line() +
-  labs(x = "Month", y = "Air Temperature (°C)",
-       title = "Monthly air temperature averages for 2000-2020 period", colour = "Year") +
-  theme(panel.background = element_blank(), axis.line = element_line(colour = "black"))
+met2003vs2018 <- c(2003, 2018)
+precipdata2003vs2018 <- avg_monthly_precip %>%
+  filter(year %in% met2003vs2018) 
 
-ggplot() +
-  geom_line(data = mean_month_temp, aes(x = month, y = avgmonthlyT)) +
-  geom_line(data = filtered_data, aes(x = month, y = monthlyT, group = year, colour = as.factor(year))) +
-  labs(x = "Month", y = "Average Air Temperature",
-       title = "Monthly Temperature Across Years",
-       colour = "Year") +
-  scale_color_manual(values = c("grey", "blue", "red", "green", "purple", "orange")) +
-  theme_minimal() +
-  theme(legend.position = "left", panel.background = element_blank(), axis.line = element_line(colour = "black"))
-  
-  
+tempdata2003vs2018 <- avg_monthly_temp %>%
+  filter(year %in% met2003vs2018)
+
+data2003vs2018 <- cbind(precipdata2003vs2018, tempdata2003vs2018$monthlyT)
+data2003vs2018 <- data2003vs2018 %>%
+  rename(monthlyT = ...4)
+
+ggplot(data = data2003vs2018, aes(x = month, y = monthlyPrecip, group = year, colour = as.factor(year))) +
+  geom_line(size = 0.7) +
+  scale_color_manual(values = c("#1979FF", "darkblue")) +
+  labs(x = "Month", y = "Precipitation (kg/m^2/s)",
+       title = "Precipitation: 2003 vs 2018", colour = "Year") +
+  scale_x_discrete(limits = c("May", "Jun", "Jul", "Aug", "Sep")) +
+  theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+ggplot(data = data2003vs2018, aes(x = month, y = monthlyT, group = year, colour = as.factor(year))) +
+  geom_line(size = 0.7) +
+  scale_color_manual(values = c("orange", "red3")) +
+  labs(x = "Month", y = "Air Temperature (°C)",
+       title = "Air Temperature: 2003 vs 2018", colour = "Year") +
+  scale_x_discrete(limits = c("May", "Jun", "Jul", "Aug", "Sep")) +
+  scale_y_continuous(limits = c(10,22)) +
+  theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+# now what about comparing their GPP values?
+
+obs_data$full_date <- as.Date(met_data$full_date)
+obs_data$month <- month(obs_data$full_date, label = TRUE)
+
+obs_data$month <- as.character(obs_data$month)
+
+avg_monthly_GPP <- obs_data %>%
+  group_by(year, month) %>%
+  summarise(monthlyGPP = mean(GPP_gCm2day, na.rm = TRUE))
+
+flux2003vs2018 <- avg_monthly_GPP %>%
+  filter(year %in% met2003vs2018)
+
+doyflux2003vs2018 <- obs_data %>%
+  filter(year %in% met2003vs2018)
+
+ggplot(flux2003vs2018, aes(x = month, y = monthlyGPP, colour = as.factor(year))) +
+  geom_point() +
+  geom_smooth(method = 'loess', se = FALSE, aes(group = year)) +
+  scale_colour_manual(values = c("green3", "blue"), name = "Year") + 
+  theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
+  labs(title="GPP 2003 vs 2018") + 
+  xlab("Month") + 
+  ylab("GPP [gC/m^2/day]")
+
+ggplot(doyflux2003vs2018, aes(x = doy, y = GPP_gCm2day, colour = as.factor(year))) +
+  geom_point() +
+  geom_smooth(method = 'loess', se = FALSE, aes(group = year)) +
+  scale_colour_manual(values = c("green3", "blue"), name = "Year") + 
+  theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
+  labs(title="GPP 2003 vs 2018") + 
+  xlab("DOY") + 
+  ylab("GPP [gC/m^2/day]")
+
+# plot consecutive years of GPP data around 2003 and 2018
+
+obs2002to2005 <- obs_data[obs_data$year >= 2002 & obs_data$year <= 2005, ]
+obs2017to2020 <- obs_data[obs_data$year >= 2017 & obs_data$year <= 2020, ]
+
+ggplot(obs2002to2005, aes(x = full_date, y = GPP_gCm2day)) +
+  geom_line(colour="green3") +
+  # geom_smooth(method = lm, colour = "darkgreen") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
+  labs(title="GPP trends 2002-2005") + 
+  xlab("Time [year]") + 
+  ylab("GPP [gC/m^2/day]")
+
+ggplot(obs2017to2020, aes(x = full_date, y = GPP_gCm2day)) +
+  geom_line(colour="green3") +
+  # geom_smooth(method = lm, colour = "darkgreen") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
+  labs(title="GPP trends 2017-2020") + 
+  xlab("Time [year]") + 
+  ylab("GPP [gC/m^2/day]")
