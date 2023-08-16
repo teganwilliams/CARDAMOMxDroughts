@@ -284,19 +284,42 @@ met_data_with_avg_temp <- left_join(met_data, avg_monthly_temp, by = c("year", "
 
 ggplot(met_data_with_avg_temp, aes(x = month, y = monthlyT, group = year, color = as.factor(year))) +
   geom_line() +
-  scale_color_manual(values = c("grey", "grey","grey", "blue","grey","grey", "red","grey","grey","grey", "green","grey","grey","grey","grey", "purple","grey","grey","grey","grey", "orange")) +
+  geom_smooth(method = 'loess', aes(group=1), colour = "black", size = 0.7) +
+  scale_color_manual(values = c("grey", "grey","grey", "#FAEF17","grey","grey", "#FFD700","grey","grey","grey","#FFA500" ,"grey","grey","grey","grey","#FF8C00","grey","grey","#D9534F","grey","grey")) +
   labs(x = "Month", y = "Air Temperature (°C)",
        title = "Air temperature over a year with drought years highlighted",
        color = "Year") +
-  theme(legend.position = "right")
+  theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
 
 # create table with average value calculated for all the same doy across 20 years
 
 mean_month_temp <- avg_monthly_temp %>%
   group_by(month) %>%
-  summarise(avgmonthlyT = mean(monthlyT, na.rm = TRUE))
+  summarise(monthlyT = mean(monthlyT, na.rm = TRUE)) 
+
+# %>% mutate(year = as.numeric(as.character(year))) 
+
+
+mean_month_temp$year <- as.numeric(mean_month_temp$year)
+
+filtered_data2 <- rbind(filtered_data, mean_month_temp)
+
+filtered_data2$year <- as.character(filtered_data2$year)
+
+filtered_data2 <- filtered_data2 %>%
+  mutate(year = replace_na(year, '2020'))
 
 # ok now use these mean values alongside the highlighted years
+
+ggplot(data = filtered_data2, aes(x = month, y = monthlyT, group = year, colour = as.factor(year))) +
+  geom_line() +
+  scale_color_manual(values = c("#FAEF17", "#FFD700", "#FFA500", "#FF8C00", "#D9534F", "black")) +
+  labs(x = "Month", y = "Air Temperature (°C)",
+       title = "Air temperature over a year with drought years highlighted",
+       color = "Year") +
+  theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+
 
 ggplot(mean_month_temp, aes(x = month, y = avgmonthlyT)) +
   geom_line() +
