@@ -281,9 +281,11 @@ avg_monthly_temp <- met_data %>%
   summarise(monthlyT = mean(airt_C, na.rm = TRUE))
 
 met_data_with_avg_temp <- left_join(met_data, avg_monthly_temp, by = c("year", "month"))
+met_data_with_avg_temp$year <- factor(met_data_with_avg_temp$year, levels = c(highlight_years, setdiff(unique(met_data_with_avg_temp$year), highlight_years)))
 
-ggplot(met_data_with_avg_temp, aes(x = month, y = monthlyT, group = year, color = as.factor(year))) +
-  geom_line() +
+  
+ggplot(met_data_with_avg_temp, aes(x = month, y = monthlyT, colour = as.factor(year))) +
+  geom_line(size = 0.7, aes(group = interaction(highlight_years, year, lex.order = TRUE))) +
   geom_smooth(method = 'loess', aes(group=1), colour = "black", size = 0.7) +
   scale_color_manual(values = c("grey", "grey","grey", "#FAEF17","grey","grey", "#FFD700","grey","grey","grey","#FFA500" ,"grey","grey","grey","grey","#FF8C00","grey","grey","#D9534F","grey","grey")) +
   labs(x = "Month", y = "Air Temperature (°C)",
@@ -318,7 +320,6 @@ ggplot(data = filtered_data2, aes(x = month, y = monthlyT, group = year, colour 
        title = "Air temperature over a year with drought years highlighted",
        color = "Year") +
   theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
-
 
 
 ggplot(mean_month_temp, aes(x = month, y = avgmonthlyT)) +
