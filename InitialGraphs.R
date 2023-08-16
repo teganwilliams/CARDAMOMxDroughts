@@ -25,10 +25,13 @@ glimpse(met_data) # Similar to str() but provides all columns
 rows_to_delete <- c(1093:1144)
 met_data <- met_data[-rows_to_delete, ]
   
-# Create new column for full dates 
+# Create new column for year, months and full dates 
 rows_per_year <- 52
 met_data$year <- rep(2000:2020, each = rows_per_year)
 met_data$full_date <- as.Date(paste0(met_data$year, "-", met_data$doy), format = "%Y-%j")
+met_data <- met_data %>%
+  mutate(month = month(full_date, label = TRUE))
+
 
 # Plot Air Temperature over Time
 ggplot(met_data, aes(x = full_date, y = airt_C)) +
@@ -269,11 +272,52 @@ ggplot(seasonal_data, aes(x=, y = avg_temp, colour = season)) +
   labs(x = 'Year', y ='Average Temperature', title = 'Seasonal Climate Averages')+
   scale_color_manual(values = c('Winter'='blue', 'Spring'='green', 'Summer'='red', 'Autumn'='orange'))
 
+highlight_years <- c(2003, 2006, 2010, 2015, 2018)
+filtered_data <- avg_monthly_temp %>%
+  filter(year %in% highlight_years)
 
-  
+avg_monthly_temp <- met_data %>%
+  group_by(year, month) %>%
+  summarise(monthlyT = mean(airt_C, na.rm = TRUE))
 
+met_data_with_avg_temp <- left_join(met_data, avg_monthly_temp, by = c("year", "month"))
 
+ggplot(met_data_with_avg_temp, aes(x = month, y = monthlyT, group = year, color = as.factor(year))) +
+  geom_line() +
+  scale_color_manual(values = c("grey", "grey","grey", "blue","grey","grey", "red","grey","grey","grey", "green","grey","grey","grey","grey", "purple","grey","grey","grey","grey", "orange")) +
+  labs(x = "Month", y = "Air Temperature (°C)",
+       title = "Air temperature over a year with drought years highlighted",
+       color = "Year") +
+  theme(legend.position = "right")
 
+# create table with average value calculated for all the same doy across 20 years
 
+mean_month_temp <- avg_monthly_temp %>%
+  group_by(month) %>%
+  summarise(avgmonthlyT = mean(monthlyT, na.rm = TRUE))
+
+# ok now use these mean values alongside the highlighted years
+
+ggplot(mean_month_temp, aes(x = month, y = avgmonthlyT)) +
+  geom_line() +
+  labs(x = "Month", y = "Air Temperature (°C)",
+       title = "Monthly air temperature averages for 2000-2020 period") +
+  theme(panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+ggplot(mean_month_temp, aes(x = month, y = avgmonthlyT, group = year, colour = as.factor(year))) +
+  geom_line() +
+  labs(x = "Month", y = "Air Temperature (°C)",
+       title = "Monthly air temperature averages for 2000-2020 period", colour = "Year") +
+  theme(panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+ggplot() +
+  geom_line(data = mean_month_temp, aes(x = month, y = avgmonthlyT)) +
+  geom_line(data = filtered_data, aes(x = month, y = monthlyT, group = year, colour = as.factor(year))) +
+  labs(x = "Month", y = "Average Air Temperature",
+       title = "Monthly Temperature Across Years",
+       colour = "Year") +
+  scale_color_manual(values = c("grey", "blue", "red", "green", "purple", "orange")) +
+  theme_minimal() +
+  theme(legend.position = "left", panel.background = element_blank(), axis.line = element_line(colour = "black"))
   
   
