@@ -10,9 +10,7 @@ library(ggplot2)
 # Load FLUXNET Data
 met_data <- read.csv("~/Desktop/Dissertation/Data/DE-Hai-2000-2020-weekly_timeseries_met.csv", header = TRUE)
 obs_data <- read.csv("~/Desktop/Dissertation/Data/DE-Hai-2000-2020-weekly_timeseries_obs.csv", header = TRUE)
-# or when using a uni desktop:
-met_data <- read_csv("DE-Hai-2000-2020-weekly_timeseries_met.csv")
-obs_data <- read_csv("DE-Hai-2000-2020-weekly_timeseries_obs.csv")
+sm_data <- read.csv("~/Desktop/Dissertation/Data/DE-Hai-2000-2020-weekly_timeseries_metSM.csv", header= TRUE)
 
 # Explore data
 head(met_data) # Gives first few variables (6 first rows) e.g. to check data imported OK, get familiar with the variables 
@@ -285,7 +283,7 @@ filtered_data2 <- filtered_data2 %>%
 
 ggplot(data = filtered_data2, aes(x = month, y = monthlyT, group = year, colour = as.factor(year))) +
   geom_line() +
-  scale_color_manual(values = c("#FAEF17", "#FFD700", "#FFA500", "#FF8C00", "#D9534F", "black")) +
+  scale_color_manual(values = c("#FAEF17", "#FFD700", "#FFA500", "#FF8C00", "#D9534F","red", "black")) +
   labs(x = "Month", y = "Air Temperature (°C)",
        title = "Air temperature over a year with drought years highlighted", colour = "Year") +
   theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
@@ -293,12 +291,13 @@ ggplot(data = filtered_data2, aes(x = month, y = monthlyT, group = year, colour 
 # let's do the same thing for precipitation trends 
 
 highlight_years <- c(2003, 2006, 2010, 2015, 2018, 2019, 2020)
-precip_filtered_data <- avg_monthly_precip %>%
-  filter(year %in% highlight_years)
 
 avg_monthly_precip <- met_data %>%
   group_by(year, month) %>%
   summarise(monthlyPrecip = mean(precip_kgm2s, na.rm = TRUE))
+
+precip_filtered_data <- avg_monthly_precip %>%
+  filter(year %in% highlight_years)
 
 met_data_with_avg_precip <- left_join(met_data, avg_monthly_precip, by = c("year", "month"))
 
@@ -399,6 +398,9 @@ ggplot(doyflux2003vs2018, aes(x = doy, y = GPP_gCm2day, colour = as.factor(year)
 
 obs2002to2005 <- obs_data[obs_data$year >= 2002 & obs_data$year <= 2005, ]
 obs2017to2020 <- obs_data[obs_data$year >= 2017 & obs_data$year <= 2020, ]
+merged <- rbind(obs2002to2005, obs2017to2020)
+merged$yeargroup <- ifelse(rownames(merged) %in% rownames(obs2002to2005), "2002to2005", "2017to2020")
+
 
 ggplot(obs2002to2005, aes(x = full_date, y = GPP_gCm2day)) +
   geom_line(colour="green3") +
@@ -417,3 +419,93 @@ ggplot(obs2017to2020, aes(x = full_date, y = GPP_gCm2day)) +
   labs(title="GPP trends 2017-2020") + 
   xlab("Time [year]") + 
   ylab("GPP [gC/m^2/day]")
+
+
+# Overlaying these two trendlines
+
+ggplot(merged, aes(x = doy, y = GPP_gCm2day, group = yeargroup)) +
+  geom_line() +
+  scale_color_manual(values = c("pink","grey")) +
+  # geom_smooth(method = lm, colour = "darkgreen") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
+  labs(title="GPP trends 2017-2020") + 
+  xlab("Time [year]") + 
+  ylab("GPP [gC/m^2/day]")
+
+ggplot(merged, aes(x = month, y = GPP_gCm2day, group = yeargroup)) +
+  geom_line(size = 0.7) +
+  geom_smooth(method = 'loess', aes(group=1), colour = "black", size = 0.7) +
+  scale_color_manual(values = c("pink","grey")) +
+  labs(x = "Month", y = "Precipitation (kg/m^2/s)", title = "Precipitation during drought years compared to average", colour = "Year") +
+  scale_x_discrete(limits = c("May", "Jun", "Jul", "Aug", "Sep")) +
+  theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+
+
+
+
+# Creating the climate averages dataframe
+climate_averages <- cbind(mean_month_temp, mean_month_precip)
+column_index_to_delete <- 3
+climate_averages <- climate_averages[,-column_index_to_delete]
+avg_monthly_MaxT <- met_data %>%
+  group_by(year, month) %>%
+  summarise(monthlyMaxT = mean(maxt_C, na.rm = TRUE))
+mean_month_MaxT <- avg_monthly_MaxT %>%
+  group_by(month) %>%
+  summarise(monthlyMaxT = mean(monthlyMaxT, na.rm = TRUE))  
+climate_averages <- cbind(climate_averages, mean_month_maxT)
+column_index_to_delete2 <- 4
+climate_averages <- climate_averages[,-column_index_to_delete2]
+climate_data_long <- gather(climate_averages, key = "temperature_type", value = "temperature", -month, -monthlyPrecip)
+
+ggplot(climate_data_long, aes(x = month, y = temperature, colour = temperature_type)) +
+  geom_point() +
+  geom_smooth(method = 'loess', se = FALSE) +
+  scale_color_manual(values = c("orange", "red3")) +
+  labs(x = "Month", y = "Temperature (°C)",
+       title = "Air Temperature vs Max Temperature averages", colour = "Year") +
+  # scale_x_discrete(limits = c("May", "Jun", "Jul", "Aug", "Sep")) +
+  # scale_y_continuous(limits = c(10,22)) +
+  theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+
+### Plotting Soil Moisture at different Depths over Time  
+
+rows_per_year <- 52
+sm_data$year <- rep(2000:2020, each = rows_per_year)
+sm_data$full_date <- as.Date(paste0(sm_data$year, "-", sm_data$doy), format = "%Y-%j")
+sm_data <- sm_data %>%
+  mutate(month = month(full_date, label = TRUE))
+
+ggplot(sm_data, aes(x = full_date, y = SWC_1)) +
+  geom_line(colour="#1D32ED") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
+  labs(title="Soil Moisture Depth 1 Trends 2000-2020") + 
+  xlab("Time [year]") + 
+  ylab("Soil Water Content [Pa]")
+
+ggplot(sm_data, aes(x = full_date, y = SWC_2)) +
+  geom_line(colour="#0D66FF") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
+  labs(title="Soil Moisture Depth 2 Trends 2000-2020") + 
+  xlab("Time [year]") + 
+  ylab("Soil Water Content [Pa]") 
+
+ggplot(sm_data, aes(x = full_date, y = SWC_3)) +
+  geom_line(colour="#6899FC") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
+  labs(title="Soil Moisture Depth 3 Trends 2000-2020") + 
+  xlab("Time [year]") + 
+  ylab("Soil Water Content [Pa]")
+
+SM_data_long <- gather(sm_data, key = "SMdepth", value = "SWC", -mint_C, -maxt_C, -airt_C, -co2_ppm, -swrad_MJm2day, -vpd_kPa, -precip_kgm2s, -wind_spd_ms, -SWC_1_unc, -SWC_2_unc, -SWC_3_unc, -month)
+
+
+
+
+  
