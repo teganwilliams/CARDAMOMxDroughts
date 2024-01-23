@@ -46,6 +46,8 @@ datafor2018 <- climate_data %>%
   filter(year(Date) == 2018)
 datafor2011 <- climate_data %>%
   filter(year(Date) == 2011)
+datafor2008 <- climate_data %>%
+  filter(year(Date) == 2008)
 
 
 combined_data1 <- merge(daily_averages, datafor2003, by = "DayOfYear", all.x = TRUE)
@@ -75,7 +77,9 @@ ggplot() +
        y = "Air Temperature") +
   scale_color_manual(values = c("black", "red"), name = "Legend", labels = c("Average", "2018")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
-        plot.title=element_text(size=13, hjust=0.5))
+        plot.title=element_text(size=13, hjust=0.5))+
+  xlim(c(152, 243))+
+  ylim(c(10,27))
 
 combined_data2011 <- merge(daily_averages, datafor2011, by = "DayOfYear", all.x = TRUE)
 view(combined_data2011)
@@ -88,8 +92,45 @@ ggplot() +
        y = "Air Temperature") +
   scale_color_manual(values = c("black", "red"), name = "Legend", labels = c("Average", "2011")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
-        plot.title=element_text(size=13, hjust=0.5))
+        plot.title=element_text(size=13, hjust=0.5))+
+  xlim(c(152, 243))+
+  ylim(c(10,27))
+
+combined_data2008 <- merge(daily_averages, datafor2008, by = "DayOfYear", all.x = TRUE)
+ggplot() +
+  geom_line(data = combined_data2008, aes(x = as.numeric(DayOfYear), y = AverageTemperature), colour = "black") +
+  geom_line(data = combined_data2008, aes(x = as.numeric(DayOfYear), y = MeanT), colour = "red") +
+  labs(title = "Daily Climate Trends vs 2008",
+       x = "Day of the Year",
+       y = "Air Temperature") +
+  scale_color_manual(values = c("black", "red"), name = "Legend", labels = c("Average", "2008")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5))+
+  xlim(c(152, 243))+
+  ylim(c(10,27))
+
+# now overlaying all the years of data + climate trend
+
+# Merge with daily averages
+combined_data_all_years <- merge(climate_data, daily_averages, by = "DayOfYear", all.x = TRUE)
+
+View(combined_data_all_years)
+combined_data_all_years$YearFactor <- factor(combined_data_all_years$Year)
+
+ggplot() +
+  geom_line(data = combined_data_all_years, aes(x = as.numeric(DayOfYear), y = AverageTemperature), size = 1, colour = "black") +
+  geom_line(data = combined_data_all_years, aes(x = as.numeric(DayOfYear), y = MeanT, group = Year, colour =as.factor(Year)), alpha = 0.5) +
+  labs(title = "Summer Climate Trends - Individual Years and Average",
+       x = "Day of the Year",
+       y = "Temperature") +
+  scale_color_manual(values = c("grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","pink", "#FAEF17","grey", "#FFD700","grey","grey","grey","#FFA500" ,"grey","grey","grey","grey","#FF8C00","grey","grey","#D9534F","#FF4640","#FF001A"))+
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5))+
+  xlim(c(152, 243))+
+  ylim(c(8,30))
 
 
-
+install.packages("lubridate")
+library(lubridate)
+climate_data$Year <- year(climate_data$Date)
 
