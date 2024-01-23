@@ -238,16 +238,18 @@ met_data$full_date <- as.Date(met_data$full_date)
 met_data$month <- month(met_data$full_date, label = TRUE)
 seasonal_data <- met_data %>%
   group_by(year, season = case_when(
-    month %in% c(12, 1, 2) ~ 'Winter',
-    month %in% c(3, 4, 5) ~ 'Spring',
-    month %in% c(6, 7, 8) ~ 'Summer',
-    month %in% c(9, 10, 11) ~ 'Autumn')) %>%
+    month %in% c('Dec', 'Jan', 'Feb') ~ 'Winter',
+    month %in% c('Mar', 'Apr', 'May') ~ 'Spring',
+    month %in% c('Jun', 'Jul', 'Aug') ~ 'Summer',
+    month %in% c('Sep', 'Oct', 'Nov') ~ 'Autumn')) %>%
   summarise(avg_temp = mean(airt_C))
+
 ggplot(seasonal_data, aes(x=year, y = avg_temp, colour = season)) +
   geom_line() +
   geom_point() +
   labs(x = 'Year', y ='Average Temperature', title = 'Seasonal Climate Averages')+
-  scale_color_manual(values = c('Winter'='blue', 'Spring'='green', 'Summer'='red', 'Autumn'='orange'))
+  scale_color_manual(values = c('Winter'='blue', 'Spring'='green', 'Summer'='red', 'Autumn'='orange'))+
+  theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
 
 highlight_years <- c(2003, 2006, 2010, 2015, 2018, 2019, 2020)
 filtered_data <- avg_monthly_temp %>%
