@@ -257,20 +257,19 @@ ggplot() +
 library(lubridate)
 combined_data_all_years_P <- merge(climate_data, daily_averages_P, by = "doy", all.x = TRUE)
 View(combined_data_all_years)
-combined_data_all_years$YearFactor <- factor(combined_data_all_years$year)
+combined_data_all_years_P$YearFactor <- factor(combined_data_all_years$year)
 
 ggplot() +
   geom_line(data = combined_data_all_years_P, aes(x = as.numeric(doy), y = MeanPrecip), size = 1, colour = "black") +
   geom_line(data = combined_data_all_years_P, aes(x = as.numeric(doy), y = Precip, group = year, colour =as.factor(year)), alpha = 0.5) +
   labs(title = "Summer Climate Trends - Individual Years and Average",
        x = "Day of the Year",
-       y = "Precip") +
+       y = "Precip (mm)") +
   scale_color_manual(values = c("grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","blue", "cyan","grey", "darkblue","grey","grey","grey","green" ,"grey","grey","grey","grey", "darkgreen","grey","grey", "#337AFF", "#0098C2", "#4FD6FF")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title=element_text(size=13, hjust=0.5))+
   xlim(c(152, 243))+
   ylim(c(0,25))
-
 
 
 #### Anomalies ####
@@ -291,21 +290,84 @@ merged_data$TemperatureAnomaly <- merged_data$MeanT - merged_data$ReferenceAvera
 
 # Calculate the 90th percentile of temperature anomalies
 percentile_90 <- quantile(merged_data$TemperatureAnomaly, 0.9, na.rm = TRUE)
+percentile_95 <- quantile(merged_data$TemperatureAnomaly, 0.95, na.rm = TRUE)
+
 
 # Filter only values in the upper 90th percentile
 anomaly_data <- merged_data %>%
-  filter(TemperatureAnomaly > percentile_90)
+  filter(TemperatureAnomaly > percentile_95)
+
+view(anomaly_data)
 
 # Plotting anomalies over time
 
-ggplot(anomaly_data, aes(x = doy, y = TemperatureAnomaly)) +
+ggplot(anomaly_data, aes(x = year, y = TemperatureAnomaly)) +
   geom_line() +
   labs(title = "Temperature Anomalies (Upper 90th Percentile)",
        x = "doy",
        y = "Temperature Anomaly")
 
 
+# for 2003
 
+datafor2003 <- climate_data %>%
+  filter(year == 2003)
+merged_data2003 <- merge(datafor2003, reference_period, by = "doy", all.x = TRUE)
+merged_data2003$TemperatureAnomaly <- merged_data2003$MeanT - merged_data2003$ReferenceAverage
+
+anomaly_data2003 <- merged_data2003 %>%
+  filter(TemperatureAnomaly > percentile_90)
+
+ggplot(anomaly_data2003, aes(x = doy, y = TemperatureAnomaly)) +
+  geom_line(colour = "red2") +
+  labs(title = "Summer 2003 Temperature Anomalies (Upper 90th Percentile)",
+       x = "doy",
+       y = "Temperature Anomaly") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) +
+  xlim(c(152, 243)) +
+  ylim(c(0,10))
+
+# for 2018
+
+datafor2018 <- climate_data %>%
+  filter(year == 2018)
+merged_data2018 <- merge(datafor2018, reference_period, by = "doy", all.x = TRUE)
+merged_data2018$TemperatureAnomaly <- merged_data2018$MeanT - merged_data2018$ReferenceAverage
+
+anomaly_data2018 <- merged_data2018 %>%
+  filter(TemperatureAnomaly > percentile_90)
+
+ggplot(anomaly_data2018, aes(x = doy, y = TemperatureAnomaly)) +
+  geom_line(colour = "red2") +
+  labs(title = "Summer 2018 Temperature Anomalies (Upper 90th Percentile)",
+       x = "doy",
+       y = "Temperature Anomaly") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) +
+  xlim(c(152, 243)) +
+  ylim(c(0,10))
+
+# for 2011
+
+datafor2011 <- climate_data %>%
+  filter(year == 2011)
+merged_data2011 <- merge(datafor2011, reference_period, by = "doy", all.x = TRUE)
+merged_data2011$TemperatureAnomaly <- merged_data2011$MeanT - merged_data2011$ReferenceAverage
+
+anomaly_data2011 <- merged_data2011 %>%
+  filter(TemperatureAnomaly > percentile_90)
+
+ggplot(anomaly_data2011, aes(x = doy, y = TemperatureAnomaly)) +
+  geom_line(colour = "red2") +
+  labs(title = "Summer 2011 Temperature Anomalies (Upper 90th Percentile)",
+       x = "doy",
+       y = "Temperature Anomaly") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) +
+  xlim(c(152, 243)) +
+  ylim(c(0,10))
+  
 
 #### Using the Göttingen data ####
 
