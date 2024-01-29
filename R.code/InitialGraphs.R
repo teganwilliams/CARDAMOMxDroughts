@@ -542,15 +542,36 @@ sm_anomaly_data_filtered$doy <- as.numeric(sm_anomaly_data_filtered$doy)
 
 ggplot(sm_anomaly_data_filtered, aes(x = doy, y = smAnomaly, colour = year)) +
   geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_text(aes(x = 242, y = 1, label = "Norm"), colour = "black") + 
   labs(title = "Summer SM Anomalies compared to 20 year average",
-       x = "doy",
-       y = "SM Anomaly") +
+       x = "",
+       y = "Weekly SM Anomaly (mm)") +
   scale_colour_manual(values = c("grey","grey","grey","blue","grey", "grey","green","grey","grey","grey","cyan" ,"grey","grey","grey","grey", "darkblue","grey","grey", "#337AFF", "#0098C2", "#4FD6FF")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title=element_text(size=13, hjust=0.5)) +
-  scale_x_continuous(breaks = c(152, 182, 213, 244), 
+  scale_x_continuous(breaks = c(154, 182, 213, 242), 
                      labels = c("Jun", "Jul", "Aug", "Sep"),
-                     limits = c(152, 244)) +
-  ylim(-15, 15) 
+                     expand = c(0, 0),
+                     limits = c(152, 245)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(-15,15))
+
+ggplot(sm_anomaly_data_filtered, aes(x = doy, y = smAnomaly, colour = year)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_text(aes(x = 242, y = 1, label = "Norm"), colour = "black") + 
+  labs(title = "Summer Deep SM Anomalies compared to 20 year average",
+       x = "",
+       y = "Weekly SM Anomaly (mm)") +
+  scale_colour_manual(values = c("grey","grey","grey","deeppink","grey", "grey","blue","grey","grey","grey","cyan3" ,"grey","grey","grey","grey", "darkblue","grey","grey","red2", "#337AFF", "#4FD6FF")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) +
+  scale_x_continuous(breaks = c(121, 154, 182, 213, 242), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"),
+                     expand = c(0, 0),
+                     limits = c(115, 245)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(-15,15))
 
   
