@@ -150,6 +150,17 @@ ggplot() +
   xlim(c(152, 243))+
   ylim(c(8,30))
 
+ggplot() +
+  geom_line(data = combined_data_all_years, aes(x = as.numeric(doy), y = AverageTemperature), size = 1, colour = "black") +
+  geom_line(data = combined_data_all_years, aes(x = as.numeric(doy), y = MeanT, group = year, colour = as.factor(year)), alpha = 0.5) +
+  labs(title = "Yearly Climate Trends - Individual Years and Average",
+       x = "Day of the Year",
+       y = "Temperature (degrees C)") +
+  scale_color_manual(values = c("grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","pink", "#FAEF17","grey", "#FFD700","grey","grey","grey","#FFA500" ,"grey","grey","grey","grey","#FF8C00","grey","grey","#D9534F","#FF4640","#FF001A"))+
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5))+
+  ylim(c(-10,30))
+
 #### Precipitation ####
 
 # Calculating Daily Trends for the whole year 
@@ -271,6 +282,17 @@ ggplot() +
   xlim(c(152, 243))+
   ylim(c(0,25))
 
+ggplot() +
+  geom_line(data = combined_data_all_years_P, aes(x = as.numeric(doy), y = MeanPrecip), size = 1, colour = "black") +
+  geom_line(data = combined_data_all_years_P, aes(x = as.numeric(doy), y = Precip, group = year, colour =as.factor(year)), alpha = 0.5) +
+  labs(title = "Summer Climate Trends - Individual Years and Average",
+       x = "Day of the Year",
+       y = "Precip (mm)") +
+  scale_color_manual(values = c("grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","blue", "cyan","grey", "darkblue","grey","grey","grey","green" ,"grey","grey","grey","grey", "darkgreen","grey","grey", "#337AFF", "#0098C2", "#4FD6FF")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5))+
+  ylim(c(0,25))
+
 
 #### Anomalies ####
 
@@ -291,25 +313,86 @@ merged_data$TemperatureAnomaly <- merged_data$MeanT - merged_data$ReferenceAvera
 # Calculate the 90th percentile of temperature anomalies
 percentile_90 <- quantile(merged_data$TemperatureAnomaly, 0.9, na.rm = TRUE)
 percentile_95 <- quantile(merged_data$TemperatureAnomaly, 0.95, na.rm = TRUE)
-
+percentile_0 <- quantile(merged_data$TemperatureAnomaly, 0, na.rm = TRUE)
 
 # Filter only values in the upper 90th percentile
 anomaly_data <- merged_data %>%
-  filter(TemperatureAnomaly > percentile_95)
+  filter(TemperatureAnomaly > percentile_0)
+
+anomaly_data$year <- as.factor(anomaly_data$year) 
 
 view(anomaly_data)
 
-# Plotting anomalies over time
+# Plotting T Anomalies over time
 
-ggplot(anomaly_data, aes(x = year, y = TemperatureAnomaly)) +
+ggplot(anomaly_data, aes(x = doy, y = TemperatureAnomaly, group = year)) +
   geom_line() +
   labs(title = "Temperature Anomalies (Upper 90th Percentile)",
        x = "doy",
-       y = "Temperature Anomaly")
+       y = "Temperature Anomaly") +
+  scale_colour_manual(values = c("grey", "pink", "red", "orange", "yellow")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5))+
+  xlim(c(152, 243))+
+  ylim(c(0,20))
+
+ggplot(anomaly_data, aes(x = doy, y = TemperatureAnomaly, group = year)) +
+  geom_line() +
+  labs(title = "Temperature Anomalies",
+       x = "doy",
+       y = "Temperature Anomaly") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5))+
+  xlim(c(152, 243))+
+  ylim(c(0,20))
 
 
-# for 2003
+# Using Weekly data for T anomalies
 
+climate_data <- climate_data %>%
+  mutate(Date = as.Date(as.character(TIMESTAMP), format = "%Y%m%d"))
+
+# Create a new dataset with weekly temperature values
+weekly_climate_data <- climate_data %>%
+  group_by(Year = year(Date), Week = week(Date)) %>%
+  summarize(AverageTemperature = mean(MeanT, na.rm = TRUE))
+
+# Now find the weekly anomalies
+# Reference period 1990-2020
+weekly_reference_period <- weekly_climate_data %>%
+  filter(Year >= 1989 & Year <= 2020) %>%
+  group_by(Week) %>%
+  summarize(ReferenceAverage = mean(AverageTemperature, na.rm = TRUE))
+
+# Merge with the main data
+merged_data_w <- merge(weekly_climate_data, weekly_reference_period, by = "Week", all.x = TRUE)
+
+# Calculate temperature anomalies
+merged_data_w$TAnomaly <- merged_data_w$AverageTemperature - merged_data_w$ReferenceAverage
+
+# Calculate the 90th percentile of weekly temperature anomalies
+percentile_90 <- quantile(merged_data_w$TAnomaly, 0.9, na.rm = TRUE)
+
+percentile_0 <- quantile(merged_data$TemperatureAnomaly, 0, na.rm = TRUE)
+
+# Filter only values in the upper 90th percentile
+weekly_anomaly_data <- merged_data_w %>%
+  filter(TAnomaly > percentile_90)
+
+# Plotting weekly T Anomalies over time
+
+ggplot(weekly_anomaly_data, aes(x = Week, y = TAnomaly, group = Year)) +
+  geom_line() +
+  labs(title = "Temperature Anomalies (Upper 90th Percentile)",
+       x = "Week",
+       y = "Temperature Anomaly") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) +
+  xlim(c(22,35)) +
+  ylim(c(2.5,10))
+
+
+# Anomalies for 2003
 datafor2003 <- climate_data %>%
   filter(year == 2003)
 merged_data2003 <- merge(datafor2003, reference_period, by = "doy", all.x = TRUE)
@@ -368,6 +451,44 @@ ggplot(anomaly_data2011, aes(x = doy, y = TemperatureAnomaly)) +
   xlim(c(152, 243)) +
   ylim(c(0,10))
   
+
+## Precipitation 'deficits' aka below average
+
+reference_period_P <- climate_data %>%
+  filter(year >= 1989 & year <= 2020) %>%
+  group_by(doy) %>%
+  summarize(ReferenceAverage = mean(Precip, na.rm = TRUE))
+
+merged_data_P <- merge(climate_data, reference_period_P, by = "doy", all.x = TRUE)
+
+# Calculate precip DEFICIT
+merged_data_P$PrecipAnomaly <-  merged_data_P$ReferenceAverage - merged_data_P$Precip
+
+percentile_90_P <- quantile(merged_data_P$PrecipAnomaly, 0.9, na.rm = TRUE)
+
+anomaly_data_P <- merged_data_P %>%
+  filter(PrecipAnomaly > percentile_90_P)
+
+anomaly_data_P$year <- as.factor(anomaly_data_P$year) 
+
+view(anomaly_data_P)
+
+# Plotting T Anomalies over time
+
+ggplot(anomaly_data_P, aes(x = doy, y = PrecipAnomaly, group = year)) +
+  geom_line() +
+  labs(title = "Precipitation Deficits (Upper 90th Percentile)",
+       x = "doy",
+       y = "Precipitation Anomaly") +
+  #scale_colour_manual(values = c("grey", "pink", "red", "orange", "yellow")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5))+
+  xlim(c(152, 243))+
+  ylim(c(2,4.5))
+
+
+
+
 
 #### Using the Göttingen data ####
 

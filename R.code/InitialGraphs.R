@@ -508,6 +508,49 @@ ggplot(sm_data, aes(x = full_date, y = SWC_3)) +
 SM_data_long <- gather(sm_data, key = "SMdepth", value = "SWC", -mint_C, -maxt_C, -airt_C, -co2_ppm, -swrad_MJm2day, -vpd_kPa, -precip_kgm2s, -wind_spd_ms, -SWC_1_unc, -SWC_2_unc, -SWC_3_unc, -month)
 
 
+# Plotting SM anomalies
 
+# Reference period 2000-2020
+sm_reference_period <- sm_data %>%
+  filter(year >= 1989 & year <= 2020) %>%
+  group_by(doy) %>%
+  summarize(smAverage = mean(SWC_1, na.rm = TRUE))
+
+# Merge with the main data
+sm_merged_data <- merge(sm_data, sm_reference_period, by = "doy", all.x = TRUE)
+
+# Calculate temperature anomalies
+sm_merged_data$smAnomaly <- sm_merged_data$SWC_1 - sm_merged_data$smAverage
+
+# Calculate the 90th percentile of temperature anomalies
+sm_percentile_90 <- quantile(sm_merged_data$smAnomaly, 0.9, na.rm = TRUE)
+sm_percentile_0 <- quantile(sm_merged_data$smAnomaly, 0, na.rm = TRUE)
+
+
+# Filter only values in the upper 90th percentile
+sm_anomaly_data <- sm_merged_data %>%
+  filter(smAnomaly > sm_percentile_0)
+
+sm_anomaly_data$year <- as.factor(sm_anomaly_data$year)
+sm_anomaly_data$doy <- as.factor(sm_anomaly_data$doy)
+
+sm_anomaly_data_filtered <- sm_anomaly_data[c("year", "doy", "smAverage", "smAnomaly")]
+sm_anomaly_data_filtered$year <- as.factor(sm_anomaly_data_filtered$year)
+sm_anomaly_data_filtered$doy <- as.numeric(sm_anomaly_data_filtered$doy)
+
+# Plotting SM anomalies over time
+
+ggplot(sm_anomaly_data_filtered, aes(x = doy, y = smAnomaly, colour = year)) +
+  geom_line() +
+  labs(title = "Summer SM Anomalies compared to 20 year average",
+       x = "doy",
+       y = "SM Anomaly") +
+  scale_colour_manual(values = c("grey","grey","grey","blue","grey", "grey","green","grey","grey","grey","cyan" ,"grey","grey","grey","grey", "darkblue","grey","grey", "#337AFF", "#0098C2", "#4FD6FF")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) +
+  scale_x_continuous(breaks = c(152, 182, 213, 244), 
+                     labels = c("Jun", "Jul", "Aug", "Sep"),
+                     limits = c(152, 244)) +
+  ylim(-15, 15) 
 
   
