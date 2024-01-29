@@ -531,6 +531,11 @@ sm_percentile_0 <- quantile(sm_merged_data$smAnomaly, 0, na.rm = TRUE)
 sm_anomaly_data <- sm_merged_data %>%
   filter(smAnomaly > sm_percentile_0)
 
+sm_anomaly_data90 <- sm_merged_data %>%
+  filter(smAnomaly > sm_percentile_90)
+
+min(sm_anomaly_data90$smAnomaly)
+
 sm_anomaly_data$year <- as.factor(sm_anomaly_data$year)
 sm_anomaly_data$doy <- as.factor(sm_anomaly_data$doy)
 
@@ -558,9 +563,14 @@ ggplot(sm_anomaly_data_filtered, aes(x = doy, y = smAnomaly, colour = year)) +
                      limits = c(-15,15))
 
 ggplot(sm_anomaly_data_filtered, aes(x = doy, y = smAnomaly, colour = year)) +
+  # geom_rect(aes(xmin = 119, xmax = 245, 
+      #          ymin = -15, ymax = -6.98), 
+        #    fill = "orange", alpha = 0.5) +
   geom_line() +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_hline(yintercept = -6.98, linetype = "dashed", colour = "darkorange") +
   geom_text(aes(x = 242, y = 1, label = "Norm"), colour = "black") + 
+  geom_text(aes(x = 235, y = -11, label = "90th Percentile"), colour = "darkorange") + 
   labs(title = "Summer Deep SM Anomalies compared to 20 year average",
        x = "",
        y = "Weekly SM Anomaly (mm)") +
@@ -570,8 +580,9 @@ ggplot(sm_anomaly_data_filtered, aes(x = doy, y = smAnomaly, colour = year)) +
   scale_x_continuous(breaks = c(121, 154, 182, 213, 242), 
                      labels = c("May", "Jun", "Jul", "Aug", "Sep"),
                      expand = c(0, 0),
-                     limits = c(115, 245)) +
+                     limits = c(119, 245)) +
   scale_y_continuous(expand = c(0, 0),
                      limits = c(-15,15))
+  
 
   
