@@ -310,7 +310,7 @@ ggplot() +
   labs(title = "Daily Climate Trends in 2003 and 2018",
        x = "Day of the Year",
        y = "Precipitation") +
-  scale_color_manual(values = c("blue", "dodgerblue"), name = "Legend", labels = c("2003", "2018", "Average")) +
+  scale_color_manual(values = c("dodgerblue", "blue"), name = "Legend", labels = c("2003", "2018", "Average")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title=element_text(size=13, hjust=0.5))+
   scale_x_continuous(breaks = c(154, 182, 213, 242), 
