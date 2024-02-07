@@ -56,6 +56,8 @@ datafor2008 <- climate_data %>%
   filter(year == 2008)
 datafor1989 <- climate_data %>%
   filter(year == 1989)
+dataforboth <- climate_data %>%
+  filter(year %in% c(2003, 2018))
 
 combined_data1 <- merge(daily_averages, datafor2003, by = "doy", all.x = TRUE)
 view(combined_data1)
@@ -87,6 +89,43 @@ ggplot() +
         plot.title=element_text(size=13, hjust=0.5))+
   xlim(c(152, 243))+
   ylim(c(8,27))
+
+
+combined_data_both <- merge(daily_averages, dataforboth, by = "doy", all.x = TRUE)
+view(combined_data_both)
+
+ggplot() +
+  geom_line(data = combined_data_both, aes(x = as.numeric(doy), y = AverageTemperature), colour = "black", labels = c("Average")) +
+  geom_line(data = combined_data_both, aes(x = as.numeric(doy), y = MeanT, colour = factor(year))) +
+  labs(title = "Daily Climate Trends in 2003 and 2018",
+       x = "Day of the Year",
+       y = "Air Temperature") +
+  scale_color_manual(values = c("orange", "red"), name = "Legend", labels = c("2003", "2018", "Average")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5))+
+  scale_x_continuous(breaks = c(154, 182, 213, 242), 
+                     labels = c("Jun", "Jul", "Aug", "Sep"),
+                     expand = c(0, 0),
+                     limits = c(152, 245)) +
+  ylim(c(8,27))
+
+ggplot(data = combined_data_both, aes(x = as.numeric(doy), y = MeanT, colour = factor(year))) +
+  geom_line() +
+  labs(title = "Daily Climate Trends in 2003 and 2018",
+       x = "Day of the Year",
+       y = "Air Temperature",
+       colour = "Year") +
+  scale_colour_manual(values = c("orange", "red"), name = "Year", labels = c("2003", "2018")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size = 13, hjust = 0.5)) +
+  scale_x_continuous(breaks = c(154, 182, 213, 242), 
+                     labels = c("Jun", "Jul", "Aug", "Sep"),
+                     expand = c(0, 0),
+                     limits = c(152, 245)) +
+  ylim(c(8,27))
+
+
+
 
 combined_data2011 <- merge(daily_averages, datafor2011, by = "doy", all.x = TRUE)
 view(combined_data2011)
@@ -260,6 +299,25 @@ ggplot() +
   xlim(c(152, 243)) +
   ylim(c(0,17))
 
+
+# comparing 2003 and 2018 summer precipitation trends vs average 
+
+Pboth <- merge(daily_averages_P, dataforboth, by = "doy", all.x = TRUE)
+
+ggplot() +
+  geom_line(data = Pboth, aes(x = as.numeric(doy), y = MeanPrecip), colour = "black", labels = c("Average")) +
+  geom_line(data = Pboth, aes(x = as.numeric(doy), y = Precip, colour = factor(year))) +
+  labs(title = "Daily Climate Trends in 2003 and 2018",
+       x = "Day of the Year",
+       y = "Precipitation") +
+  scale_color_manual(values = c("blue", "dodgerblue"), name = "Legend", labels = c("2003", "2018", "Average")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5))+
+  scale_x_continuous(breaks = c(154, 182, 213, 242), 
+                     labels = c("Jun", "Jul", "Aug", "Sep"),
+                     expand = c(0, 0),
+                     limits = c(152, 245)) +
+  ylim(c(0,22))
 
 
 # now overlaying all the years of data + climate trend
@@ -485,6 +543,8 @@ ggplot(anomaly_data_P, aes(x = doy, y = PrecipAnomaly, group = year)) +
         plot.title=element_text(size=13, hjust=0.5))+
   xlim(c(152, 243))+
   ylim(c(2,4.5))
+
+
 
 
 

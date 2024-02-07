@@ -543,16 +543,20 @@ sm_anomaly_data_filtered <- sm_anomaly_data[c("year", "doy", "smAverage", "smAno
 sm_anomaly_data_filtered$year <- as.factor(sm_anomaly_data_filtered$year)
 sm_anomaly_data_filtered$doy <- as.numeric(sm_anomaly_data_filtered$doy)
 
+View(sm_anomaly_data_filtered)
+
 # Plotting SM anomalies over time
 
 ggplot(sm_anomaly_data_filtered, aes(x = doy, y = smAnomaly, colour = year)) +
   geom_line() +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_hline(yintercept = -6.98, linetype = "dashed", colour = "darkorange") +
+  geom_text(aes(x = 235, y = -11, label = "90th Percentile"), colour = "darkorange") + 
   geom_text(aes(x = 242, y = 1, label = "Norm"), colour = "black") + 
   labs(title = "Summer SM Anomalies compared to 20 year average",
        x = "",
        y = "Weekly SM Anomaly (mm)") +
-  scale_colour_manual(values = c("grey","grey","grey","blue","grey", "grey","green","grey","grey","grey","cyan" ,"grey","grey","grey","grey", "darkblue","grey","grey", "#337AFF", "#0098C2", "#4FD6FF")) +
+  scale_colour_manual(values = c("grey","grey","grey","deeppink","grey", "grey","purple","grey","grey","grey","cyan" ,"grey","grey","grey","grey", "darkblue","grey","grey", "red2", "#0098C2", "#4FD6FF")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title=element_text(size=13, hjust=0.5)) +
   scale_x_continuous(breaks = c(154, 182, 213, 242), 
