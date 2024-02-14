@@ -587,6 +587,88 @@ ggplot(sm_anomaly_data_filtered, aes(x = doy, y = smAnomaly, colour = year)) +
                      limits = c(119, 245)) +
   scale_y_continuous(expand = c(0, 0),
                      limits = c(-15,15))
+
+
   
+#### Plotting Temperature anomalies ####
+
+# Reference period 1989-2020
+temp_reference_period <- climate_data %>%
+  filter(year >= 1989 & year <= 2020) %>%
+  group_by(doy) %>%
+  summarize(tAverage = mean(MeanT, na.rm = TRUE))
+
+# Merge with the main data
+temp_merged_data <- merge(climate_data, temp_reference_period, by = "doy", all.x = TRUE)
+
+# Calculate temperature anomalies
+temp_merged_data$tempAnomaly <- temp_merged_data$MeanT - temp_merged_data$tAverage
+
+# Calculate the 90th percentile of temperature anomalies
+temp_percentile_90 <- quantile(temp_merged_data$tempAnomaly, 0.9, na.rm = TRUE)
+temp_percentile_0 <- quantile(temp_merged_data$tempAnomaly, 0, na.rm = TRUE)
+
+
+# Filter only values in the upper 90th percentile
+temp_anomaly_data <- temp_merged_data %>%
+  filter(tempAnomaly > temp_percentile_0)
+
+temp_anomaly_data90 <- temp_merged_data %>%
+  filter(tempAnomaly > temp_percentile_90)
+
+min(temp_anomaly_data90$tempAnomaly)
+max(temp_anomaly_data90$tempAnomaly)
+
+temp_anomaly_data$year <- as.factor(temp_anomaly_data$year)
+temp_anomaly_data$doy <- as.factor(temp_anomaly_data$doy)
+
+temp_anomaly_data_filtered <- temp_anomaly_data[c("year", "doy", "tAverage", "tempAnomaly")]
+temp_anomaly_data_filtered$year <- as.factor(temp_anomaly_data_filtered$year)
+temp_anomaly_data_filtered$doy <- as.numeric(temp_anomaly_data_filtered$doy)
+
+View(temp_anomaly_data_filtered)
+
+# Plotting Temperature anomalies over time
+
+ggplot(temp_anomaly_data_filtered, aes(x = doy, y = tempAnomaly, colour = year)) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_hline(yintercept = 4.63, linetype = "dashed", colour = "darkorange") +
+  geom_text(aes(x = 235, y = -11, label = "90th Percentile"), colour = "darkorange") + 
+  geom_text(aes(x = 242, y = 1, label = "Norm"), colour = "black") + 
+  labs(title = "Summer Temperature Anomalies compared to 30 year average",
+       x = "",
+       y = "Daily Temp Anomaly (degrees C)") +
+  scale_colour_manual(values = c("grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","deeppink","grey", "grey","purple","grey","grey","grey","cyan","grey","grey","grey","grey","grey", "darkblue","grey", "red2", "#0098C2", "#4FD6FF")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) +
+  scale_x_continuous(breaks = c(154, 182, 213, 242), 
+                     labels = c("Jun", "Jul", "Aug", "Sep"),
+                     expand = c(0, 0),
+                     limits = c(152, 245)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(0,11))
+
+ggplot(temp_anomaly_data_filtered, aes(x = doy, y = tempAnomaly, colour = year)) +
+  # geom_rect(aes(xmin = 119, xmax = 245, 
+  #          ymin = -15, ymax = -6.98), 
+  #    fill = "orange", alpha = 0.5) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_hline(yintercept = -6.98, linetype = "dashed", colour = "darkorange") +
+  geom_text(aes(x = 242, y = 1, label = "Norm"), colour = "black") + 
+  geom_text(aes(x = 235, y = -11, label = "90th Percentile"), colour = "darkorange") + 
+  labs(title = "Summer Temperature Anomalies compared to 30 year average",
+       x = "",
+       y = "Daily Temperature Anomaly (degrees Celsius)") +
+  scale_colour_manual(values = c("grey","grey","grey","deeppink","grey", "grey","blue","grey","grey","grey","cyan3" ,"grey","grey","grey","grey", "darkblue","grey","grey","red2", "#337AFF", "#4FD6FF")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) +
+  scale_x_continuous(breaks = c(121, 154, 182, 213, 242), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"),
+                     expand = c(0, 0),
+                     limits = c(119, 245)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(-15,15))
 
   
