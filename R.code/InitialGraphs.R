@@ -164,6 +164,34 @@ ggplot(obs_data, aes(x = full_date, y = GPP_gCm2day)) +
   xlab("Time [year]") + 
   ylab("GPP [gC/m^2/day]")
 
+# plotting GPP for 2000-2005
+
+firstdrought <- obs_data %>%
+  filter(year >= 2000 & year <= 2005)
+
+ggplot(firstdrought, aes(x = full_date, y = GPP_gCm2day)) +
+  geom_line(colour="green3") +
+  # geom_smooth(method = lm, colour = "darkgreen") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
+  labs(title="GPP trends 2000-2005") + 
+  xlab("Time [year]") + 
+  ylab("GPP [gC/m^2/day]")
+
+# plotting GPP for 2015-2020
+
+seconddrought <- obs_data %>%
+  filter(year >= 2015 & year <= 2020)
+
+ggplot(seconddrought, aes(x = full_date, y = GPP_gCm2day)) +
+  geom_line(colour="green3") +
+  # geom_smooth(method = lm, colour = "darkgreen") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) + 
+  labs(title="GPP trends 2015-2020") + 
+  xlab("Time [year]") + 
+  ylab("GPP [gC/m^2/day]")
+
 
 # Plot GPP against Temperature
 # first combine the datasets
