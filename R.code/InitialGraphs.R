@@ -8,9 +8,9 @@ library(tidyverse)
 library(ggplot2) 
 
 # Load FLUXNET Data
-met_data <- read.csv("~/Desktop/Dissertation/Data/DE-Hai-2000-2020-weekly_timeseries_met.csv", header = TRUE)
-obs_data <- read.csv("~/Desktop/Dissertation/Data/DE-Hai-2000-2020-weekly_timeseries_obs.csv", header = TRUE)
-sm_data <- read.csv("~/Desktop/Dissertation/Data/DE-Hai-2000-2020-weekly_timeseries_metSM.csv", header= TRUE)
+met_data <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_met.csv", header = TRUE)
+obs_data <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_obs.csv", header = TRUE)
+sm_data <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_metSM.csv", header= TRUE)
 
 # Explore data
 head(met_data) # Gives first few variables (6 first rows) e.g. to check data imported OK, get familiar with the variables 
@@ -54,15 +54,16 @@ ggplot(met2010to2020, aes(x = full_date, y = airt_C)) +
 
 # Now filter for even less years
 met_data$year <- as.numeric(met_data$year)
+met2000to2005 <- met_data[met_data$year >= 2000 & met_data$year <= 2005, ]
 met2015to2020 <- met_data[met_data$year >= 2015 & met_data$year <= 2020, ]
 met2018to2020 <- met_data[met_data$year >= 2018 & met_data$year <= 2020, ]
 met2019 <- met_data[met_data$year >= 2019 & met_data$year <= 2019, ]
 met2013 <- met_data[met_data$year >= 2013 & met_data$year <= 2013, ]
 
-ggplot(met2018to2020, aes(x = full_date, y = airt_C)) +
+ggplot(met2000to2005, aes(x = full_date, y = airt_C)) +
   geom_line(colour="red2") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-  labs(title="Temperature trends 2018-2020") + 
+  labs(title="Temperature trends 2000-2005") + 
   theme(plot.title=element_text(size=13, hjust=0.5)) + # Title size and position
   xlab("Time [year]") + 
   ylab("Air Temperature [°C]")
@@ -84,11 +85,10 @@ ggplot(met_data, aes(x = full_date, y = maxt_C)) +
   xlab("Time [year]") + 
   ylab("Max Temperature [°C]")
 
-ggplot(met2010to2020, aes(x = full_date, y = maxt_C)) +
+ggplot(met2000to2005, aes(x = full_date, y = maxt_C)) +
   geom_line(colour="red2") +
-  geom_smooth(method = lm, colour = "darkred") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-  labs(title="Maximum Temperature trends 2000-2020") + 
+  labs(title="Maximum Temperature trends 2000-2005") + 
   theme(plot.title=element_text(size=13, hjust=0.5)) + 
   xlab("Time [year]") + 
   ylab("Max Temperature [°C]")
@@ -101,6 +101,14 @@ ggplot(met2015to2020, aes(x = full_date, y = maxt_C)) +
   scale_y_continuous(name = "Max Temperature [°C]", 
                      # limits=c(15, 30)
                      )
+
+
+# plotting T over time for 5 consecutive years e.g., 2000-2005, to show the difference during drought years 
+# plus add the mean temperature as well!
+
+
+
+
 
 # Now let's look at Precipitation over Time
 ggplot(met_data, aes(x = full_date, y = precip_kgm2s)) +
@@ -667,7 +675,7 @@ ggplot(temp_anomaly_data_filtered, aes(x = doy, y = tempAnomaly, colour = year))
   labs(title = "Summer Temperature Anomalies compared to 30 year average",
        x = "",
        y = "Daily Temp Anomaly (degrees C)") +
-  scale_colour_manual(values = c("grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","deeppink","grey", "grey","purple","grey","grey","grey","cyan","grey","grey","grey","grey","grey", "darkblue","grey", "red2", "#0098C2", "#4FD6FF")) +
+  scale_colour_manual(values = c("grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","deeppink","grey", "grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey", "grey","grey", "red2", "grey", "grey")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title=element_text(size=13, hjust=0.5)) +
   scale_x_continuous(breaks = c(154, 182, 213, 242), 
@@ -683,13 +691,13 @@ ggplot(temp_anomaly_data_filtered, aes(x = doy, y = tempAnomaly, colour = year))
   #    fill = "orange", alpha = 0.5) +
   geom_line() +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
-  geom_hline(yintercept = -6.98, linetype = "dashed", colour = "darkorange") +
+  geom_hline(yintercept = 4.63, linetype = "dashed", colour = "darkorange") +
   geom_text(aes(x = 242, y = 1, label = "Norm"), colour = "black") + 
   geom_text(aes(x = 235, y = -11, label = "90th Percentile"), colour = "darkorange") + 
   labs(title = "Summer Temperature Anomalies compared to 30 year average",
        x = "",
        y = "Daily Temperature Anomaly (degrees Celsius)") +
-  scale_colour_manual(values = c("grey","grey","grey","deeppink","grey", "grey","blue","grey","grey","grey","cyan3" ,"grey","grey","grey","grey", "darkblue","grey","grey","red2", "#337AFF", "#4FD6FF")) +
+  scale_colour_manual(values = c("grey","grey","grey","grey","grey", "grey","grey","grey","grey","grey","grey","grey","grey","grey","deeppink","grey","grey","grey","grey","grey","grey","grey","grey","grey", "grey", "grey","grey","grey","grey","red2", "grey", "grey")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title=element_text(size=13, hjust=0.5)) +
   scale_x_continuous(breaks = c(121, 154, 182, 213, 242), 
@@ -697,6 +705,57 @@ ggplot(temp_anomaly_data_filtered, aes(x = doy, y = tempAnomaly, colour = year))
                      expand = c(0, 0),
                      limits = c(119, 245)) +
   scale_y_continuous(expand = c(0, 0),
-                     limits = c(-15,15))
+                     limits = c(0,15))
 
-  
+
+# Using weekly temperature means to calculate anomalies
+weekly_average_temp_data <- climate_data %>%
+  group_by(week = ceiling(as.numeric(doy)/7)) %>%
+  summarise(AverageWeeklyMeanT = mean(MeanT, na.rm = TRUE))
+
+weekly_temp_data <- climate_data %>%
+  group_by(year, week = ceiling(as.numeric(doy)/7)) %>%
+  summarise(WeeklyMeanT = mean(MeanT, na.rm = TRUE))
+
+# now find the anomaly values
+weekly_temp_merged_data <- merge(weekly_average_temp_data, weekly_temp_data, by = "week", all.x = TRUE)
+weekly_temp_merged_data$tempAnomaly <- weekly_temp_merged_data$WeeklyMeanT - weekly_temp_merged_data$AverageWeeklyMeanT
+weekly_temp_percentile_90 <- quantile(weekly_temp_merged_data$tempAnomaly, 0.9, na.rm = TRUE)
+weekly_temp_percentile_0 <- quantile(weekly_temp_merged_data$tempAnomaly, 0, na.rm = TRUE)
+
+weekly_temp_anomaly_data <- weekly_temp_merged_data %>%
+  filter(tempAnomaly > weekly_temp_percentile_0)
+
+weekly_temp_anomaly_data90 <- weekly_temp_merged_data %>%
+  filter(tempAnomaly > weekly_temp_percentile_90)
+
+min(weekly_temp_anomaly_data90$tempAnomaly)
+max(weekly_temp_anomaly_data90$tempAnomaly)
+
+temp_anomaly_data$year <- as.factor(temp_anomaly_data$year)
+temp_anomaly_data$doy <- as.factor(temp_anomaly_data$doy)
+
+weekly_temp_anomaly_data$year <- as.factor(weekly_temp_anomaly_data$year)
+weekly_temp_anomaly_data$week <- as.numeric(weekly_temp_anomaly_data$week)
+
+ggplot(weekly_temp_anomaly_data, aes(x = week, y = tempAnomaly, colour = year)) +
+  # geom_rect(aes(xmin = 119, xmax = 245, 
+  #          ymin = -15, ymax = -6.98), 
+  #    fill = "orange", alpha = 0.5) +
+  geom_line() +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_hline(yintercept = 3.63, linetype = "dashed", colour = "darkorange") +
+  geom_text(aes(x = 242, y = 1, label = "Norm"), colour = "black") + 
+  geom_text(aes(x = 235, y = -11, label = "90th Percentile"), colour = "darkorange") + 
+  labs(title = "Summer Weekly Temperature Anomalies compared to 30 year average",
+       x = "",
+       y = "Temperature Anomaly (degrees Celsius)") +
+  scale_colour_manual(values = c("grey","grey","grey","grey","grey", "blue","grey","grey","grey","grey","grey","grey","grey","grey","deeppink","grey","grey","grey","grey","grey","grey","grey","grey","grey", "grey", "grey","grey","grey","grey","red2", "grey", "grey")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title=element_text(size=13, hjust=0.5)) +
+  scale_x_continuous(breaks = c(18, 22, 27, 32, 36), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"),
+                     expand = c(0, 0),
+                     limits = c(18, 36)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(-5,8))

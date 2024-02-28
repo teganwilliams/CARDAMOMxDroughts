@@ -13,9 +13,9 @@ library(ggplot2)
 climate_data <- read_csv("Data/DE-Hai_FLUXNET2015_DD_1989-2020_met.csv")
 View(climate_data)
 
-met_data <- read.csv("~/Desktop/Dissertation/Data/DE-Hai-2000-2020-weekly_timeseries_met.csv", header = TRUE)
-obs_data <- read.csv("~/Desktop/Dissertation/Data/DE-Hai-2000-2020-weekly_timeseries_obs.csv", header = TRUE)
-sm_data <- read.csv("~/Desktop/Dissertation/Data/DE-Hai-2000-2020-weekly_timeseries_metSM.csv", header= TRUE)
+met_data <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_met.csv", header = TRUE)
+obs_data <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_obs.csv", header = TRUE)
+sm_data <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_metSM.csv", header= TRUE)
 
 # Editing the Hainich met dataset to include DOY, month and year columns
 
@@ -125,8 +125,6 @@ ggplot(data = combined_data_both, aes(x = as.numeric(doy), y = MeanT, colour = f
   ylim(c(8,27))
 
 
-
-
 combined_data2011 <- merge(daily_averages, datafor2011, by = "doy", all.x = TRUE)
 view(combined_data2011)
 
@@ -199,6 +197,10 @@ ggplot() +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title=element_text(size=13, hjust=0.5))+
   ylim(c(-10,30))
+
+
+
+
 
 #### Precipitation ####
 
@@ -429,13 +431,13 @@ merged_data_w <- merge(weekly_climate_data, weekly_reference_period, by = "Week"
 merged_data_w$TAnomaly <- merged_data_w$AverageTemperature - merged_data_w$ReferenceAverage
 
 # Calculate the 90th percentile of weekly temperature anomalies
-percentile_90 <- quantile(merged_data_w$TAnomaly, 0.9, na.rm = TRUE)
+weekly_percentile_90 <- quantile(merged_data_w$TAnomaly, 0.9, na.rm = TRUE)
 
-percentile_0 <- quantile(merged_data$TemperatureAnomaly, 0, na.rm = TRUE)
+weekly_percentile_0 <- quantile(merged_data$TemperatureAnomaly, 0, na.rm = TRUE)
 
 # Filter only values in the upper 90th percentile
 weekly_anomaly_data <- merged_data_w %>%
-  filter(TAnomaly > percentile_90)
+  filter(TAnomaly > weekly_percentile_0)
 
 # Plotting weekly T Anomalies over time
 
@@ -489,25 +491,10 @@ ggplot(anomaly_data2018, aes(x = doy, y = TemperatureAnomaly)) +
   xlim(c(152, 243)) +
   ylim(c(0,10))
 
-# for 2011
 
-datafor2011 <- climate_data %>%
-  filter(year == 2011)
-merged_data2011 <- merge(datafor2011, reference_period, by = "doy", all.x = TRUE)
-merged_data2011$TemperatureAnomaly <- merged_data2011$MeanT - merged_data2011$ReferenceAverage
+# Plot of all anomalies with 2003 and 2018 highlighted 
 
-anomaly_data2011 <- merged_data2011 %>%
-  filter(TemperatureAnomaly > percentile_90)
 
-ggplot(anomaly_data2011, aes(x = doy, y = TemperatureAnomaly)) +
-  geom_line(colour = "red2") +
-  labs(title = "Summer 2011 Temperature Anomalies (Upper 90th Percentile)",
-       x = "doy",
-       y = "Temperature Anomaly") +
-  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
-        plot.title=element_text(size=13, hjust=0.5)) +
-  xlim(c(152, 243)) +
-  ylim(c(0,10))
   
 
 ## Precipitation 'deficits' aka below average
@@ -583,10 +570,6 @@ datafor2003 <- climate_data %>%
   filter(year(Date) == 2003)
 datafor2018 <- climate_data %>%
   filter(year(Date) == 2018)
-datafor2011 <- climate_data %>%
-  filter(year(Date) == 2011)
-datafor2008 <- climate_data %>%
-  filter(year(Date) == 2008)
 
 
 combined_data1 <- merge(daily_averages, datafor2003, by = "DayOfYear", all.x = TRUE)
@@ -620,34 +603,6 @@ ggplot() +
   xlim(c(152, 243))+
   ylim(c(10,27))
 
-combined_data2011 <- merge(daily_averages, datafor2011, by = "DayOfYear", all.x = TRUE)
-view(combined_data2011)
-
-ggplot() +
-  geom_line(data = combined_data2011, aes(x = as.numeric(DayOfYear), y = AverageTemperature), colour = "black") +
-  geom_line(data = combined_data2011, aes(x = as.numeric(DayOfYear), y = MeanT), colour = "red") +
-  labs(title = "Daily Climate Trends vs 2011",
-       x = "Day of the Year",
-       y = "Air Temperature") +
-  scale_color_manual(values = c("black", "red"), name = "Legend", labels = c("Average", "2011")) +
-  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
-        plot.title=element_text(size=13, hjust=0.5))+
-  xlim(c(152, 243))+
-  ylim(c(10,27))
-
-combined_data2008 <- merge(daily_averages, datafor2008, by = "DayOfYear", all.x = TRUE)
-ggplot() +
-  geom_line(data = combined_data2008, aes(x = as.numeric(DayOfYear), y = AverageTemperature), colour = "black") +
-  geom_line(data = combined_data2008, aes(x = as.numeric(DayOfYear), y = MeanT), colour = "red") +
-  labs(title = "Daily Climate Trends vs 2008",
-       x = "Day of the Year",
-       y = "Air Temperature") +
-  scale_color_manual(values = c("black", "red"), name = "Legend", labels = c("Average", "2008")) +
-  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
-        plot.title=element_text(size=13, hjust=0.5))+
-  xlim(c(152, 243))+
-  ylim(c(10,27))
-
 # now overlaying all the years of data + climate trend
 
 # Merge with daily averages
@@ -664,11 +619,28 @@ ggplot() +
   labs(title = "Summer Climate Trends - Individual Years and Average",
        x = "Day of the Year",
        y = "Temperature") +
-  scale_color_manual(values = c("grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","pink", "#FAEF17","grey", "#FFD700","grey","grey","grey","#FFA500" ,"grey","grey","grey","grey","#FF8C00","grey","grey","#D9534F","#FF4640","#FF001A"))+
+  scale_color_manual(values = c("grey","grey","grey","grey", "grey","grey","grey","grey","grey","grey","grey","grey","grey","grey","pink", "#FAEF17","grey", "#FFD700","grey","grey","grey","#FFA500" ,"grey","grey","grey","grey","#FF8C00","grey","grey","#D9534F","#FF4640","#FF001A"))+
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title=element_text(size=13, hjust=0.5))+
   xlim(c(152, 243))+
   ylim(c(8,30))
+
+
+# plotting T over time for 5 consecutive years e.g., 2000-2005, to show the difference during drought years 
+# plus add the mean temperature as well!
+
+met_data$year <- as.numeric(met_data$year)
+met2000to2005 <- met_data[met_data$year >= 2000 & met_data$year <= 2005, ]
+met2015to2020 <- met_data[met_data$year >= 2015 & met_data$year <= 2020, ]
+
+ggplot(met2015to2020, aes(x = full_date, y = maxt_C)) +
+  geom_line(colour="red2") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+  labs(title="Maximum Temperature trends 2015-2020") + 
+  xlab("Time [year]") + 
+  scale_y_continuous(name = "Max Temperature [°C]", 
+                     # limits=c(15, 30)
+                     )
 
 library(dplyr)
 library(lubridate)
