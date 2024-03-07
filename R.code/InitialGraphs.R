@@ -750,7 +750,7 @@ ggplot(weekly_temp_anomaly_data, aes(x = week, y = tempAnomaly, colour = year)) 
   labs(title = "Summer Weekly Temperature Anomalies compared to 30 year average",
        x = "",
        y = "Temperature Anomaly (degrees Celsius)") +
-  scale_colour_manual(values = c("grey","grey","grey","grey","grey", "blue","grey","grey","grey","grey","grey","grey","grey","grey","deeppink","grey","grey","grey","grey","grey","grey","grey","grey","grey", "grey", "grey","grey","grey","grey","red2", "grey", "grey")) +
+  scale_colour_manual(values = c("grey","grey","grey","grey","grey", "grey","grey","grey","grey","grey","grey","grey","grey","grey","deeppink","grey","grey","grey","grey","grey","grey","blue","grey","grey", "grey", "grey","grey","grey","grey","red2", "grey", "grey")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title=element_text(size=13, hjust=0.5)) +
   scale_x_continuous(breaks = c(18, 22, 27, 32, 36), 

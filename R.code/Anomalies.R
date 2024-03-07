@@ -34,7 +34,7 @@ met2015to2020 <- met_data[met_data$year >= 2015 & met_data$year <= 2020, ]
 met2003 <- met_data[met_data$year >= 2003 & met_data$year <= 2003, ]
 met2018 <- met_data[met_data$year >= 2018 & met_data$year <= 2018, ]
 
-#### Plots of raw met data timeseries ####
+#### Plots of raw Meteorological data time series ####
 
 # Air Temperature over Time for 2000 to 2005
 ggplot(met2000to2005, aes(x = full_date, y = airt_C)) +
@@ -101,7 +101,7 @@ ggplot(met2000to2005, aes(x = full_date, y = precip_kgm2s)) +
   ylab("Precipitation [kg/m^2/s]")
 
 
-#### Plotting Temperature Anomalies ####
+#### Temperature Anomalies ####
 
 # Reference period 1989-2020
 climate_data <- climate_data %>%
@@ -173,7 +173,6 @@ ggplot(temp_anomaly_data_filtered, aes(x = doy, y = tempAnomaly, colour = year))
   scale_y_continuous(expand = c(0, 0),
                      limits = c(0,11))
 
-
 # 2) using weekly temperature means to calculate anomalies
 weekly_average_temp_data <- climate_data %>%
   group_by(week = ceiling(as.numeric(doy)/7)) %>%
@@ -188,14 +187,17 @@ weekly_temp_merged_data <- merge(weekly_average_temp_data, weekly_temp_data, by 
 weekly_temp_merged_data$tempAnomaly <- weekly_temp_merged_data$WeeklyMeanT - weekly_temp_merged_data$AverageWeeklyMeanT
 weekly_temp_percentile_90 <- quantile(weekly_temp_merged_data$tempAnomaly, 0.9, na.rm = TRUE)
 weekly_temp_percentile_0 <- quantile(weekly_temp_merged_data$tempAnomaly, 0, na.rm = TRUE)
+weekly_temp_percentile_95 <- quantile(weekly_temp_merged_data$tempAnomaly, 0.95, na.rm = TRUE)
 
 weekly_temp_anomaly_data <- weekly_temp_merged_data %>%
   filter(tempAnomaly > weekly_temp_percentile_0)
 weekly_temp_anomaly_data90 <- weekly_temp_merged_data %>%
   filter(tempAnomaly > weekly_temp_percentile_90)
+weekly_temp_anomaly_data95 <- weekly_temp_merged_data %>%
+  filter(tempAnomaly > weekly_temp_percentile_95)
 
-min(weekly_temp_anomaly_data90$tempAnomaly)
-max(weekly_temp_anomaly_data90$tempAnomaly)
+min(weekly_temp_anomaly_data95$tempAnomaly)
+max(weekly_temp_anomaly_data95$tempAnomaly)
 
 temp_anomaly_data$year <- as.factor(temp_anomaly_data$year)
 temp_anomaly_data$doy <- as.factor(temp_anomaly_data$doy)
@@ -203,29 +205,50 @@ temp_anomaly_data$doy <- as.factor(temp_anomaly_data$doy)
 weekly_temp_anomaly_data$year <- as.factor(weekly_temp_anomaly_data$year)
 weekly_temp_anomaly_data$week <- as.numeric(weekly_temp_anomaly_data$week)
 
-ggplot(weekly_temp_anomaly_data, aes(x = week, y = tempAnomaly, colour = year)) +
-  # geom_rect(aes(xmin = 119, xmax = 245, 
-  #          ymin = -15, ymax = -6.98), 
-  #    fill = "orange", alpha = 0.5) +
-  geom_line() +
-  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
-  geom_hline(yintercept = 3.63, linetype = "dashed", colour = "darkorange") +
-  geom_text(aes(x = 242, y = 1, label = "Norm"), colour = "black") + 
-  geom_text(aes(x = 235, y = -11, label = "90th Percentile"), colour = "darkorange") + 
-  labs(title = "Summer Weekly Temperature Anomalies compared to 30 year average",
-       x = "",
-       y = "Temperature Anomaly (degrees Celsius)") +
-  scale_colour_manual(values = c("grey","grey","grey","grey","grey", "blue","grey","grey","grey","grey","grey","grey","grey","grey","deeppink","grey","grey","grey","grey","grey","grey","grey","grey","grey", "grey", "grey","grey","grey","grey","red2", "grey", "grey")) +
+
+# creating a new column to group into drought vs non-drought years 
+# based on their max value (e.g., >6.5 temp anomaly)
+
+# Create new column 'drought_status' and initialise it with 'non-drought'
+
+temp_anomaly_data_summer <- weekly_temp_anomaly_data[weekly_temp_anomaly_data$week >= 18 & weekly_temp_anomaly_data$week <= 36, ]
+drought_years <- temp_anomaly_data_summer %>%
+  filter(tempAnomaly > 6.5) %>%
+  pull(year) %>%
+  unique()
+temp_anomaly_data_summer['Drought_Status'] = '1989-2020'
+temp_anomaly_data_summer$Drought_Status[temp_anomaly_data_summer$year %in% drought_years] <- as.character(temp_anomaly_data_summer$year[temp_anomaly_data_summer$year %in% drought_years])
+temp_anomaly_data_summer$Drought_Status <- as.factor(temp_anomaly_data_summer$Drought_Status)
+
+min(temp_anomaly_data_summer$tempAnomaly)
+
+ggplot(temp_anomaly_data_summer, aes(x = week, y = tempAnomaly, colour = Drought_Status, group = year)) +
+  geom_line(size = 0.7) +
+  geom_hline(yintercept = 0, linetype = "dashed", size = 0.7, colour = "black") +
+  geom_hline(yintercept = 4.69, linetype = "dashed", size = 0.7, colour = "darkorange") +
+  geom_text(aes(x = 35.2, y = -0.3, label = "Norm"), colour = "black") + 
+  geom_text(aes(x = 34.5, y = 5.2, label = "95th percentile"), colour = "darkorange") + 
+  labs(title = "Summer weekly temperature anomalies compared to 30 year average",
+       x = "Summer months",
+       y = "Temperature Anomaly (degrees Celsius)",
+       colour = "Year:") +
+  scale_colour_manual(values = c("#D4D4D4C4", "#B51717", "#0F5596", "#178A86")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
-        plot.title=element_text(size=13, hjust=0.5)) +
+        plot.title = element_text(size=14, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 14, face = "bold", ),
+        legend.text = element_text(size = 12)) +
   scale_x_continuous(breaks = c(18, 22, 27, 32, 36), 
                      labels = c("May", "Jun", "Jul", "Aug", "Sep"),
                      expand = c(0, 0),
                      limits = c(18, 36)) +
   scale_y_continuous(expand = c(0, 0),
-                     limits = c(-5,8))
+                     limits = c(-6,8))
 
-View(weekly_temp_anomaly_data)
+
+#### Deep Soil Moisture Anomalies ####
+
 
 
 
