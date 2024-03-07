@@ -2,7 +2,7 @@
 ### 06/07/2023-present
 ### Tegan Williams
 
-# Libraries (allow access to required packages for data wrangling)
+#### Libraries (allow access to required packages for data wrangling) ####
 library(dplyr)
 library(tidyverse)
 library(ggplot2) 
@@ -481,8 +481,6 @@ ggplot(merged, aes(x = month, y = GPP_gCm2day, group = yeargroup)) +
 
 
 
-
-
 # Creating the climate averages dataframe
 climate_averages <- cbind(mean_month_temp, mean_month_precip)
 column_index_to_delete <- 3
@@ -509,7 +507,8 @@ ggplot(climate_data_long, aes(x = month, y = temperature, colour = temperature_t
   theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"))
 
 
-### Plotting Soil Moisture at different Depths over Time  
+
+#### Plotting Soil Moisture at different Depths over Time ####
 
 rows_per_year <- 52
 sm_data$year <- rep(2000:2020, each = rows_per_year)
@@ -559,6 +558,7 @@ sm_merged_data <- merge(sm_data, sm_reference_period, by = "doy", all.x = TRUE)
 sm_merged_data$smAnomaly <- sm_merged_data$SWC_1 - sm_merged_data$smAverage
 
 # Calculate the 90th percentile of temperature anomalies
+sm_percentile_95 <- quantile(sm_merged_data$smAnomaly, 0.95, na.rm = TRUE)
 sm_percentile_90 <- quantile(sm_merged_data$smAnomaly, 0.9, na.rm = TRUE)
 sm_percentile_0 <- quantile(sm_merged_data$smAnomaly, 0, na.rm = TRUE)
 
@@ -570,7 +570,10 @@ sm_anomaly_data <- sm_merged_data %>%
 sm_anomaly_data90 <- sm_merged_data %>%
   filter(smAnomaly > sm_percentile_90)
 
-min(sm_anomaly_data90$smAnomaly)
+sm_anomaly_data95 <- sm_merged_data %>%
+  filter(smAnomaly > sm_percentile_95)
+
+min(sm_anomaly_data95$smAnomaly)
 
 sm_anomaly_data$year <- as.factor(sm_anomaly_data$year)
 sm_anomaly_data$doy <- as.factor(sm_anomaly_data$doy)

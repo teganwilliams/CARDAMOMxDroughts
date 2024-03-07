@@ -200,8 +200,6 @@ ggplot() +
 
 
 
-
-
 #### Precipitation ####
 
 # Calculating Daily Trends for the whole year 
@@ -493,8 +491,6 @@ ggplot(anomaly_data2018, aes(x = doy, y = TemperatureAnomaly)) +
 
 
 # Plot of all anomalies with 2003 and 2018 highlighted 
-
-
   
 
 ## Precipitation 'deficits' aka below average
@@ -530,10 +526,6 @@ ggplot(anomaly_data_P, aes(x = doy, y = PrecipAnomaly, group = year)) +
         plot.title=element_text(size=13, hjust=0.5))+
   xlim(c(152, 243))+
   ylim(c(2,4.5))
-
-
-
-
 
 
 
@@ -644,7 +636,6 @@ ggplot(met2015to2020, aes(x = full_date, y = maxt_C)) +
 
 library(dplyr)
 library(lubridate)
-
 
 # Choose a reference period 1990-2020
 reference_period <- climate_data %>%
