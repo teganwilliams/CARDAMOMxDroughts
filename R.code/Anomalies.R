@@ -102,7 +102,6 @@ ggplot(met2000to2005, aes(x = full_date, y = precip_kgm2s)) +
 
 
 #### Temperature Anomalies ####
-
 # Reference period 1989-2020
 climate_data <- climate_data %>%
   mutate(TIMESTAMP = as.character(TIMESTAMP),
@@ -247,13 +246,114 @@ ggplot(temp_anomaly_data_summer, aes(x = week, y = tempAnomaly, colour = Drought
                      limits = c(-6,8))
 
 
+
+
+
+
+
 #### Deep Soil Moisture Anomalies ####
 
+# Reference period 2000-2020
+sm_reference_period <- sm_data %>%
+  filter(year >= 2000 & year <= 2020) %>%
+  group_by(doy) %>%
+  summarize(smAverage = mean(SWC_1, na.rm = TRUE))
 
+# Merge with the main data
+sm_merged_data <- merge(sm_data, sm_reference_period, by = "doy", all.x = TRUE)
 
+# Calculate soil moisture anomalies
+sm_merged_data$smAnomaly <- sm_merged_data$SWC_1 - sm_merged_data$smAverage
 
+# Calculate the 90th percentile of sm anomalies
+sm_percentile_95 <- quantile(sm_merged_data$smAnomaly, 0.95, na.rm = TRUE)
+sm_percentile_90 <- quantile(sm_merged_data$smAnomaly, 0.9, na.rm = TRUE)
+sm_percentile_0 <- quantile(sm_merged_data$smAnomaly, 0, na.rm = TRUE)
+sm_percentile_10 <- quantile(sm_merged_data$smAnomaly, 0.1, na.rm = TRUE)
 
+# Filter only values in the upper 90th percentile
+sm_anomaly_data <- sm_merged_data %>%
+  filter(smAnomaly > sm_percentile_0)
 
+sm_anomaly_data90 <- sm_merged_data %>%
+  filter(smAnomaly > sm_percentile_90)
+
+sm_anomaly_data95 <- sm_merged_data %>%
+  filter(smAnomaly > sm_percentile_95)
+
+sm_anomaly_data10 <- sm_merged_data %>%
+  filter(smAnomaly > sm_percentile_10)
+
+min(sm_anomaly_data95$smAnomaly)
+
+sm_anomaly_data$year <- as.factor(sm_anomaly_data$year)
+sm_anomaly_data$doy <- as.factor(sm_anomaly_data$doy)
+
+sm_anomaly_data_filtered <- sm_anomaly_data[c("year", "doy", "smAverage", "smAnomaly")]
+sm_anomaly_data_filtered$year <- as.factor(sm_anomaly_data_filtered$year)
+sm_anomaly_data_filtered$doy <- as.numeric(sm_anomaly_data_filtered$doy)
+
+# Create new column 'drought_status' and initialise it with 'non-drought'
+sm_anomaly_data_summer <- sm_anomaly_data_filtered %>%
+  filter(doy %in% c(18:36))
+
+sm_drought_years <- sm_anomaly_data_summer%>%
+  filter(year %in% c(2003,2010,2018)) %>%
+  pull(year) %>%
+  unique()
+
+sm_anomaly_data_summer['Drought_Status'] = '2000-2020'
+
+sm_anomaly_data_summer <- sm_anomaly_data_summer %>%
+  mutate(Drought_Status = ifelse(year %in% sm_drought_years, as.character(year), Drought_Status))
+
+sm_anomaly_data_summer$Drought_Status <- as.factor(sm_anomaly_data_summer$Drought_Status)
+sm_anomaly_data_summer$year <- as.factor(sm_anomaly_data_summer$year)
+sm_anomaly_data_summer$doy <- as.numeric(sm_anomaly_data_summer$doy)
+sm_anomaly_data_summer$smAnomaly <- as.numeric(sm_anomaly_data_summer$smAnomaly)
+
+sm_anomaly_data_filtered10 <- sm_anomaly_data_summer %>%
+  filter(smAnomaly > sm_percentile_10)
+
+deficit_data <- sm_anomaly_data_summer %>%
+  filter(smAnomaly < 0)
+drought_threshold <- quantile(deficit_data$smAnomaly, 0.05)
+minimum_deficit <- deficit_data %>%
+  mutate(Drought_Status = ifelse(smAnomaly < drought_threshold, "Drought", "No Drought"))
+
+drought_threshold95 <- minimum_deficit %>%
+  filter(Drought_Status == "Drought")
+
+max(drought_threshold95$smAnomaly)
+
+# threshold for 80th percentile is -8.06
+# threshold for 90th percentile is -9.43
+# threshold for 95th percentile is -9.93
+
+# Plotting soil moisture anomalies
+ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, group = year, colour = Drought_Status)) +
+  geom_line(size = 0.7) +
+  geom_hline(yintercept = 0, size = 0.3, colour = "black") +
+  geom_hline(yintercept = -8.06, linetype = "dashed", size = 0.7, colour = "darkorange") +
+  geom_text(aes(x = 35.2, y = 1, label = "Norm"), colour = "black") + 
+  geom_text(aes(x = 34.2, y = -10, label = "80th percentile"), colour = "darkorange") +  
+  labs(title = "Summer weekly deep soil moisture anomalies compared to 20 year average",
+       x = "Summer months",
+       y = "Deep Soil Moisture Anomaly (mm)",
+       colour = "Year:") +
+  scale_colour_manual(values = c("#D4D4D4C4", "#B51717", "#0F5596", "#178A86")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 14, face = "bold", ),
+        legend.text = element_text(size = 12)) +
+  scale_x_continuous(breaks = c(18, 22, 27, 32, 36), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"),
+                     expand = c(0, 0),
+                     limits = c(18, 36)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(-15,15))
 
 
 
