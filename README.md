@@ -11,4 +11,4 @@ In this folder you can find various files related to the project, from datasets 
 - [R Code](/Code)
 - [Results Plotted](/Plots)
 
-If you have any questions about my research, please feel free to reach out to me: T.L.L.Wiliams@ed.ac.uk
+If you have any questions about my research, please feel free to reach out to me: T.L.L.Williams@ed.ac.uk
