@@ -221,23 +221,24 @@ temp_anomaly_data_summer$Drought_Status <- as.factor(temp_anomaly_data_summer$Dr
 
 min(temp_anomaly_data_summer$tempAnomaly)
 
-ggplot(temp_anomaly_data_summer, aes(x = week, y = tempAnomaly, colour = Drought_Status, group = year)) +
+temp_anomaly_plot <- ggplot(temp_anomaly_data_summer, aes(x = week, y = tempAnomaly, colour = Drought_Status, group = year)) +
   geom_line(size = 0.7) +
-  geom_hline(yintercept = 0, linetype = "dashed", size = 0.7, colour = "black") +
+  geom_hline(yintercept = 0, size = 0.4, colour = "black") +
   geom_hline(yintercept = 4.69, linetype = "dashed", size = 0.7, colour = "darkorange") +
-  geom_text(aes(x = 35.2, y = -0.3, label = "Norm"), colour = "black") + 
-  geom_text(aes(x = 34.5, y = 5.2, label = "95th percentile"), colour = "darkorange") + 
+  geom_text(aes(x = 35.4, y = -0.4, label = "Norm"), colour = "black") + 
+  geom_text(aes(x = 34.6, y = 5.2, label = "95th percentile"), colour = "darkorange") + 
   labs(title = "Summer weekly temperature anomalies compared to 30 year average",
        x = "Summer months",
        y = "Temperature Anomaly (degrees Celsius)",
        colour = "Year:") +
-  scale_colour_manual(values = c("#D4D4D4C4", "#B51717", "#0F5596", "#178A86")) +
+  scale_colour_manual(values = c("#D4D4D4C4", "#178A86", "#0F5596", "#B51717")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
-        plot.title = element_text(size=14, hjust=0.5),
+        plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
-        legend.title = element_text(size = 14, face = "bold", ),
-        legend.text = element_text(size = 12)) +
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
   scale_x_continuous(breaks = c(18, 22, 27, 32, 36), 
                      labels = c("May", "Jun", "Jul", "Aug", "Sep"),
                      expand = c(0, 0),
@@ -245,8 +246,12 @@ ggplot(temp_anomaly_data_summer, aes(x = week, y = tempAnomaly, colour = Drought
   scale_y_continuous(expand = c(0, 0),
                      limits = c(-6,8))
 
+plot(temp_anomaly_plot)
 
+dev.off()
 
+# Save the plot as a PNG file to GitHub
+ggsave("temp_anomaly_plot.png", plot = temp_anomaly_plot, width = 8, height = 6, dpi = 500)
 
 
 
@@ -331,23 +336,24 @@ max(drought_threshold95$smAnomaly)
 # threshold for 95th percentile is -9.93
 
 # Plotting soil moisture anomalies
-ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, group = year, colour = Drought_Status)) +
+sm_anomaly_plot <- ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, group = year, colour = Drought_Status)) +
   geom_line(size = 0.7) +
-  geom_hline(yintercept = 0, size = 0.3, colour = "black") +
+  geom_hline(yintercept = 0, size = 0.4, colour = "black") +
   geom_hline(yintercept = -8.06, linetype = "dashed", size = 0.7, colour = "darkorange") +
-  geom_text(aes(x = 35.2, y = 1, label = "Norm"), colour = "black") + 
-  geom_text(aes(x = 34.2, y = -10, label = "80th percentile"), colour = "darkorange") +  
+  geom_text(aes(x = 35.4, y = 1, label = "Norm"), colour = "black") + 
+  geom_text(aes(x = 34.6, y = -10, label = "80th percentile"), colour = "darkorange") +  
   labs(title = "Summer weekly deep soil moisture anomalies compared to 20 year average",
        x = "Summer months",
        y = "Deep Soil Moisture Anomaly (mm)",
        colour = "Year:") +
-  scale_colour_manual(values = c("#D4D4D4C4", "#B51717", "#0F5596", "#178A86")) +
+  scale_colour_manual(values = c("#D4D4D4C4", "#178A86", "#0F5596", "#B51717")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
-        legend.title = element_text(size = 14, face = "bold", ),
-        legend.text = element_text(size = 12)) +
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
   scale_x_continuous(breaks = c(18, 22, 27, 32, 36), 
                      labels = c("May", "Jun", "Jul", "Aug", "Sep"),
                      expand = c(0, 0),
@@ -355,6 +361,8 @@ ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, group = year, colour 
   scale_y_continuous(expand = c(0, 0),
                      limits = c(-15,15))
 
+plot(sm_anomaly_plot)
 
+ggsave("sm_anomaly_plot.png", plot = sm_anomaly_plot, width = 8, height = 6, dpi = 500)
 
 
