@@ -1,4 +1,4 @@
-## CARDAMOMxDroughts 
+## CARDAMOM x Droughts 
 *-by Tegan Williams, EES final year dissertation project 2023-2024*
   
 Repository for my dissertation research process; data gathering, storing, processing; and analysis.
