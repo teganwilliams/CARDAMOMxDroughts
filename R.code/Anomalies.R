@@ -221,6 +221,8 @@ temp_anomaly_data_summer$Drought_Status <- as.factor(temp_anomaly_data_summer$Dr
 
 min(temp_anomaly_data_summer$tempAnomaly)
 
+palette_anomalies <- c("#D4D4D4C4", "#29B071", "#2275BA", "#C93402")
+
 temp_anomaly_plot <- ggplot(temp_anomaly_data_summer, aes(x = week, y = tempAnomaly, colour = Drought_Status, group = year)) +
   geom_line(size = 0.7) +
   geom_hline(yintercept = 0, size = 0.4, colour = "black") +
@@ -231,7 +233,7 @@ temp_anomaly_plot <- ggplot(temp_anomaly_data_summer, aes(x = week, y = tempAnom
        x = "Summer months",
        y = "Temperature Anomaly (degrees Celsius)",
        colour = "Year:") +
-  scale_colour_manual(values = c("#D4D4D4C4", "#178A86", "#0F5596", "#B51717")) +
+  scale_colour_manual(values = palette_anomalies) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
@@ -335,6 +337,8 @@ max(drought_threshold95$smAnomaly)
 # threshold for 90th percentile is -9.43
 # threshold for 95th percentile is -9.93
 
+palette_before <- c("#D4D4D4C4", "#178A86", "#0F5596", "#B51717")
+
 # Plotting soil moisture anomalies
 sm_anomaly_plot <- ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, group = year, colour = Drought_Status)) +
   geom_line(size = 0.7) +
@@ -346,7 +350,7 @@ sm_anomaly_plot <- ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, gr
        x = "Summer months",
        y = "Deep Soil Moisture Anomaly (mm)",
        colour = "Year:") +
-  scale_colour_manual(values = c("#D4D4D4C4", "#178A86", "#0F5596", "#B51717")) +
+  scale_colour_manual(values = palette_anomalies) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
