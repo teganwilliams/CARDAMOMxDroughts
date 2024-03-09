@@ -221,7 +221,11 @@ temp_anomaly_data_summer$Drought_Status <- as.factor(temp_anomaly_data_summer$Dr
 
 min(temp_anomaly_data_summer$tempAnomaly)
 
-palette_anomalies <- c("#D4D4D4C4", "#29B071", "#2275BA", "#C93402")
+palette_anomalies <- c("#D4D4D4C4", "#29B071", "#077BE0", "#C93402")
+
+
+
+colourblind_palette <- c("#D4D4D4C4","#329FD6", "#C20502", "#9E21C4")
 
 temp_anomaly_plot <- ggplot(temp_anomaly_data_summer, aes(x = week, y = tempAnomaly, colour = Drought_Status, group = year)) +
   geom_line(size = 0.7) +
