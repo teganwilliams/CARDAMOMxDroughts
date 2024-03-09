@@ -221,8 +221,7 @@ temp_anomaly_data_summer$Drought_Status <- as.factor(temp_anomaly_data_summer$Dr
 
 min(temp_anomaly_data_summer$tempAnomaly)
 
-palette_anomalies <- c("#D4D4D4C4", "#29B071", "#077BE0", "#C93402")
-
+palette_anomalies <- c("#D6D6D686", "#29B071", "#1D19E8", "#C93402")
 
 
 colourblind_palette <- c("#D4D4D4C4","#329FD6", "#C20502", "#9E21C4")
