@@ -34,7 +34,9 @@ hainich_map_satellite <- get_map(hainich, maptype='satellite', source="google", 
                                                                    fill = 'floralwhite')) +
     theme(legend.position = "none",
           aspect.ratio = 1,  
-          panel.background = element_rect(fill = "white")))
+          panel.background = element_rect(fill = "white"),
+          axis.title = element_text(size=14),
+          axis.text = element_text(size=12)))
 
 satellite_map
 
