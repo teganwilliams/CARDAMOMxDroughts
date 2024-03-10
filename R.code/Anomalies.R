@@ -256,7 +256,7 @@ plot(temp_anomaly_plot)
 dev.off()
 
 # Save the plot as a PNG file to GitHub
-ggsave("temp_anomaly_plot.png", plot = temp_anomaly_plot, width = 8, height = 6, dpi = 500)
+ggsave("temp_anomaly_plot.png", path = "Plots", plot = temp_anomaly_plot, width = 8, height = 6, dpi = 500)
 
 
 
@@ -370,5 +370,5 @@ sm_anomaly_plot <- ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, gr
 
 plot(sm_anomaly_plot)
 
-ggsave("sm_anomaly_plot.png", plot = sm_anomaly_plot, width = 8, height = 6, dpi = 500)
+ggsave("sm_anomaly_plot.png", path = "Plots", plot = sm_anomaly_plot, width = 8, height = 6, dpi = 500)
 
