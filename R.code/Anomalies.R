@@ -372,4 +372,3 @@ plot(sm_anomaly_plot)
 
 ggsave("sm_anomaly_plot.png", plot = sm_anomaly_plot, width = 8, height = 6, dpi = 500)
 
-
