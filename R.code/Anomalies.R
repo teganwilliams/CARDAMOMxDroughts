@@ -230,9 +230,9 @@ temp_anomaly_plot <- ggplot(temp_anomaly_data_summer, aes(x = week, y = tempAnom
   geom_line(size = 0.8) +
   geom_hline(yintercept = 0, size = 0.4, colour = "black") +
   geom_hline(yintercept = 4.69, linetype = "dashed", size = 0.7, colour = "darkorange") +
-  geom_text(aes(x = 35.4, y = -0.4, label = "Norm"), colour = "black") + 
-  geom_text(aes(x = 34.6, y = 5.2, label = "95th percentile"), colour = "darkorange") + 
-  labs(title = "Summer weekly temperature anomalies compared to 30 year average",
+  geom_text(aes(x = 35, y = -0.4, label = "Norm"), colour = "black") + 
+  geom_text(aes(x = 34, y = 5.2, label = "95th percentile"), colour = "darkorange") + 
+  labs(title = "",
        x = "Summer months",
        y = "Temperature Anomaly (degrees Celsius)",
        colour = "Year:") +
@@ -256,7 +256,7 @@ plot(temp_anomaly_plot)
 dev.off()
 
 # Save the plot as a PNG file to GitHub
-ggsave("temp_anomaly_plot.png", path = "Plots", plot = temp_anomaly_plot, width = 8, height = 6, dpi = 500)
+ggsave("temp_anomaly_plot.png", path = "Plots", plot = temp_anomaly_plot, width = 7, height = 5, dpi = 500)
 
 
 
@@ -344,12 +344,12 @@ palette_before <- c("#D4D4D4C4", "#178A86", "#0F5596", "#B51717")
 
 # Plotting soil moisture anomalies
 sm_anomaly_plot <- ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, group = year, colour = Drought_Status)) +
-  geom_line(size = 0.7) +
+  geom_line(size = 0.8) +
   geom_hline(yintercept = 0, size = 0.4, colour = "black") +
   geom_hline(yintercept = -8.06, linetype = "dashed", size = 0.7, colour = "darkorange") +
-  geom_text(aes(x = 35.4, y = 1, label = "Norm"), colour = "black") + 
-  geom_text(aes(x = 34.6, y = -10, label = "80th percentile"), colour = "darkorange") +  
-  labs(title = "Summer weekly deep soil moisture anomalies compared to 20 year average",
+  geom_text(aes(x = 35, y = 1, label = "Norm"), colour = "black") + 
+  geom_text(aes(x = 34, y = -10, label = "80th percentile"), colour = "darkorange") +  
+  labs(title = "",
        x = "Summer months",
        y = "Deep Soil Moisture Anomaly (mm)",
        colour = "Year:") +
@@ -370,5 +370,19 @@ sm_anomaly_plot <- ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, gr
 
 plot(sm_anomaly_plot)
 
-ggsave("sm_anomaly_plot.png", path = "Plots", plot = sm_anomaly_plot, width = 8, height = 6, dpi = 500)
+ggsave("sm_anomaly_plot.png", path = "Plots", plot = sm_anomaly_plot, width = 7, height = 5, dpi = 500)
+
+
+#### Combined plots ####
+
+combined_anomaly_plot <- grid.arrange(temp_anomaly_plot, sm_anomaly_plot, nrow = 2, layout_matrix = rbind(c(1, 2)), heights = c(0.5, 0.5)))
+
+# Display the combined plot
+print(combined_anomaly_plot)
+
+# Save plot
+
+ggsave("combined_anomaly_plot.png", path = "Plots", plot = combined_anomaly_plot, width = 9, height = 6, dpi = 500)
+
+
 
