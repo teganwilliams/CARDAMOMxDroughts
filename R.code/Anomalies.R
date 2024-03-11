@@ -230,8 +230,8 @@ temp_anomaly_plot <- ggplot(temp_anomaly_data_summer, aes(x = week, y = tempAnom
   geom_line(size = 0.8) +
   geom_hline(yintercept = 0, size = 0.4, colour = "black") +
   geom_hline(yintercept = 4.69, linetype = "dashed", size = 0.7, colour = "darkorange") +
-  geom_text(aes(x = 35, y = -0.4, label = "Norm"), colour = "black") + 
-  geom_text(aes(x = 34, y = 5.2, label = "95th percentile"), colour = "darkorange") + 
+  geom_text(aes(x = 35.2, y = -0.4, label = "Norm"), colour = "black") + 
+  geom_text(aes(x = 34.2, y = 5.2, label = "95th percentile"), colour = "darkorange") + 
   labs(title = "",
        x = "Summer months",
        y = "Temperature Anomaly (degrees Celsius)",
@@ -347,8 +347,8 @@ sm_anomaly_plot <- ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, gr
   geom_line(size = 0.8) +
   geom_hline(yintercept = 0, size = 0.4, colour = "black") +
   geom_hline(yintercept = -8.06, linetype = "dashed", size = 0.7, colour = "darkorange") +
-  geom_text(aes(x = 35, y = 1, label = "Norm"), colour = "black") + 
-  geom_text(aes(x = 34, y = -10, label = "80th percentile"), colour = "darkorange") +  
+  geom_text(aes(x = 35.1, y = 1, label = "Norm"), colour = "black") + 
+  geom_text(aes(x = 34.1, y = -10, label = "80th percentile"), colour = "darkorange") +  
   labs(title = "",
        x = "Summer months",
        y = "Deep Soil Moisture Anomaly (mm)",
@@ -382,7 +382,7 @@ print(combined_anomaly_plot)
 
 # Save plot
 
-ggsave("combined_anomaly_plot.png", path = "Plots", plot = combined_anomaly_plot, width = 9, height = 6, dpi = 500)
+ggsave("combined_anomaly_plot.png", path = "Plots", plot = combined_anomaly_plot, width = 10, height = 6, dpi = 500)
 
 
 
