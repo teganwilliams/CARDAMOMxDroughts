@@ -27,7 +27,7 @@ hainich_map_satellite <- get_map(hainich, maptype='satellite', source="google", 
 (satellite_map <- ggmap(hainich_map_satellite) +
     xlab("Longitude") +
     ylab("Latitude") +
-    geom_point(data = tower, shape = 25, colour = "darkorange", size = 1, aes(lon, lat)) +
+    geom_point(data = tower, shape = 4, colour = "red", size = 5, aes(lon, lat)) +
     annotation_north_arrow(location = "tr", which_north = "true", 
                            style = north_arrow_fancy_orienteering (text_col = 'floralwhite',
                                                                    line_col = 'floralwhite',
@@ -41,6 +41,30 @@ hainich_map_satellite <- get_map(hainich, maptype='satellite', source="google", 
 satellite_map
 
 ggsave("site_map.png", plot = satellite_map, path = 'Plots', width = 6, height = 4)
+
+
+# Map of larger scale / zoomed out (aka Germany and Europe)
+
+germany_map_satellite <- get_map(hainich, maptype='hybrid', source="google", zoom=6) 
+(satellite_map2 <- ggmap(germany_map_satellite) +
+    xlab("Longitude") +
+    ylab("Latitude") +
+    geom_point(data = tower, shape = 25, colour = "darkorange", size = 1, aes(lon, lat)) +
+    annotation_north_arrow(location = "tr", which_north = "true", 
+                           style = north_arrow_fancy_orienteering (text_col = 'floralwhite',
+                                                                   line_col = 'floralwhite',
+                                                                   fill = 'floralwhite')) +
+    theme(legend.position = "none",
+          aspect.ratio = 1,  
+          panel.background = element_rect(fill = "white"),
+          axis.title = element_text(size=14),
+          axis.text = element_text(size=12)))
+
+satellite_map2
+
+ggsave("site_map2.png", plot = satellite_map2, path = 'Plots', width = 6, height = 4)
+
+
 
 
 # Hybrid style map (adds place names and roads to satellite image)
