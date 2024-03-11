@@ -27,7 +27,7 @@ hainich_map_satellite <- get_map(hainich, maptype='satellite', source="google", 
 (satellite_map <- ggmap(hainich_map_satellite) +
     xlab("Longitude") +
     ylab("Latitude") +
-    geom_point(data = tower, shape = 17, colour = "darkorange", aes(lon, lat, size = 2)) +
+    geom_point(data = tower, shape = 25, colour = "darkorange", aes(lon, lat, size = 1)) +
     annotation_north_arrow(location = "tr", which_north = "true", 
                            style = north_arrow_fancy_orienteering (text_col = 'floralwhite',
                                                                    line_col = 'floralwhite',
