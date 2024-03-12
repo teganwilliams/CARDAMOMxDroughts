@@ -382,7 +382,7 @@ print(combined_anomaly_plot)
 
 # Save plot
 
-ggsave("combined_anomaly_plot.png", path = "Plots", plot = combined_anomaly_plot, width = 10, height = 6, dpi = 500)
+ggsave("combined_anomaly_plot.png", path = "Plots", plot = combined_anomaly_plot, width = 8, height = 3, dpi = 500)
 
 
 
