@@ -230,8 +230,8 @@ temp_anomaly_plot <- ggplot(temp_anomaly_data_summer, aes(x = week, y = tempAnom
   geom_line(size = 0.8) +
   geom_hline(yintercept = 0, size = 0.4, colour = "black") +
   geom_hline(yintercept = 4.69, linetype = "dashed", size = 0.7, colour = "darkorange") +
-  geom_text(aes(x = 35.2, y = -0.4, label = "Norm"), colour = "black") + 
-  geom_text(aes(x = 34.2, y = 5.2, label = "95th percentile"), colour = "darkorange") + 
+  # geom_text(aes(x = 35.2, y = -0.4, label = "Norm"), colour = "black") + 
+  # geom_text(aes(x = 34, y = 5.2, label = "95th percentile"), colour = "darkorange", size = 3) + 
   labs(title = "",
        x = "Summer months",
        y = "Temperature Anomaly (degrees Celsius)",
@@ -256,7 +256,7 @@ plot(temp_anomaly_plot)
 dev.off()
 
 # Save the plot as a PNG file to GitHub
-ggsave("temp_anomaly_plot.png", path = "Plots", plot = temp_anomaly_plot, width = 7, height = 5, dpi = 500)
+ggsave("temp_anomaly_plot.png", path = "Plots/Anomalies", plot = temp_anomaly_plot, width = 7, height = 5, dpi = 500)
 
 
 
@@ -347,8 +347,8 @@ sm_anomaly_plot <- ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, gr
   geom_line(size = 0.8) +
   geom_hline(yintercept = 0, size = 0.4, colour = "black") +
   geom_hline(yintercept = -8.06, linetype = "dashed", size = 0.7, colour = "darkorange") +
-  geom_text(aes(x = 35.1, y = 1, label = "Norm"), colour = "black") + 
-  geom_text(aes(x = 34.1, y = -10, label = "80th percentile"), colour = "darkorange") +  
+  # geom_text(aes(x = 35.1, y = 1, label = "Norm"), colour = "black") + 
+  # geom_text(aes(x = 34, y = -7, label = "80th percentile"), colour = "darkorange", size = 3) +  
   labs(title = "",
        x = "Summer months",
        y = "Deep Soil Moisture Anomaly (mm)",
@@ -370,19 +370,19 @@ sm_anomaly_plot <- ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, gr
 
 plot(sm_anomaly_plot)
 
-ggsave("sm_anomaly_plot.png", path = "Plots", plot = sm_anomaly_plot, width = 7, height = 5, dpi = 500)
+ggsave("sm_anomaly_plot.png", path = "Plots/Anomalies", plot = sm_anomaly_plot, width = 7, height = 5, dpi = 500)
 
 
 #### Combined plots ####
 
-combined_anomaly_plot <- grid.arrange(temp_anomaly_plot, sm_anomaly_plot, nrow = 2, layout_matrix = rbind(c(1, 2)), heights = c(0.5, 0.5)))
+(combined_anomaly_plot <- grid.arrange(temp_anomaly_plot, sm_anomaly_plot, nrow = 2, layout_matrix = rbind(c(1, 2)), heights = c(1, 1)))
 
 # Display the combined plot
 print(combined_anomaly_plot)
 
 # Save plot
 
-ggsave("combined_anomaly_plot.png", path = "Plots", plot = combined_anomaly_plot, width = 8, height = 3, dpi = 500)
+ggsave("combined_anomaly_plot.png", path = "Plots/Anomalies", plot = combined_anomaly_plot, width = 10, height = 8)
 
 
 
