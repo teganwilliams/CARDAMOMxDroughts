@@ -234,7 +234,7 @@ temp_anomaly_plot <- ggplot(temp_anomaly_data_summer, aes(x = week, y = tempAnom
   # geom_text(aes(x = 34, y = 5.2, label = "95th percentile"), colour = "darkorange", size = 3) + 
   labs(title = "",
        x = "Summer months",
-       y = "Temperature Anomaly (degrees Celsius)",
+       y = "Air temperature anomaly (°C)",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
@@ -351,7 +351,7 @@ sm_anomaly_plot <- ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, gr
   # geom_text(aes(x = 34, y = -7, label = "80th percentile"), colour = "darkorange", size = 3) +  
   labs(title = "",
        x = "Summer months",
-       y = "Deep Soil Moisture Anomaly (mm)",
+       y = "Deep soil moisture anomaly (mm)",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
