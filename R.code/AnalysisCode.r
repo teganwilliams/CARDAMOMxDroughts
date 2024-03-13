@@ -13,10 +13,48 @@ obs <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_obs.csv", header = TRUE
 met <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_metSM.csv", header = TRUE)
 climate <- read_csv("Data/DE-Hai_FLUXNET2015_DD_1989-2020_met.csv")
 
-mod2000_2002 <- read_csv()
-mod2000_2005 <- read_csv()
-mod2015_2017 <- read_csv()
-mod2015_2020 <- read_csv()
+
+
+names(drivers)
+drivers$obs
+drivers$met
+view(drivers$met)
+view(obs)
+view(drivers$obs)
+ 
+# Data wrangling
+
+colnames(drivers$met) <- c("day", "x", "y", "z", ...) 
+drivers$obs$day <- seq_len(nrow(drivers$obs))
+
+merged_data <- merge(drivers$met[, c("day", "temperature")], 
+                     drivers$obs[, c("day", "desired_column1", "desired_column2", ...)], 
+                     by = "day")
+
+view(states_all$gpp_gCm2day)
+
+
+
+# calculate annual values of GPP to quantify the differences between years
+obs <- subset(obs, GPP_gCm2day != -9999)
+annual_gpp <- aggregate(GPP_gCm2day ~ year, data = obs, FUN = sum)
+annual_GPP <- data.frame(year = annual_gpp$year, annual_gpp = annual_gpp$GPP_gCm2day)
+print(annual_GPP)
+
+obs$GPP_gCm2day[obs$GPP_gCm2day== -9999] <- NA
+
+yearly_std_dev <- tapply(obs$GPP_gCm2day, obs$year, sd, na.rm = TRUE)
+print(yearly_std_dev)
+
+# overall standard deviation
+gpp_std_dev <- sd(obs$GPP_gCm2day, na.rm = TRUE)
+print(gpp_std_dev)
+
+annual_GPP <- data.frame(
+  year = unique(obs$year),
+  annual_gpp = tapply(obs$GPP_gCm2day, obs$year, sum, na.rm = TRUE),
+  std_dev = yearly_std_dev)
+print(annual_GPP)
 
 ### Create datasets for first drought: 2000-2005
 
@@ -148,9 +186,18 @@ drought_threshold95 <- minimum_deficit %>%
 
 #### Flux Observations ####
 
+# assimilated fluxes should be within 'drivers' -> names(drivers) 
 
 
+flux_data2003 <- 
 
+flux_data2018 <- 
+
+
+# datasets with obs and mod GPP in SEPARATE columns (called obs and mod) 
+gpp_data2003 <- 
+  
+gpp_data2018 <- 
 
 #### Merge Anomalies with Flux Observation data ####
 
@@ -162,7 +209,7 @@ data2000_2005 <- xxx
 
 # Plotting a) for 2000-2005 (fully assimilated)
 
-palette_GPP <- c()
+palette_GPP <- c('blue','pink')
 
 gpp_drought2003 <- ggplot(data2000_2005, aes(x = day, y = GPP, group = type)) +
   geom_line(size = 0.8) +
@@ -184,7 +231,26 @@ gpp_drought2003 <- ggplot(data2000_2005, aes(x = day, y = GPP, group = type)) +
                      limits = c(0,20))
 
 
+# b) analysis
+#### linear regressions
 
+
+linear2003 <- lm(obs ~ mod, data = gpp_data2003)
+
+linear2018 <- lm(obs ~ mod, data = gpp_data2018)
+
+summary(linear2003)
+summary(linear2018)
+
+# visualisation of this fit:
+
+ggplot(gpp_data2003, aes(x = mod, y = obs)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Modeled GPP", y = "Observed GPP", title = "Observed vs. Modeled GPP")
+
+
+# what about uncertainties???
 
 
 #### RQ2: Fluxes against T and SM anomalies  ####
