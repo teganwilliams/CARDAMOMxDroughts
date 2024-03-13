@@ -670,3 +670,49 @@ ggplot(anomaly_data, aes(x = Date, y = TemperatureAnomaly)) +
 
 
 
+
+
+#### Extras deleted from Anomalies.R ####
+
+
+daily_averages <- climate_data %>%
+  group_by(doy) %>%
+  summarize(AverageTemperature = mean(MeanT, na.rm = TRUE))
+
+datafor2003 <- climate_data %>%
+  filter(year == 2003)
+datafor2018 <- climate_data %>%
+  filter(year == 2018)
+dataforboth <- climate_data %>%
+  filter(year %in% c(2003, 2018))
+
+temp_reference_period <- climate_data %>%
+  filter(year >= 1989 & year <= 2020) %>%
+  group_by(doy) %>%
+  summarize(tAverage = mean(MeanT, na.rm = TRUE))
+
+# Merge climate data with reference period
+temp_merged_data <- merge(climate_data, temp_reference_period, by = "doy", all.x = TRUE)
+
+# Calculate temperature anomalies
+temp_merged_data$tempAnomaly <- temp_merged_data$MeanT - temp_merged_data$tAverage
+
+# Calculate the 90th percentile of temperature anomalies
+temp_percentile_90 <- quantile(temp_merged_data$tempAnomaly, 0.9, na.rm = TRUE)
+temp_percentile_0 <- quantile(temp_merged_data$tempAnomaly, 0, na.rm = TRUE)
+
+# Filter only values in the chosen percentile
+temp_anomaly_data <- temp_merged_data %>%
+  filter(tempAnomaly > temp_percentile_0)
+temp_anomaly_data90 <- temp_merged_data %>%
+  filter(tempAnomaly > temp_percentile_90)
+
+min(temp_anomaly_data90$tempAnomaly)
+max(temp_anomaly_data90$tempAnomaly)
+
+temp_anomaly_data$year <- as.factor(temp_anomaly_data$year)
+temp_anomaly_data$doy <- as.factor(temp_anomaly_data$doy)
+
+temp_anomaly_data_filtered <- temp_anomaly_data[c("year", "doy", "tAverage", "tempAnomaly")]
+temp_anomaly_data_filtered$doy <- as.numeric(temp_anomaly_data_filtered$doy)
+

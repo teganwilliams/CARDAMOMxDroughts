@@ -2,17 +2,197 @@
 ####### by Tegan Williams ########
 ######### February 2024 ##########
 
-# Set working directory in which the CARDAMOM code base can be found
-setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/CARDAMOM")
-
-
-## Load needed libraries and internal functions
-source("./R_functions/load_all_cardamom_functions.r")
-
 # Load libraries
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+
+# Datasets ####
+
+obs <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_obs.csv", header = TRUE)
+met <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_metSM.csv", header = TRUE)
+climate <- read_csv("Data/DE-Hai_FLUXNET2015_DD_1989-2020_met.csv")
+
+mod2000_2002 <- read_csv()
+mod2000_2005 <- read_csv()
+mod2015_2017 <- read_csv()
+mod2015_2020 <- read_csv()
+
+### Create datasets for first drought: 2000-2005
+
+#### Met Data ####
+# delete 2021 data from Met data set since only NA values (-9999)
+rows_to_delete <- c(1093:1144)
+met <- met[-rows_to_delete, ]
+
+# create new column for year, months and full dates 
+rows_per_year <- 52
+met$year <- rep(2000:2020, each = rows_per_year)
+met$full_date <- as.Date(paste0(met$year, "-", met$doy), format = "%Y-%j")
+met <- met %>%
+  mutate(month = month(full_date, label = TRUE))
+
+# filter for 2000-2005
+met$year <- as.numeric(met$year)
+met2000to2005 <- met[met$year >= 2000 & met$year <= 2005, ]
+met2015to2020 <- met[met$year >= 2015 & met$year <= 2020, ]
+
+# since flux obs data is weekly should i also change the met data to weekly? 
+
+
+#### Temperature Anomalies ####
+
+# reference period 1989-2020
+climate_data <- climate_data %>%
+  mutate(TIMESTAMP = as.character(TIMESTAMP),
+         year = year(as.Date(TIMESTAMP, format = "%Y%m%d")),
+         month = month(as.Date(TIMESTAMP, format = "%Y%m%d")),
+         doy = yday(as.Date(TIMESTAMP, format = "%Y%m%d")))
+
+# weekly temperature anomalies 
+weekly_average_temp_data <- climate_data %>%
+  group_by(week = ceiling(as.numeric(doy)/7)) %>%
+  summarise(AverageWeeklyMeanT = mean(MeanT, na.rm = TRUE))
+
+weekly_temp_data <- climate_data %>%
+  group_by(year, week = ceiling(as.numeric(doy)/7)) %>%
+  summarise(WeeklyMeanT = mean(MeanT, na.rm = TRUE))
+
+# anomaly values
+weekly_temp_merged_data <- merge(weekly_average_temp_data, weekly_temp_data, by = "week", all.x = TRUE)
+weekly_temp_merged_data$tempAnomaly <- weekly_temp_merged_data$WeeklyMeanT - weekly_temp_merged_data$AverageWeeklyMeanT
+weekly_temp_percentile_0 <- quantile(weekly_temp_merged_data$tempAnomaly, 0, na.rm = TRUE)
+temp_anomalies <- weekly_temp_merged_data %>%
+  filter(tempAnomaly > weekly_temp_percentile_0)
+
+temp_anomalies$year <- as.factor(temp_anomalies$year)
+temp_anomalies$doy <- as.factor(temp_anomalies$doy)
+temp_anomalies$year <- as.factor(temp_anomalies$year)
+temp_anomalies$week <- as.numeric(temp_anomalies$week)
+
+# creating a new column to group into drought vs non-drought years 
+# based on their max value (e.g., >6.5 temp anomaly aka 95th percentile)
+
+temp_anomalies_summer <- temp_anomalies[temp_anomalies$week >= 18 & temp_anomalies$week <= 36, ]
+drought_years <- temp_anomalies_summer %>%
+  filter(tempAnomaly > 6.5) %>%
+  pull(year) %>%
+  unique()
+
+temp_anomalies_summer['Drought_Status'] = '1989-2020'
+temp_anomalies_summer$Drought_Status[temp_anomalies_summer$year %in% drought_years] <- as.character(temp_anomalies_summer$year[temp_anomalies_summer$year %in% drought_years])
+temp_anomalies_summer$Drought_Status <- as.factor(temp_anomalies_summer$Drought_Status)
+
+
+#### Deep SM Anomalies ####
+
+# Reference period 2000-2020
+sm_reference <- met %>%
+  filter(year >= 2000 & year <= 2020) %>%
+  group_by(doy) %>%
+  summarize(smAverage = mean(SWC_1, na.rm = TRUE))
+
+# Merge with the main data
+sm_merged_data <- merge(met, sm_reference, by = "doy", all.x = TRUE)
+
+# Calculate soil moisture anomalies
+sm_merged_data$smAnomaly <- sm_merged_data$SWC_1 - sm_merged_data$smAverage
+
+# Calculate the 90th percentile of sm anomalies
+sm_percentile_95 <- quantile(sm_merged_data$smAnomaly, 0.95, na.rm = TRUE)
+sm_percentile_90 <- quantile(sm_merged_data$smAnomaly, 0.9, na.rm = TRUE)
+sm_percentile_0 <- quantile(sm_merged_data$smAnomaly, 0, na.rm = TRUE)
+sm_percentile_10 <- quantile(sm_merged_data$smAnomaly, 0.1, na.rm = TRUE)
+
+sm_anomalies <- sm_merged_data %>%
+  filter(smAnomaly > sm_percentile_0)
+
+sm_anomalies$year <- as.factor(sm_anomalies$year)
+sm_anomalies$doy <- as.factor(sm_anomalies$doy)
+
+sm_anomalies_filtered <- sm_anomalies[c("year", "doy", "smAverage", "smAnomaly")]
+sm_anomalies_filtered$year <- as.factor(sm_anomalies_filtered$year)
+sm_anomalies_filtered$doy <- as.numeric(sm_anomalies_filtered$doy)
+
+# Create new column 'drought_status' and initialise it with 'non-drought'
+sm_anomalies_summer <- sm_anomalies_filtered %>%
+  filter(doy %in% c(18:36))
+
+sm_drought_years <- sm_anomalies_summer%>%
+  filter(year %in% c(2003,2010,2018)) %>%
+  pull(year) %>%
+  unique()
+
+sm_anomalies_summer['Drought_Status'] = '2000-2020'
+
+sm_anomalies_summer <- sm_anomalies_summer %>%
+  mutate(Drought_Status = ifelse(year %in% sm_drought_years, as.character(year), Drought_Status))
+
+sm_anomalies_summer$Drought_Status <- as.factor(sm_anomalies_summer$Drought_Status)
+sm_anomalies_summer$year <- as.factor(sm_anomalies_summer$year)
+sm_anomalies_summer$doy <- as.numeric(sm_anomalies_summer$doy)
+sm_anomalies_summer$smAnomaly <- as.numeric(sm_anomalies_summer$smAnomaly)
+
+sm_anomaly_data_filtered10 <- sm_anomalies_summer %>%
+  filter(smAnomaly > sm_percentile_10)
+
+deficit_data <- sm_anomalies_summer %>%
+  filter(smAnomaly < 0)
+drought_threshold <- quantile(deficit_data$smAnomaly, 0.05)
+minimum_deficit <- deficit_data %>%
+  mutate(Drought_Status = ifelse(smAnomaly < drought_threshold, "Drought", "No Drought"))
+
+drought_threshold95 <- minimum_deficit %>%
+  filter(Drought_Status == "Drought")
+
+
+#### Flux Observations ####
+
+
+
+
+
+#### Merge Anomalies with Flux Observation data ####
+
+data2000_2005 <- xxx
+
+#### RQ1: GPP (obs vs modelled) ####
+#### a) plot over time (6 years) with uncertainties 
+#### b) linear models of obs vs modelled 
+
+# Plotting a) for 2000-2005 (fully assimilated)
+
+palette_GPP <- c()
+
+gpp_drought2003 <- ggplot(data2000_2005, aes(x = day, y = GPP, group = type)) +
+  geom_line(size = 0.8) +
+  labs(title = "",
+       x = "Time (year)",
+       y = "GPP (gCm2day)",
+       colour = "Type:") +
+  scale_colour_manual(values = palette_GPP) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(1, 366, 731, 1096, 1461), 
+                     labels = c("2000", "2001", "2002", "2003", "2004", "2005")) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(0,20))
+
+
+
+
+
+#### RQ2: Fluxes against T and SM anomalies  ####
+
+#### RQ3: Simulated drought response -> accuracy #####
+  
+
+# Previous code ####
 
 # Met drivers against GPP
 
