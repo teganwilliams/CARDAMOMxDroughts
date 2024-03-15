@@ -5,6 +5,10 @@
 #### Data loading & wrangling ####
 
 # Libraries (required packages for data wrangling)
+install.packages('tidyverse')
+install.packages('tidyr')
+install.packages('RColorBrewer')
+
 library(dplyr)
 library(tidyverse)
 library(ggplot2) 
@@ -13,7 +17,7 @@ library(ggplot2)
 met_data <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_met.csv", header = TRUE)
 obs_data <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_obs.csv", header = TRUE)
 sm_data <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_metSM.csv", header= TRUE)
-climate_data <- read_csv("Data/DE-Hai_FLUXNET2015_DD_1989-2020_met.csv")
+climate_data <- read.csv("Data/DE-Hai_FLUXNET2015_DD_1989-2020_met.csv")
 
 # Delete 2021 data from Met data set since only NA values (-9999)
 rows_to_delete <- c(1093:1144)

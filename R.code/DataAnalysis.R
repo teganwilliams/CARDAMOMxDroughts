@@ -170,6 +170,14 @@ ggplot(merged_data2000, aes(x = mod_gpp, y = obs_gpp)) +
 plot(hist())
 
 
+##### RQ2: Anomalies x fluxes ####
+
+# Datasets
+
+obs <- read.csv("/exports/csce/datastore/geos/groups/gcel/for_Tegan/CARDAMOM/DE-Hai/2015-2020/DE-Hai_timeseries_obs.csv", header = TRUE)
+met <- read.csv("/exports/csce/datastore/geos/groups/gcel/for_Tegan/CARDAMOM/DE-Hai/2015-2017/DE-Hai_timeseries_met.csv", header = TRUE)
+sm <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_metSM.csv", header= TRUE)
+climate_data <- read_csv("Data/DE-Hai_FLUXNET2015_DD_1989-2020_met.csv")
 
 
 
