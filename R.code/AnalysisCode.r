@@ -33,6 +33,9 @@ merged_data <- merge(drivers$met[, c("day", "temperature")],
 
 view(states_all$gpp_gCm2day)
 
+gpp <- states_all$gpp_gCm2day
+
+view(gpp$dimensions)
 
 
 # calculate annual values of GPP to quantify the differences between years
@@ -41,7 +44,7 @@ annual_gpp <- aggregate(GPP_gCm2day ~ year, data = obs, FUN = sum)
 annual_GPP <- data.frame(year = annual_gpp$year, annual_gpp = annual_gpp$GPP_gCm2day)
 print(annual_GPP)
 
-obs$GPP_gCm2day[obs$GPP_gCm2day== -9999] <- NA
+obs$GPP_gCm2day[obs$GPP_gCm2day== -9999] <- NAss
 
 yearly_std_dev <- tapply(obs$GPP_gCm2day, obs$year, sd, na.rm = TRUE)
 print(yearly_std_dev)

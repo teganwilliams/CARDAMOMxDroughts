@@ -10,7 +10,7 @@ library(tidyverse)
 library(ggplot2) 
 
 # Load Meteorological Data
-met_data <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_met.csv", header = TRUE)
+met_data <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_metSM.csv", header = TRUE)
 obs_data <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_obs.csv", header = TRUE)
 sm_data <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_metSM.csv", header= TRUE)
 climate_data <- read_csv("Data/DE-Hai_FLUXNET2015_DD_1989-2020_met.csv")
@@ -137,6 +137,7 @@ weekly_temp_anomaly_data95 <- weekly_temp_merged_data %>%
 min(weekly_temp_anomaly_data95$tempAnomaly)
 max(weekly_temp_anomaly_data95$tempAnomaly)
 
+
 temp_anomaly_data$year <- as.factor(temp_anomaly_data$year)
 temp_anomaly_data$doy <- as.factor(temp_anomaly_data$doy)
 
@@ -160,13 +161,17 @@ temp_anomaly_data_summer$Drought_Status <- as.factor(temp_anomaly_data_summer$Dr
 
 min(temp_anomaly_data_summer$tempAnomaly)
 
-palette_anomalies <- c("#D6D6D686", "#29B071", "#2C78DB", "#C93402")
+palette_anomalies1 <- c("#D6D6D686", "#29B071", "#2C78DB", "#C93402")
+palette_anomalies2 <-c("#D6D6D686", "#DB2C95", "#11A0D9", "#8A3FBF")
+palette_anomalies3 <- c("#D6D6D686", "#990AFF", "#126DFF", "#FF19AB")
+palette_anomalies <- c("#D6D6D686", "#D6A400", "#3EA85A", "#B80422")
+
 colourblind_palette <- c("#D4D4D4C4","#329FD6", "#C20502", "#9E21C4")
 
 temp_anomaly_plot <- ggplot(temp_anomaly_data_summer, aes(x = week, y = tempAnomaly, colour = Drought_Status, group = year)) +
   geom_line(size = 0.8) +
   geom_hline(yintercept = 0, size = 0.4, colour = "black") +
-  geom_hline(yintercept = 4.69, linetype = "dashed", size = 0.7, colour = "darkorange") +
+  geom_hline(yintercept = 4.69, linetype = "dashed", size = 0.7, colour = "#FC6C19BE") +
   # geom_text(aes(x = 35.2, y = -0.4, label = "Norm"), colour = "black") + 
   # geom_text(aes(x = 34, y = 5.2, label = "95th percentile"), colour = "darkorange", size = 3) + 
   labs(title = "",
@@ -199,15 +204,13 @@ ggsave("temp_anomaly_plot.png", path = "Plots/Anomalies", plot = temp_anomaly_pl
 #### Deep Soil Moisture Anomalies ####
 
 # Reference period 2000-2020
-
-
-sm_reference_period <- sm_data %>%
+sm_reference_period <- met_data %>%
   filter(year >= 2000 & year <= 2020) %>%
   group_by(doy) %>%
   summarize(smAverage = mean(SWC_1, na.rm = TRUE))
 
 # Merge with the main data
-sm_merged_data <- merge(sm_data, sm_reference_period, by = "doy", all.x = TRUE)
+sm_merged_data <- merge(met_data, sm_reference_period, by = "doy", all.x = TRUE)
 
 # Calculate soil moisture anomalies
 sm_merged_data$smAnomaly <- sm_merged_data$SWC_1 - sm_merged_data$smAverage
@@ -283,7 +286,7 @@ palette_before <- c("#D4D4D4C4", "#178A86", "#0F5596", "#B51717")
 sm_anomaly_plot <- ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, group = year, colour = Drought_Status)) +
   geom_line(size = 0.8) +
   geom_hline(yintercept = 0, size = 0.4, colour = "black") +
-  geom_hline(yintercept = -8.06, linetype = "dashed", size = 0.7, colour = "darkorange") +
+  geom_hline(yintercept = -8.06, linetype = "dashed", size = 0.7, colour = "#FC6C19BE") +
   # geom_text(aes(x = 35.1, y = 1, label = "Norm"), colour = "black") + 
   # geom_text(aes(x = 34, y = -7, label = "80th percentile"), colour = "darkorange", size = 3) +  
   labs(title = "",
@@ -311,6 +314,8 @@ ggsave("sm_anomaly_plot.png", path = "Plots/Anomalies", plot = sm_anomaly_plot, 
 
 
 #### Combined plots ####
+
+library(gridExtra)
 
 (combined_anomaly_plot <- grid.arrange(temp_anomaly_plot, sm_anomaly_plot, nrow = 2, layout_matrix = rbind(c(1, 2)), heights = c(1, 1)))
 
