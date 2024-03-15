@@ -135,15 +135,32 @@ ggplot(merged_data, aes(x = day)) +
                      limits = c(0,20)))
 # add uncertainty bounds! 
 
-# now look at linear model of this
+# Linear model (R squared; correlation coefficient)
+# 1) Calculate correlation coefficient
+correlation2000 <- cor(merged_data2000$mod_gpp, merged_data2000$obs_gpp, use = "complete.obs")
 
-ggplot(merged_data, aes(x = mod_gpp, y = obs_gpp)) +
-  geom_point(colour = "grey") +
-  labs(x = "Modelled GPP (gC/m^2/day)", y = "Observed GPP (gC/m^2/day)") +
-  geom_abline(intercept = 0, slope = 1, color = "black", size = 0.5) +
-  geom_abline(intercept = 0, slope = max(merged_data$obs_gpp, na.rm = TRUE) / max(merged_data$mod_gpp, na.rm = TRUE), linetype = "dotted", color = "red") +
-  theme_minimal()
+# Square the correlation coefficient to get R^2
+r_squared2000 <- correlation2000^2
 
+# Print the R^2 value
+print(paste("R^2 value:", round(r_squared2000, 3)))
+
+# PLot this
+ggplot(merged_data2000, aes(x = mod_gpp, y = obs_gpp)) +
+  geom_point(colour = "orchid") +
+  labs(x = "Modelled GPP (gC/m²/day)", y = "Observed GPP (gC/m²/day)") +
+  geom_abline(intercept = 0, slope = 1, color = "purple", size = 0.6) +
+  geom_abline(intercept = 0, slope = max(merged_data2000$obs_gpp, na.rm = TRUE) / max(merged_data2000$mod_gpp, na.rm = TRUE), linetype = "dashed", color = "black") +
+  geom_text(aes(x = 11, 
+                y = 6), 
+            label = paste("R² =", round(r_squared2000, 3)), 
+            hjust = 0, vjust = 1,
+            size = 5, 
+            fontface = "bold", 
+            colour = "purple") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9))
 
 
 
