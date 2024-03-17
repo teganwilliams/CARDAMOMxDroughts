@@ -129,6 +129,7 @@ mean_summer_temp <- aggregate(TA_ERA_DAY ~ year, data = summer_temp_data, FUN = 
 mean(mean_summer_temp$TA_ERA_DAY)
 
 
+
 summer_rainfall_data <- climate_data[climate_data$month %in% c("7", "8"), ]
 summer_rainfall_data <- summer_rainfall_data %>%
   select("year", "month", "Precip")
