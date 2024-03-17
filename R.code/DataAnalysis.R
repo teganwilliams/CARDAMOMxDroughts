@@ -169,6 +169,52 @@ ggplot(merged_data2000, aes(x = mod_gpp, y = obs_gpp)) +
 
 plot(hist())
 
+#### Parameters ####
+parameter_data <- data.frame(x = parameters)
+parameter_data <- t(parameter_data)
+colnames(parameter_data) <- c("SOM", "GPP fraction auto", "Fraction to Foliage", 
+                              "Fraction to Roots", "Leaf Lifespan", "TOR Wood", 
+                              "TOR Roots", "Litter Turnover", "SOM Turnover", "Temp factor",
+                              "11", "Max bud burst day", "Fraction to Clab", "Clab release period", "Max leaf fall day",
+                              "Leaf fall period", "LMA", "C labile", "C foliar", "C roots", "C wood",
+                              "C litter", "C SOM", "Initial soil water",
+                              "Fraction Cwood coarse root", "26","27", "Resilience factor","29",
+                              "30", "31", "32", "Likelihood score")
+
+parameter_data2000 <- data.frame(parameter_data)
+parameter_data2015 <- data.frame(parameter_data)
+
+# Plot the first histogram
+par(mfrow = c(2, 2))
+
+hist(parameter_data2000$SOM, col = "pink", main = "Histogram of SOM", xlab = "SOM", ylab = "Frequency", breaks = 20, xlim = range(c(parameter_data2000$SOM, parameter_data2015$SOM)))
+hist(parameter_data2015$SOM, col = "lightblue", add = TRUE, breaks = 20)
+legend("topright", legend = c("SOM 2003", "SOM 2018"), fill = c("pink", "lightblue"))
+
+hist(parameter_data2000$GPP.fraction.auto, col = "pink", main = "Histogram of SOM", xlab = "SOM", ylab = "Frequency", breaks = 20, xlim = range(c(parameter_data2000$GPP.fraction.auto, parameter_data2015$GPP.fraction.auto)))
+hist(parameter_data2015$GPP.fraction.auto, col = "lightblue", add = TRUE, breaks = 20)
+legend("topright", legend = c("gpp auto 2003", "gpp auto 2018"), fill = c("pink", "lightblue"))
+
+hist(parameter_data2000$Temp.factor, col = "pink", main = "Histogram of SOM", xlab = "SOM", ylab = "Frequency", breaks = 20, xlim = range(c(parameter_data2000$Temp.factor, parameter_data2015$Temp.factor)))
+hist(parameter_data2015$Temp.factor, col = "lightblue", add = TRUE, breaks = 20)
+legend("topright", legend = c("Temp factor 2003", "Temp factor 2018"), fill = c("pink", "lightblue"))
+
+hist(parameter_data2000$C.labile, col = "pink", main = "Histogram of SOM", xlab = "SOM", ylab = "Frequency", breaks = 20, xlim = range(c(parameter_data2000$C.labile, parameter_data2015$C.labile)))
+hist(parameter_data2015$C.labile, col = "lightblue", add = TRUE, breaks = 20)
+legend("topright", legend = c("C labile 2003", "C labile 2018"), fill = c("pink", "lightblue"))
+
+
+plot(hist(parameter_data2015$GPP.fraction.auto))
+plot(hist(parameter_data2015$Temp.factor))
+plot(hist(parameter_data2015$C.labile))
+plot(hist(parameter_data2015$Likelihood.score))
+
+plot(hist(combined_parameters$SOM))
+plot(hist(combined_parameters$GPP.fraction.auto))
+plot(hist(combined_parameters$Temp.factor))
+plot(hist(combined_parameters$C.labile))
+plot(hist(combined_parameters$Likelihood.score))
+
 
 ##### RQ2: Anomalies x fluxes ####
 
