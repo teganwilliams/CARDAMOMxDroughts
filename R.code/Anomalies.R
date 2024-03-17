@@ -59,6 +59,7 @@ ggplot(met2000to2005, aes(x = full_date, y = maxt_C)) +
   ylab("Max Temperature [°C]")
 
 
+
 # plotting T over time for 5 consecutive years e.g., 2000-2005, to show the difference during drought years 
 # plus add the 30-year mean temperature as well!
 avg_monthly_temp <- met_data %>%
@@ -113,6 +114,30 @@ climate_data <- climate_data %>%
          year = year(as.Date(TIMESTAMP, format = "%Y%m%d")),
          month = month(as.Date(TIMESTAMP, format = "%Y%m%d")),
          doy = yday(as.Date(TIMESTAMP, format = "%Y%m%d")))
+
+# finding average summer mean max day temperatures
+
+max_temperatures <- aggregate(TA_ERA_DAY ~ year, data = climate_data, FUN = max)
+max_temperatures$TA_ERA_DAY <- as.numeric(max_temperatures$TA_ERA_DAY)
+mean(max_temperatures$TA_ERA_DAY)
+
+summer_temp_data <- climate_data[climate_data$month %in% c("6", "7", "8"), ]
+summer_temp_data <- summer_temp_data %>%
+  select("year", "month", "TA_ERA_DAY")
+mean_summer_temp <- aggregate(TA_ERA_DAY ~ year, data = summer_temp_data, FUN = mean)
+
+mean(mean_summer_temp$TA_ERA_DAY)
+
+
+summer_rainfall_data <- climate_data[climate_data$month %in% c("7", "8"), ]
+summer_rainfall_data <- summer_rainfall_data %>%
+  select("year", "month", "Precip")
+
+# Aggregate the rainfall data by year and calculate the mean rainfall for each year
+mean_summer_rainfall <- aggregate(Precip ~ year, data = summer_rainfall_data, FUN = sum)
+
+mean(mean_summer_rainfall$Precip)
+
 
 # Plotting weekly temperature anomalies over Time
 
