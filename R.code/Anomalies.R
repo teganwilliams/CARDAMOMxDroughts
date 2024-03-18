@@ -182,11 +182,19 @@ weekly_temp_anomaly_data$week <- as.numeric(weekly_temp_anomaly_data$week)
 
 temp_anomaly_data_summer <- weekly_temp_anomaly_data[weekly_temp_anomaly_data$week >= 18 & weekly_temp_anomaly_data$week <= 36, ]
 drought_years <- temp_anomaly_data_summer %>%
-  filter(tempAnomaly > 6.5) %>%
+  filter(tempAnomaly > 5.2) %>%
   pull(year) %>%
   unique()
+
+temp_drought_years <- temp_anomaly_data_summer%>%
+  filter(year %in% c(2003,2010,2018,2019)) %>%
+  pull(year) %>%
+  unique()
+
+hotyears <- as.data.frame(drought_years)
+
 temp_anomaly_data_summer['Drought_Status'] = '1989-2020'
-temp_anomaly_data_summer$Drought_Status[temp_anomaly_data_summer$year %in% drought_years] <- as.character(temp_anomaly_data_summer$year[temp_anomaly_data_summer$year %in% drought_years])
+temp_anomaly_data_summer$Drought_Status[temp_anomaly_data_summer$year %in% temp_drought_years] <- as.character(temp_anomaly_data_summer$year[temp_anomaly_data_summer$year %in% temp_drought_years])
 temp_anomaly_data_summer$Drought_Status <- as.factor(temp_anomaly_data_summer$Drought_Status)
 
 min(temp_anomaly_data_summer$tempAnomaly)
@@ -194,7 +202,7 @@ min(temp_anomaly_data_summer$tempAnomaly)
 palette_anomalies1 <- c("#D6D6D686", "#29B071", "#2C78DB", "#C93402")
 palette_anomalies2 <-c("#D6D6D686", "#DB2C95", "#11A0D9", "#8A3FBF")
 palette_anomalies3 <- c("#D6D6D686", "#990AFF", "#126DFF", "#FF19AB")
-palette_anomalies <- c("#D6D6D686", "#D6A400", "#3EA85A", "#B80422")
+palette_anomalies <- c("#D6D6D686", "#D6A400", "#7362BA", "#B80422", "#3EA85A")
 
 colourblind_palette <- c("#D4D4D4C4","#329FD6", "#C20502", "#9E21C4")
 
@@ -278,7 +286,7 @@ sm_anomaly_data_summer <- sm_anomaly_data_filtered %>%
   filter(doy %in% c(18:36))
 
 sm_drought_years <- sm_anomaly_data_summer%>%
-  filter(year %in% c(2003,2010,2018)) %>%
+  filter(year %in% c(2003,2010,2018,2019)) %>%
   pull(year) %>%
   unique()
 
@@ -342,6 +350,7 @@ plot(sm_anomaly_plot)
 
 ggsave("sm_anomaly_plot.png", path = "Plots/Anomalies", plot = sm_anomaly_plot, width = 7, height = 5, dpi = 500)
 
+write.csv(temp_anomaly_data_summer, "temp_anomaly_data.csv", path = "Data")
 
 #### Combined plots ####
 
