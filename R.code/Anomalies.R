@@ -183,8 +183,10 @@ anomalies <- anomalies1 %>%
   select(full_date, week.x, year.x, tempAnomaly, smAnomaly) %>%
   rename(date = full_date, week = week.x, year = year.x) %>%
   filter(year >= 2000 & year <=2005 | year >= 2015 & year <= 2020)
-
   
+anomalies_full <- anomalies1 %>%
+  select(full_date, week.x, year.x, tempAnomaly, smAnomaly) %>%
+  rename(date = full_date, week = week.x, year = year.x) 
 
 # creating a new column to group into drought vs non-drought years 
 # based on their max value (e.g., >6.5 temp anomaly)
@@ -367,9 +369,17 @@ plot(sm_anomaly_plot)
 ggsave("sm_anomaly_plot.png", path = "Plots/Anomalies", plot = sm_anomaly_plot, width = 7, height = 5, dpi = 500)
 
 
+#### Creating normalised anomaly data for comparison of their effects on gpp
+
+
+
+
+
 # save data tables for anomalies
 write.csv(temp_anomaly_data_summer, "temp_anomaly_data.csv")
 write.csv(sm_anomaly_data_summer, "sm_anomaly_data.csv")
+
+write.csv(anomalies, "anomalies.csv")
 
 #### Combined plots ####
 
