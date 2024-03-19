@@ -148,7 +148,11 @@ weekly_average_temp_data <- climate_data %>%
 
 weekly_temp_data <- climate_data %>%
   group_by(year, week = ceiling(as.numeric(doy)/7)) %>%
-  summarise(WeeklyMeanT = mean(MeanT, na.rm = TRUE))
+  summarise(WeeklyMeanT = mean(MeanT, na.rm = TRUE)) 
+  
+
+View(weekly_temp_data)
+
 
 # find the anomaly values
 weekly_temp_merged_data <- merge(weekly_average_temp_data, weekly_temp_data, by = "week", all.x = TRUE)
@@ -167,13 +171,20 @@ weekly_temp_anomaly_data95 <- weekly_temp_merged_data %>%
 min(weekly_temp_anomaly_data95$tempAnomaly)
 max(weekly_temp_anomaly_data95$tempAnomaly)
 
-
-temp_anomaly_data$year <- as.factor(temp_anomaly_data$year)
-temp_anomaly_data$doy <- as.factor(temp_anomaly_data$doy)
-
 weekly_temp_anomaly_data$year <- as.factor(weekly_temp_anomaly_data$year)
 weekly_temp_anomaly_data$week <- as.numeric(weekly_temp_anomaly_data$week)
 
+weekly_temp_merged_data$full_date <- ymd(paste0(weekly_temp_merged_data$year, "-01-07")) + weeks(weekly_temp_merged_data$week - 1)
+
+
+anomalies1 <- merge(weekly_temp_merged_data, sm_anomaly_data_filtered, by = "full_date")
+
+anomalies <- anomalies1 %>%
+  select(full_date, week.x, year.x, tempAnomaly, smAnomaly) %>%
+  rename(date = full_date, week = week.x, year = year.x) %>%
+  filter(year >= 2000 & year <=2005 | year >= 2015 & year <= 2020)
+
+  
 
 # creating a new column to group into drought vs non-drought years 
 # based on their max value (e.g., >6.5 temp anomaly)
@@ -277,9 +288,14 @@ min(sm_anomaly_data95$smAnomaly)
 sm_anomaly_data$year <- as.factor(sm_anomaly_data$year)
 sm_anomaly_data$doy <- as.factor(sm_anomaly_data$doy)
 
-sm_anomaly_data_filtered <- sm_anomaly_data[c("year", "doy", "smAverage", "smAnomaly")]
+sm_anomaly_data$week <- ceiling((sm_anomaly_data$doy - 6) / 7)
+View(sm_anomaly_data)
+
+sm_anomaly_data_filtered <- sm_anomaly_data[c("year", "week", "full_date", "smAverage", "smAnomaly")]
 sm_anomaly_data_filtered$year <- as.factor(sm_anomaly_data_filtered$year)
 sm_anomaly_data_filtered$doy <- as.numeric(sm_anomaly_data_filtered$doy)
+
+
 
 # Create new column 'drought_status' and initialise it with 'non-drought'
 sm_anomaly_data_summer <- sm_anomaly_data_filtered %>%
@@ -350,7 +366,10 @@ plot(sm_anomaly_plot)
 
 ggsave("sm_anomaly_plot.png", path = "Plots/Anomalies", plot = sm_anomaly_plot, width = 7, height = 5, dpi = 500)
 
-write.csv(temp_anomaly_data_summer, "temp_anomaly_data.csv", path = "Data")
+
+# save data tables for anomalies
+write.csv(temp_anomaly_data_summer, "temp_anomaly_data.csv")
+write.csv(sm_anomaly_data_summer, "sm_anomaly_data.csv")
 
 #### Combined plots ####
 
