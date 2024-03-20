@@ -269,6 +269,7 @@ sm_merged_data <- merge(met_data, sm_reference_period, by = "doy", all.x = TRUE)
 
 # Calculate soil moisture anomalies
 sm_merged_data$smAnomaly <- sm_merged_data$SWC_1 - sm_merged_data$smAverage
+sm_merged_data$weeklysm <- sm_merged_data$SWC_1
 
 # Calculate the 90th percentile of sm anomalies
 sm_percentile_95 <- quantile(sm_merged_data$smAnomaly, 0.95, na.rm = TRUE)
@@ -297,7 +298,7 @@ sm_anomaly_data$doy <- as.factor(sm_anomaly_data$doy)
 sm_anomaly_data$week <- ceiling((sm_anomaly_data$doy - 6) / 7)
 View(sm_anomaly_data)
 
-sm_anomaly_data_filtered <- sm_anomaly_data[c("year", "week", "full_date", "smAverage", "smAnomaly")]
+sm_anomaly_data_filtered <- sm_anomaly_data[c("year", "week", "full_date", "weeklysm", "smAverage", "smAnomaly")]
 sm_anomaly_data_filtered$year <- as.factor(sm_anomaly_data_filtered$year)
 sm_anomaly_data_filtered$doy <- as.numeric(sm_anomaly_data_filtered$doy)
 
@@ -376,7 +377,8 @@ ggsave("sm_anomaly_plot.png", path = "Plots/Anomalies", plot = sm_anomaly_plot, 
 #### Creating normalised anomaly data for comparison of their effects on gpp
 
 
-
+View(sm_merged_data)
+View(sm_anomaly_data_filtered)
 
 
 # save data tables for anomalies
