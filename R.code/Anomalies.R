@@ -144,13 +144,14 @@ mean(mean_summer_rainfall$Precip)
 
 weekly_average_temp_data <- climate_data %>%
   group_by(week = ceiling(as.numeric(doy)/7)) %>%
-  summarise(AverageWeeklyMeanT = mean(MeanT, na.rm = TRUE))
+  summarise(AverageWeeklyMeanT = mean(MeanT, na.rm = TRUE),
+            sd = sd(MeanT, na.rm = TRUE))
 
 weekly_temp_data <- climate_data %>%
   group_by(year, week = ceiling(as.numeric(doy)/7)) %>%
   summarise(WeeklyMeanT = mean(MeanT, na.rm = TRUE)) 
-  
 
+  
 View(weekly_temp_data)
 
 
@@ -178,6 +179,9 @@ weekly_temp_merged_data$full_date <- ymd(paste0(weekly_temp_merged_data$year, "-
 
 
 anomalies1 <- merge(weekly_temp_merged_data, sm_anomaly_data_filtered, by = "full_date")
+
+View(weekly_temp_merged_data)
+View(sm_anomaly_data_filtered)
 
 anomalies <- anomalies1 %>%
   select(full_date, week.x, year.x, tempAnomaly, smAnomaly) %>%
@@ -380,6 +384,9 @@ write.csv(temp_anomaly_data_summer, "temp_anomaly_data.csv")
 write.csv(sm_anomaly_data_summer, "sm_anomaly_data.csv")
 
 write.csv(anomalies, "anomalies.csv")
+write.csv(anomalies_full, "anomalies_full.csv")
+write.csv(weekly_temp_merged_data, "temp_anomalies.csv")
+write.csv(sm_anomaly_data_filtered, "sm_anomalies.csv")
 
 #### Combined plots ####
 
