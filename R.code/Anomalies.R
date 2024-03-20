@@ -262,7 +262,8 @@ ggsave("temp_anomaly_plot.png", path = "Plots/Anomalies", plot = temp_anomaly_pl
 sm_reference_period <- met_data %>%
   filter(year >= 2000 & year <= 2020) %>%
   group_by(doy) %>%
-  summarize(smAverage = mean(SWC_1, na.rm = TRUE))
+  summarize(smAverage = mean(SWC_1, na.rm = TRUE),
+            sd = sd(mean(SWC_1, na.rm = TRUE)))
 
 # Merge with the main data
 sm_merged_data <- merge(met_data, sm_reference_period, by = "doy", all.x = TRUE)
@@ -298,7 +299,7 @@ sm_anomaly_data$doy <- as.factor(sm_anomaly_data$doy)
 sm_anomaly_data$week <- ceiling((sm_anomaly_data$doy - 6) / 7)
 View(sm_anomaly_data)
 
-sm_anomaly_data_filtered <- sm_anomaly_data[c("year", "week", "full_date", "weeklysm", "smAverage", "smAnomaly")]
+sm_anomaly_data_filtered <- sm_anomaly_data[c("year", "week", "full_date", "weeklysm", "sd", "smAverage", "smAnomaly")]
 sm_anomaly_data_filtered$year <- as.factor(sm_anomaly_data_filtered$year)
 sm_anomaly_data_filtered$doy <- as.numeric(sm_anomaly_data_filtered$doy)
 
