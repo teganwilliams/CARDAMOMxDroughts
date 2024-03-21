@@ -299,7 +299,7 @@ sm_anomaly_data$doy <- as.numeric(sm_anomaly_data$doy)
 sm_anomaly_data$week <- ceiling((sm_anomaly_data$doy - 6) / 7)
 View(sm_anomaly_data)
 
-sm_anomaly_data_filtered <- sm_anomaly_data[c("year", "doy", "week", "full_date", "weeklysm", "sd", "smAverage", "smAnomaly")]
+sm_anomaly_data_filtered <- sm_anomaly_data[c("year", "week", "full_date", "weeklysm", "sd", "smAverage", "smAnomaly")]
 sm_anomaly_data_filtered$year <- as.factor(sm_anomaly_data_filtered$year)
 sm_anomaly_data_filtered$doy <- as.numeric(sm_anomaly_data_filtered$doy)
 
