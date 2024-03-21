@@ -204,7 +204,7 @@ drought_years <- temp_anomaly_data_summer %>%
   unique()
 
 temp_drought_years <- temp_anomaly_data_summer%>%
-  filter(year %in% c(2003,2010,2018,2019)) %>%
+  filter(year %in% c(2003,2018,2019,2020)) %>%
   pull(year) %>%
   unique()
 
@@ -219,7 +219,7 @@ min(temp_anomaly_data_summer$tempAnomaly)
 palette_anomalies1 <- c("#D6D6D686", "#29B071", "#2C78DB", "#C93402")
 palette_anomalies2 <-c("#D6D6D686", "#DB2C95", "#11A0D9", "#8A3FBF")
 palette_anomalies3 <- c("#D6D6D686", "#990AFF", "#126DFF", "#FF19AB")
-palette_anomalies <- c("#D6D6D686", "#D6A400", "#7362BA", "#B80422", "#3EA85A")
+palette_anomalies <- c("#D6D6D686", "#D6A400", "#B80422", "#7362BA", "#3EA85A")
 
 colourblind_palette <- c("#D4D4D4C4","#329FD6", "#C20502", "#9E21C4")
 
@@ -262,15 +262,15 @@ ggsave("temp_anomaly_plot.png", path = "Plots/Anomalies", plot = temp_anomaly_pl
 sm_reference_period <- met_data %>%
   filter(year >= 2000 & year <= 2020) %>%
   group_by(doy) %>%
-  summarize(smAverage = mean(SWC_1, na.rm = TRUE),
-            sd = sd(mean(SWC_1, na.rm = TRUE)))
+  summarize(smAverage = mean(SWC_3, na.rm = TRUE),
+            sd = sd(SWC_3, na.rm = TRUE))
 
 # Merge with the main data
 sm_merged_data <- merge(met_data, sm_reference_period, by = "doy", all.x = TRUE)
 
 # Calculate soil moisture anomalies
-sm_merged_data$smAnomaly <- sm_merged_data$SWC_1 - sm_merged_data$smAverage
-sm_merged_data$weeklysm <- sm_merged_data$SWC_1
+sm_merged_data$smAnomaly <- sm_merged_data$SWC_3 - sm_merged_data$smAverage
+sm_merged_data$weeklysm <- sm_merged_data$SWC_3
 
 # Calculate the 90th percentile of sm anomalies
 sm_percentile_95 <- quantile(sm_merged_data$smAnomaly, 0.95, na.rm = TRUE)
@@ -294,23 +294,21 @@ sm_anomaly_data10 <- sm_merged_data %>%
 min(sm_anomaly_data95$smAnomaly)
 
 sm_anomaly_data$year <- as.factor(sm_anomaly_data$year)
-sm_anomaly_data$doy <- as.factor(sm_anomaly_data$doy)
+sm_anomaly_data$doy <- as.numeric(sm_anomaly_data$doy)
 
 sm_anomaly_data$week <- ceiling((sm_anomaly_data$doy - 6) / 7)
 View(sm_anomaly_data)
 
-sm_anomaly_data_filtered <- sm_anomaly_data[c("year", "week", "full_date", "weeklysm", "sd", "smAverage", "smAnomaly")]
+sm_anomaly_data_filtered <- sm_anomaly_data[c("year", "doy", "week", "full_date", "weeklysm", "sd", "smAverage", "smAnomaly")]
 sm_anomaly_data_filtered$year <- as.factor(sm_anomaly_data_filtered$year)
 sm_anomaly_data_filtered$doy <- as.numeric(sm_anomaly_data_filtered$doy)
-
-
 
 # Create new column 'drought_status' and initialise it with 'non-drought'
 sm_anomaly_data_summer <- sm_anomaly_data_filtered %>%
   filter(doy %in% c(18:36))
 
 sm_drought_years <- sm_anomaly_data_summer%>%
-  filter(year %in% c(2003,2010,2018,2019)) %>%
+  filter(year %in% c(2003,2018,2019,2020)) %>%
   pull(year) %>%
   unique()
 
@@ -343,6 +341,8 @@ max(drought_threshold95$smAnomaly)
 # threshold for 95th percentile is -9.93
 
 palette_before <- c("#D4D4D4C4", "#178A86", "#0F5596", "#B51717")
+
+View(sm_anomaly_data_summer)
 
 # Plotting soil moisture anomalies
 sm_anomaly_plot <- ggplot(sm_anomaly_data_summer, aes(x = doy, y = smAnomaly, group = year, colour = Drought_Status)) +
