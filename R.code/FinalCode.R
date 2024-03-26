@@ -1,19 +1,24 @@
 #### Final code using wrangled datasheets 
 #### for data analysis and visualisation
 
+### Libraries
+library(dplyr)
+library(tidyverse)
+library(ggplot2) 
+
 ### Load datafiles
 
-gpp2000 <- read.csv()
-gpp2015 <- read.csv()
+gpp2000 <- read.csv("Data/gpp2000.csv", header = TRUE)
+gpp2015 <- read.csv("Data/gpp2015.csv", header = TRUE)
 
 # RQ1: 
 # a) plotting timeseries of modelled and obs GPP over time (5 years) 
 # ALSO need to include my calculations of annual GPP here!
 
-drought2003 <- ggplot(merged_data2000, aes(x = day)) +
+drought2003 <- ggplot(gpp2000, aes(x = day)) +
   geom_ribbon(aes(ymin = obs_gpp - obs_gpp_unc, ymax = obs_gpp + obs_gpp_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
   geom_ribbon(aes(ymin = mod_gpp - mod_gpp_unc95, ymax = mod_gpp + mod_gpp_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
-  geom_line(aes(y = mod_gpp, colour = "Mod"), size = 0.6) +
+  geom_line(aes(y = mod_gpp, colour = "Mod"), linewidth = 0.6) +
   geom_point(aes(y = obs_gpp, colour = "Obs"), size = 1.2) +
   labs(x = "Time (year)", y = "GPP (gC/m²/day)", colour = "Data:") +
   scale_color_manual(values = c("Mod" = "#5D1CAD", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
@@ -30,10 +35,10 @@ drought2003 <- ggplot(merged_data2000, aes(x = day)) +
   scale_y_continuous(expand = c(0, 0),
                      limits = c(0,17))
 
-drought2018 <- ggplot(merged_data, aes(x = day)) +
+drought2018 <- ggplot(gpp2015, aes(x = day)) +
   geom_ribbon(aes(ymin = obs_gpp - obs_gpp_unc, ymax = obs_gpp + obs_gpp_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
   geom_ribbon(aes(ymin = mod_gpp - mod_gpp_unc95, ymax = mod_gpp + mod_gpp_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
-  geom_line(aes(y = mod_gpp, colour = "Mod"), size = 0.6) +
+  geom_line(aes(y = mod_gpp, colour = "Mod"), linewidth = 0.6) +
   geom_point(aes(y = obs_gpp, colour = "Obs"), size = 1.2) +
   labs(x = "Time (year)", y = "GPP (gC/m²/day)", colour = "Data:") +
   scale_color_manual(values = c("Mod" = "#5D1CAD", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
@@ -53,7 +58,8 @@ drought2018 <- ggplot(merged_data, aes(x = day)) +
 plot(drought2003)
 plot(drought2018)
 
-ggsave()
+ggsave("gpp2015_timeseries.png", path = "Plots", plot = drought2018, width = 7, height = 5, dpi = 500)
+
 ggsave()
 
 # b) RMSE // R squared calculations and plotting correlation! -> appendix?
