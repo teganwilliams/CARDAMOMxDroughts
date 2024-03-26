@@ -58,9 +58,8 @@ drought2018 <- ggplot(gpp2015, aes(x = day)) +
 plot(drought2003)
 plot(drought2018)
 
+ggsave("gpp2000_timeseries.png", path = "Plots", plot = drought2003, width = 7, height = 5, dpi = 500)
 ggsave("gpp2015_timeseries.png", path = "Plots", plot = drought2018, width = 7, height = 5, dpi = 500)
-
-ggsave()
 
 # b) RMSE // R squared calculations and plotting correlation! -> appendix?
 
@@ -76,7 +75,7 @@ relative_rmse2000 <- rmse2000 / (max(obs_gpp) - min(obs_gpp))
 print(paste("R^2 value:", round(r_squared2000, 3)))
 
 # Plot the relationship
-ggplot(merged_data2000, aes(x = mod_gpp, y = obs_gpp)) +
+correlation2000 <- ggplot(gpp2000, aes(x = mod_gpp, y = obs_gpp)) +
   geom_point(colour = "#5A00C75E") +
   labs(x = "Modelled GPP (gC/m²/day)", y = "Observed GPP (gC/m²/day)") +
   geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
@@ -94,7 +93,7 @@ ggplot(merged_data2000, aes(x = mod_gpp, y = obs_gpp)) +
 
 ## Same for 2015-2020
 # Linear model (R squared; correlation test)
-obs_gpp <- merged_data$obs_gpp[!is.na(merged_data$obs_gpp)]
+obs_gpp <- gpp2015$obs_gpp[!is.na(merged_data$obs_gpp)]
 # Calculate correlation coefficient
 correlation2020 <- cor(merged_data$mod_gpp, merged_data$obs_gpp, use = "complete.obs")
 # Square the correlation coefficient to get R^2
@@ -107,7 +106,7 @@ print(rmse2020)
 print(relative_rmse2020)
 
 # Plot the relationship
-ggplot(merged_data, aes(x = mod_gpp, y = obs_gpp)) +
+correlation2015 <- ggplot(merged_data, aes(x = mod_gpp, y = obs_gpp)) +
   geom_point(colour = "#5A00C75E") +
   labs(x = "Modelled GPP (gC/m²/day)", y = "Observed GPP (gC/m²/day)") +
   geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
@@ -122,6 +121,9 @@ ggplot(merged_data, aes(x = mod_gpp, y = obs_gpp)) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         axis.title = element_text(size=11),
         axis.text = element_text(size=9))
+
+ggsave("gpp2000_correlation.png", path = "Plots", plot = correlation2000, width = 7, height = 5, dpi = 500)
+ggsave("gpp2015_correlation.png", path = "Plots", plot = correlation2015, width = 7, height = 5, dpi = 500)
 
 ### RQ2: Drivers vs response variables 
 # should i maybe include more drivers, such as VPD; also respiration??
