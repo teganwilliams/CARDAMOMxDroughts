@@ -158,7 +158,7 @@ anomaly_cor_gpp <- ggplot(fully_merged_long, aes(x = zscore, y = mod_gpp, colour
   geom_point() +
   geom_smooth(method = lm, se = FALSE) +
   scale_colour_manual(
-    values = c("dodgerblue", "orange"), 
+    values = c("#1ea7f7b1", "#f2a60ebb"), 
     labels = c("sm z-score", "temp z-score")) +
   labs(x = "Anomaly", 
        y = "GPP (gC/m²/day)", 
