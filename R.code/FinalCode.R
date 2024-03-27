@@ -11,7 +11,7 @@ library(ggplot2)
 gpp2000 <- read.csv("Data/gpp2000.csv", header = TRUE)
 gpp2015 <- read.csv("Data/gpp2015.csv", header = TRUE)
 
-# RQ1: 
+# RQ1: Modelling ecosystem productivity response to 2 major drought events ####
 # a) plotting timeseries of modelled and obs GPP over time (5 years) 
 # ALSO need to include my calculations of annual GPP here!
 
@@ -129,6 +129,11 @@ plot(correlation2015)
 
 ggsave("gpp2000_correlation.png", path = "Plots", plot = correlation2000, width = 5, height = 5, dpi = 500)
 ggsave("gpp2015_correlation.png", path = "Plots", plot = correlation2015, width = 5, height = 5, dpi = 500)
+
+# Statistical test to assess whether gpp is significantly different by year:
+
+lm_annualgpp <- lm()
+
 
 ### RQ2: Drivers vs response variables 
 # should i maybe include more drivers, such as VPD; also respiration??
