@@ -8,14 +8,14 @@ library(ggplot2)
 
 ### Load datafiles
 
-gpp2000 <- read.csv("Data/gpp2000.csv", header = TRUE)
-gpp2015 <- read.csv("Data/gpp2015.csv", header = TRUE)
+data2000 <- read.csv("Data/data2000-2005.csv", header = TRUE)
+data2015 <- read.csv("Data/data2015-2020.csv", header = TRUE)
 
 # RQ1: Modelling ecosystem productivity response to 2 major drought events ####
 # a) plotting timeseries of modelled and obs GPP over time (5 years) 
 # ALSO need to include my calculations of annual GPP here!
 
-drought2003 <- ggplot(gpp2000, aes(x = day)) +
+gppdrought2003 <- ggplot(data2000, aes(x = day)) +
   geom_ribbon(aes(ymin = obs_gpp - obs_gpp_unc, ymax = obs_gpp + obs_gpp_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
   geom_ribbon(aes(ymin = mod_gpp - mod_gpp_unc95, ymax = mod_gpp + mod_gpp_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
   geom_line(aes(y = mod_gpp, colour = "Mod"), linewidth = 0.6) +
@@ -35,7 +35,7 @@ drought2003 <- ggplot(gpp2000, aes(x = day)) +
   scale_y_continuous(expand = c(0, 0),
                      limits = c(0,17))
 
-drought2018 <- ggplot(gpp2015, aes(x = day)) +
+gppdrought2018 <- ggplot(data2015, aes(x = day)) +
   geom_ribbon(aes(ymin = obs_gpp - obs_gpp_unc, ymax = obs_gpp + obs_gpp_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
   geom_ribbon(aes(ymin = mod_gpp - mod_gpp_unc95, ymax = mod_gpp + mod_gpp_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
   geom_line(aes(y = mod_gpp, colour = "Mod"), linewidth = 0.6) +
@@ -55,36 +55,129 @@ drought2018 <- ggplot(gpp2015, aes(x = day)) +
   scale_y_continuous(expand = c(0, 0),
                      limits = c(0,17))
 
-plot(drought2003)
-plot(drought2018)
+laidrought2003 <- ggplot(merged_data2000, aes(x = day)) +
+  geom_ribbon(aes(ymin = obs_lai - obs_lai_unc, ymax = obs_lai + obs_lai_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
+  geom_ribbon(aes(ymin = mod_lai - mod_lai_unc95, ymax = mod_lai + mod_lai_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
+  geom_line(aes(y = mod_lai, colour = "Mod"), size = 0.6) +
+  geom_point(aes(y = obs_lai, colour = "Obs"), size = 1.2) +
+  labs(x = "Time (year)", y = "LAI (m² x m²)", colour = "Data:") +
+  scale_color_manual(values = c("Mod" = "#5D1CAD", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold"),
+        legend.text = element_text(size = 11)) +
+  scale_x_continuous(breaks = c(182, 553, 917, 1281, 1645, 2009), 
+                     labels = c("2000", "2001", "2002", "2003", "2004", "2005"),
+                     expand = c(0, 0),
+                     limits = c(0,2184)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(0,8))
 
-ggsave("gpp2000_timeseries.png", path = "Plots", plot = drought2003, width = 7, height = 5, dpi = 500)
-ggsave("gpp2015_timeseries.png", path = "Plots", plot = drought2018, width = 7, height = 5, dpi = 500)
+laidrought2018 <- ggplot(data2015, aes(x = day)) +
+  geom_ribbon(aes(ymin = obs_lai - obs_lai_unc, ymax = obs_lai + obs_lai_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
+  geom_ribbon(aes(ymin = mod_lai - mod_lai_unc95, ymax = mod_lai + mod_lai_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
+  geom_line(aes(y = mod_lai, colour = "Mod"), size = 0.6) +
+  geom_point(aes(y = obs_lai, colour = "Obs"), size = 1.2) +
+  labs(x = "Time (year)", y = "LAI (m² x m²)", colour = "Data:") +
+  scale_color_manual(values = c("Mod" = "#5D1CAD", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold"),
+        legend.text = element_text(size = 11)) +
+  scale_x_continuous(breaks = c(182, 553, 917, 1281, 1645, 2009), 
+                     labels = c("2015", "2016", "2017", "2018", "2019", "2020"),
+                     expand = c(0, 0),
+                     limits = c(0,2184)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(0,8))
+
+recodrought2003 <- ggplot(merged_data2000, aes(x = day)) +
+  geom_ribbon(aes(ymin = obs_reco - obs_reco_unc, ymax = obs_reco + obs_reco_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
+  geom_ribbon(aes(ymin = mod_reco - mod_reco_unc95, ymax = mod_reco + mod_reco_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
+  geom_line(aes(y = mod_reco, colour = "Mod"), size = 0.6) +
+  geom_point(aes(y = obs_reco, colour = "Obs"), size = 1.2) +
+  labs(x = "Time (year)", y = "Reco (gC/m²/day)", colour = "Data:") +
+  scale_color_manual(values = c("Mod" = "#5D1CAD", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold"),
+        legend.text = element_text(size = 11)) +
+  scale_x_continuous(breaks = c(182, 553, 917, 1281, 1645, 2009), 
+                     labels = c("2000", "2001", "2002", "2003", "2004", "2005"),
+                     expand = c(0, 0),
+                     limits = c(0,2184)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(0,8))
+
+
+recodrought2018 <- ggplot(data2015, aes(x = day)) +
+  geom_ribbon(aes(ymin = obs_reco - obs_reco_unc, ymax = obs_reco + obs_reco_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
+  geom_ribbon(aes(ymin = mod_reco - mod_reco_unc95, ymax = mod_reco + mod_reco_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
+  geom_line(aes(y = mod_reco, colour = "Mod"), size = 0.6) +
+  geom_point(aes(y = obs_reco, colour = "Obs"), size = 1.2) +
+  labs(x = "Time (year)", y = "Reco (gC/m²/day)", colour = "Data:") +
+  scale_color_manual(values = c("Mod" = "#5D1CAD", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold"),
+        legend.text = element_text(size = 11)) +
+  scale_x_continuous(breaks = c(182, 553, 917, 1281, 1645, 2009), 
+                     labels = c("2015", "2016", "2017", "2018", "2019", "2020"),
+                     expand = c(0, 0),
+                     limits = c(0,2184)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(0,8))
+
+plot(gppdrought2003)
+plot(gppdrought2018)
+plot(laidrought2003)
+plot(laidrought2018)
+plot(recodrought2003)
+plot(recodrought2018)
+
+ggsave("gpp2000_timeseries.png", path = "Plots", plot = gppdrought2003, width = 7, height = 5, dpi = 500)
+ggsave("gpp2015_timeseries.png", path = "Plots", plot = gppdrought2018, width = 7, height = 5, dpi = 500)
+ggsave("lai2000_timeseries.png", path = "Plots", plot = laidrought2003, width = 7, height = 5, dpi = 500)
+ggsave("lai2015_timeseries.png", path = "Plots", plot = laidrought2018, width = 7, height = 5, dpi = 500)
+ggsave("reco2000_timeseries.png", path = "Plots", plot = recodrought2003, width = 7, height = 5, dpi = 500)
+ggsave("reco2015_timeseries.png", path = "Plots", plot = recodrought2018, width = 7, height = 5, dpi = 500)
 
 # b) RMSE // R squared calculations and plotting correlation! -> appendix?
 
-correlation2000 <- cor(gpp2000$mod_gpp, gpp2000$obs_gpp, use = "complete.obs")
-obs_gpp2000 <- gpp2000$obs_gpp[!is.na(gpp2000$obs_gpp)]
+gppcorrelation2000 <- cor(data2000$mod_gpp, data2000$obs_gpp, use = "complete.obs")
+obs_gpp2000 <- data2000$obs_gpp[!is.na(data2000$obs_gpp)]
 
 # Square the correlation coefficient to get R^2
-r_squared2000 <- correlation2000^2
-rmse2000 <- sqrt(mean((gpp2000$obs_gpp - gpp2000$mod_gpp)^2, na.rm = TRUE))
-relative_rmse2000 <- rmse2000 / (max(obs_gpp2000) - min(obs_gpp2000))
+gppr_squared2000 <- gppcorrelation2000^2
+
+gpprmse2000 <- sqrt(mean((data2000$obs_gpp - data2000$mod_gpp)^2, na.rm = TRUE))
+lairmse2000 <- sqrt(mean((data2000$obs_lai - data2000$mod_lai)^2, na.rm = TRUE))
+recormse2000 <- sqrt(mean((data2000$obs_reco - data2000$mod_reco)^2, na.rm = TRUE))
+
+gpprelative_rmse2000 <- gpprmse2000 / (max(obs_gpp2000) - min(obs_gpp2000))
 
 # Print the values
-print(paste("R^2 value:", round(r_squared2000, 3)))
-print(rmse2000)
-print(relative_rmse2000)
+print(paste("R^2 value:", round(gppr_squared2000, 3)))
+print(gpprmse2000)
+print(gpprelative_rmse2000)
 
-# Plot the relationship
-correlation2000 <- ggplot(gpp2000, aes(x = mod_gpp, y = obs_gpp)) +
+# Plot the relationships
+gppcorrelation2000 <- ggplot(data2000, aes(x = mod_gpp, y = obs_gpp)) +
   geom_point(colour = "#5A00C75E") +
   labs(x = "Modelled GPP (gC/m²/day)", y = "Observed GPP (gC/m²/day)") +
   geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
-  geom_abline(intercept = 0, slope = max(gpp2000$obs_gpp, na.rm = TRUE) / max(gpp2000$mod_gpp, na.rm = TRUE), linetype = "dashed", color = "black") +
+  geom_abline(intercept = 0, slope = max(data2000$obs_gpp, na.rm = TRUE) / max(data2000$mod_gpp, na.rm = TRUE), linetype = "dashed", color = "black") +
   geom_text(aes(x = 11, 
                 y = 6), 
-            label = paste("RMSE =", round(rmse2000, 3)), 
+            label = paste("RMSE =", round(gpprmse2000, 3)), 
             hjust = 0, vjust = 1,
             size = 5, 
             fontface = "bold", 
@@ -93,31 +186,72 @@ correlation2000 <- ggplot(gpp2000, aes(x = mod_gpp, y = obs_gpp)) +
         axis.title = element_text(size=11),
         axis.text = element_text(size=9))
 
-plot(correlation2000)
+laicorrelation2000 <- ggplot(data2000, aes(x = mod_lai, y = obs_lai)) +
+  geom_point(colour = "#5A00C75E") +
+  labs(x = "Modelled LAI (m² x m²)", y = "Observed LAI (m² x m²)") +
+  geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
+  geom_abline(intercept = 0, slope = max(data2000$obs_lai, na.rm = TRUE) / max(data2000$mod_lai, na.rm = TRUE), linetype = "dashed", color = "black") +
+  geom_text(aes(x = 11, 
+                y = 6), 
+            label = paste("RMSE =", round(lairmse2000, 3)), 
+            hjust = 0, vjust = 1,
+            size = 5, 
+            fontface = "bold", 
+            colour = "#5D1CAD") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9))
+
+recocorrelation2000 <- ggplot(data2000, aes(x = mod_reco, y = obs_reco)) +
+  geom_point(colour = "#5A00C75E") +
+  labs(x = "Modelled Reco (gC/m²/day)", y = "Observed Reco (gC/m²/day)") +
+  geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
+  geom_abline(intercept = 0, slope = max(data2000$obs_reco, na.rm = TRUE) / max(data2000$mod_reco, na.rm = TRUE), linetype = "dashed", color = "black") +
+  geom_text(aes(x = 11, 
+                y = 6), 
+            label = paste("RMSE =", round(recormse2000, 3)), 
+            hjust = 0, vjust = 1,
+            size = 5, 
+            fontface = "bold", 
+            colour = "#5D1CAD") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9))
+
+
+plot(gppcorrelation2000)
+plot(laicorrelation2000)
+plot(recocorrelation2000)
+
 
 ## Same for 2015-2020
 # Linear model (R squared; correlation test)
-obs_gpp2015 <- gpp2015$obs_gpp[!is.na(gpp2015$obs_gpp)]
+obs_gpp2015 <- data2015$obs_gpp[!is.na(data2015$obs_gpp)]
 # Calculate correlation coefficient
-correlation2015 <- cor(gpp2015$mod_gpp, gpp2015$obs_gpp, use = "complete.obs")
+gppcorrelation2015 <- cor(data2015$mod_gpp, data2015$obs_gpp, use = "complete.obs")
 # Square the correlation coefficient to get R^2
-r_squared2015 <- correlation2015^2
-rmse2015 <- sqrt(mean((gpp2015$obs_gpp - gpp2015$mod_gpp)^2, na.rm = TRUE))
-relative_rmse2015 <- 1.337 / (max(obs_gpp2015) - min(obs_gpp2015))
-# Print the values
-print(paste("R^2 value:", round(r_squared2015, 3)))
-print(rmse2015)
-print(relative_rmse2015)
+gppr_squared2015 <- gppcorrelation2015^2
 
-# Plot the relationship
-correlation2015 <- ggplot(gpp2015, aes(x = mod_gpp, y = obs_gpp)) +
+gpprmse2015 <- sqrt(mean((data2015$obs_gpp - data2015$mod_gpp)^2, na.rm = TRUE))
+lairmse2015 <- sqrt(mean((data2015$obs_lai - data2015$mod_lai)^2, na.rm = TRUE))
+recormse2015 <- sqrt(mean((data2015$obs_reco - data2015$mod_reco)^2, na.rm = TRUE))
+
+gpprelative_rmse2015 <- 1.337 / (max(obs_gpp2015) - min(obs_gpp2015))
+
+# Print the values
+print(paste("R^2 value:", round(gppr_squared2015, 3)))
+print(gpprmse2015)
+print(gpprelative_rmse2015)
+
+# Plot the relationships
+gppcorrelation2015 <- ggplot(data2015, aes(x = mod_gpp, y = obs_gpp)) +
   geom_point(colour = "#5A00C75E") +
   labs(x = "Modelled GPP (gC/m²/day)", y = "Observed GPP (gC/m²/day)") +
   geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
-  geom_abline(intercept = 0, slope = max(gpp2015$obs_gpp, na.rm = TRUE) / max(gpp2015$mod_gpp, na.rm = TRUE), linetype = "dashed", color = "black") +
+  geom_abline(intercept = 0, slope = max(data2015$obs_gpp, na.rm = TRUE) / max(data2015$mod_gpp, na.rm = TRUE), linetype = "dashed", color = "black") +
   geom_text(aes(x = 11, 
                 y = 6), 
-            label = paste("RMSE=", round(rmse2015, 3)), 
+            label = paste("RMSE =", round(gpprmse2015, 3)), 
             hjust = 0, vjust = 1,
             size = 5, 
             fontface = "bold", 
@@ -125,7 +259,43 @@ correlation2015 <- ggplot(gpp2015, aes(x = mod_gpp, y = obs_gpp)) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         axis.title = element_text(size=11),
         axis.text = element_text(size=9))
-plot(correlation2015)
+
+laicorrelation2000 <- ggplot(data2015, aes(x = mod_lai, y = obs_lai)) +
+  geom_point(colour = "#5A00C75E") +
+  labs(x = "Modelled LAI (m² x m²)", y = "Observed LAI (m² x m²)") +
+  geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
+  geom_abline(intercept = 0, slope = max(data2015$obs_lai, na.rm = TRUE) / max(data2015$mod_lai, na.rm = TRUE), linetype = "dashed", color = "black") +
+  geom_text(aes(x = 11, 
+                y = 6), 
+            label = paste("RMSE =", round(lairmse2015, 3)), 
+            hjust = 0, vjust = 1,
+            size = 5, 
+            fontface = "bold", 
+            colour = "#5D1CAD") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9))
+
+recocorrelation2015 <- ggplot(data2015, aes(x = mod_reco, y = obs_reco)) +
+  geom_point(colour = "#5A00C75E") +
+  labs(x = "Modelled Reco (gC/m²/day)", y = "Observed Reco (gC/m²/day)") +
+  geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
+  geom_abline(intercept = 0, slope = max(data2015$obs_reco, na.rm = TRUE) / max(data2015$mod_reco, na.rm = TRUE), linetype = "dashed", color = "black") +
+  geom_text(aes(x = 11, 
+                y = 6), 
+            label = paste("RMSE =", round(recormse2015, 3)), 
+            hjust = 0, vjust = 1,
+            size = 5, 
+            fontface = "bold", 
+            colour = "#5D1CAD") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9))
+
+plot(gppcorrelation2015)
+plot(laicorrelation2015)
+plot(recocorrelation2015)
+
 
 ggsave("gpp2000_correlation.png", path = "Plots", plot = correlation2000, width = 5, height = 5, dpi = 500)
 ggsave("gpp2015_correlation.png", path = "Plots", plot = correlation2015, width = 5, height = 5, dpi = 500)
