@@ -2,15 +2,187 @@
 #### for data analysis and visualisation
 
 ### Libraries
+library(lubridate)
 library(dplyr)
 library(tidyr)
 library(ggplot2) 
 library(gridExtra)
+library(corrplot)
+library(lme4)
 
 ### Load datafiles
-
+setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/diss_github")
+anomalies <- read.csv("Data/finalanomalies.csv", header = TRUE)
 data2000 <- read.csv("Data/data2000-2005.csv", header = TRUE)
 data2015 <- read.csv("Data/data2015-2020.csv", header = TRUE)
+
+# Anomalies ####
+
+# Data wrangling ####
+
+anomalies2015 <- anomalies %>%
+  filter(year >= 2015 & year <= 2020)
+data2015$week <- week(data2015$date)
+merged2015x <- merge(anomalies2015, data2015, by = c("year", "week"))
+merged2015 <- merged2015x %>%
+  arrange(date)
+
+anomalies2000 <- anomalies %>%
+  filter(year >= 2000 & year <= 2005)
+data2000$week <- week(data2000$date)
+merged2000x <- merge(anomalies2000, data2000, by = c("year", "week"))
+merged2000 <- merged2000x %>%
+  arrange(date)
+
+fully_merged <- rbind(merged2000, merged2015)
+View(fully_merged_summer)
+fully_merged_summer <- fully_merged %>%
+  filter(week >= 18 & week <= 36) %>%
+  select(!c(X.1, order, day, doy, X.x, X.y))
+
+fully_merged_long <- fully_merged_summer %>%
+  pivot_longer(cols = c(sm_z_scores, temp_z_scores),
+               names_to = "driver",
+               values_to = "zscore")
+
+fully_merged_long$driver <- as.factor(fully_merged_long$driver)
+
+
+# Subset data for drought years and non-drought years
+drought_years <- fully_merged_summer %>% filter(year %in% c(2003, 2018))
+non_drought_years <- fully_merged_summer %>% filter(!year %in% c(2003, 2018))
+drought_years2 <- fully_merged %>% filter(year %in% c(2003, 2018))
+non_drought_years2 <- fully_merged %>% filter(!year %in% c(2003, 2018))
+
+# Calculate average values for non-drought years by week
+average_values <- non_drought_years %>%
+  group_by(week) %>%
+  summarise(avg_tempAnomaly = mean(temp_z_scores),
+            avg_smAnomaly = mean(sm_z_scores),
+            avg_mod_gpp = mean(mod_gpp))
+
+average_drought_values <- drought_years %>%
+  group_by(week) %>%
+  summarise(avg_tempAnomaly = mean(temp_z_scores),
+            avg_smAnomaly = mean(sm_z_scores),
+            avg_mod_gpp = mean(mod_gpp))
+
+# Merge the average values back into the dataset
+fully_merged_summer2 <- fully_merged_summer %>%
+  left_join(average_drought_values, by = "week")
+
+
+## Regression analysis ####
+
+# Multiple linear regression
+model_both <- lm(mod_gpp ~ temp_z_scores + sm_z_scores, data = fully_merged_summer)
+summary(model_both)
+plot(model_both)
+
+# Model for the effect of temperature on GPP
+model_temp <- lm(mod_gpp ~ tempAnomaly, data = fully_merged_summer)
+summary(model_temp)
+plot(model_temp)
+
+# Model for the effect of soil moisture on GPP
+model_sm <- lm(mod_gpp ~ smAnomaly, data = fully_merged_summer)
+summary(model_sm)
+
+# Mixed effect with random effect of time as year
+
+
+mixed_model <- lmer(mod_gpp ~ smAnomaly + tempAnomaly + (1 | year), data = fully_merged_summer)
+summary(mixed_model)
+mixed_modelSM <- lmer(mod_gpp ~ smAnomaly + (1 | year), data = fully_merged_summer)
+summary(mixed_modelSM)
+
+
+
+
+# Calculate correlation coefficients
+correlation_matrix <- cor(fully_merged_summer[c("temp_z_scores", "sm_z_scores", "mod_gpp")])
+
+# Print correlation coefficients
+print(correlation_matrix)
+# Visualize correlation matrix
+corrplot(correlation_matrix, method = "circle", type = "upper", tl.cex = 0.8)
+
+# Visualise 
+
+anomaly_colour_palette <- c("#00BA38", "darkgreen", "deepskyblue", "blue3", "orangered", "orange2")
+
+# SUMMER anomaly timeseries
+ggplot() +
+  # geom_ribbon(data = fully_merged_summer, aes(ymin = mod_gpp - mod_gpp_unc95, ymax = mod_gpp + mod_gpp_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
+  geom_line(data = average_drought_values, aes(x = week, y = avg_tempAnomaly, colour = "T Anomaly (Drought)")) +
+  geom_line(data = average_drought_values, aes(x = week, y = avg_smAnomaly, colour = "SM Anomaly (Drought)")) +
+  # geom_line(data = average_drought_values, aes(x = week, y = avg_mod_gpp, colour = "GPP (Drought)")) +
+  geom_line(data = average_values, aes(x = week, y = avg_tempAnomaly, colour = "T Anomaly (Non-Drought)"), linetype = "dashed") +
+  geom_line(data = average_values, aes(x = week, y = avg_smAnomaly, colour = "SM Anomaly (Non-Drought)"), linetype = "dashed") +
+  # geom_line(data = average_values, aes(x = week, y = avg_mod_gpp, colour = "GPP (Non-Drought)"), linetype = "dashed") +
+  geom_hline(yintercept = 0, size = 0.4, colour = "black") +
+  labs(x = "Week", y = "Value", colour = "Variable") +
+  scale_colour_manual(values = anomaly_colour_palette) +
+  scale_x_continuous(breaks = c(18, 22, 27, 32, 36),
+                     labels = c("May", "June", "Jul", "Aug", "Sep")) +
+  theme(legend.position = "right", panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.title = element_text(size = 11),
+        axis.text = element_text(size = 9), 
+        legend.text = element_text(size = 11))
+
+
+### Plotting anomaly relationships ####
+
+smcor <- cor(fully_merged_summer$mod_gpp, fully_merged_summer$sm_z_scores, use = "complete.obs")
+tempcor <- cor(fully_merged_summer$mod_gpp, fully_merged_summer$temp_z_scores, use = "complete.obs")
+
+# Square the correlation coefficient to get R^2
+sm_r_squared <- smcor^2
+temp_r_squared <- tempcor^2
+
+# Print the values
+print(paste("R^2 value:", round(sm_r_squared, 3)))
+
+
+rsquared <- function(x, y) {
+  lm_model <- lm(y ~ x)
+  summary(lm_model)$r.squared
+}
+
+rsquared_values <- fully_merged_long %>%
+  group_by(driver) %>%
+  summarise(r_squared = rsquared(zscore, mod_gpp))
+
+
+anomaly_cor_gpp <- ggplot(fully_merged_long, aes(x = zscore, y = mod_gpp, colour = driver)) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE) +
+  scale_colour_manual(
+    values = c("dodgerblue", "orange"), 
+    labels = c("sm z-score", "temp z-score")) +
+  labs(x = "Anomaly", 
+       y = "GPP (gC/m²/day)", 
+       colour = "Driver") +
+  # geom_text(aes(x = -3, y = 15), 
+            # label = paste("R =", round(gpprmse2000, 2)), 
+            # hjust = 0, vjust = 1,
+            # size = 4, 
+            # colour = "#5D1CAD") +
+  theme(legend.position = "right", 
+    panel.background = element_blank(), 
+    axis.line = element_line(colour = "black"),
+    axis.title = element_text(size = 11),
+    axis.text = element_text(size = 9), 
+    legend.text = element_text(size = 11)) +
+  stat_smooth(method = "lm", se = FALSE)
+
+plot(anomaly_cor_gpp)
+
+ggsave("anomalies_correlation_gpp.png", path = "Plots", plot = anomaly_cor_gpp, width = 7, height = 5, dpi = 500)
+
+
+# add R squared values next to the lines
+
 
 # RQ1: Modelling ecosystem productivity response to 2 major drought events ####
 # a) plotting timeseries of modelled and obs GPP over time (5 years) 
@@ -321,7 +493,7 @@ combined_cor_plots <- grid.arrange(
 
 
 ggsave("correlation_plots.png", path = "Plots", plot = combined_cor_plots, width = 10, height = 7, dpi = 500)
-ggsave("gpp2015_correlation.png", path = "Plots", plot = correlation2015, width = 5, height = 5, dpi = 500)
+
 
 # Statistical test to assess whether gpp is significantly different by year:
 
@@ -332,8 +504,20 @@ lm_annualgppboth <- lm(mod_gpp ~ year, data = combinedyears)
 summary(lm_annualgpp2015)
 
 
+
+
 ### RQ2: Drivers vs response variables ####
 # should i maybe include more drivers, such as VPD; also respiration??
+
+
+
+
+
+
+
+
+
+### RQ3: Drivers vs response variables ####
 
 
 
