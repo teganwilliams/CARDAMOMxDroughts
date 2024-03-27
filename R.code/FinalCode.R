@@ -132,10 +132,12 @@ ggsave("gpp2015_correlation.png", path = "Plots", plot = correlation2015, width 
 
 # Statistical test to assess whether gpp is significantly different by year:
 
-lm_annualgpp <- lm()
+lm_annualgpp2000 <- lm(mod_gpp ~ year, data = gpp2000))
+lm_annualgpp2015 <- lm(mod_gpp ~ year, data = gpp2000))
+lm_annualgppboth <- lm(mod_gpp ~ year, data = combinedyears))
 
 
-### RQ2: Drivers vs response variables 
+### RQ2: Drivers vs response variables ####
 # should i maybe include more drivers, such as VPD; also respiration??
 
 
