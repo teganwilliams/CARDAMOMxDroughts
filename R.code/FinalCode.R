@@ -183,6 +183,48 @@ ggsave("anomalies_correlation_gpp.png", path = "Plots", plot = anomaly_cor_gpp, 
 
 # add R squared values next to the lines
 
+library(ggplot2)
+library(dplyr)
+
+# Example data
+# fully_merged_long <- data.frame(zscore = rnorm(100), mod_gpp = rnorm(100), driver = rep(c("sm_z_scores", "temp_z_scores"), 50))
+
+# Calculate the linear models
+lm_sm1 <- lm(mod_gpp ~ sm_z_scores, data = fully_merged_summer)
+lm_temp1 <- lm(mod_gpp ~ temp_z_scores, data = fully_merged_summer)
+
+summary(lm_sm1)
+summary(lm_temp1)
+
+
+# Extract R-squared values and p-values 
+rsquared_sm <- summary(lm_sm1)$r.squared
+rsquared_temp <- summary(lm_temp1)$r.squared
+
+pvalue_sm <- summary(lm_sm1)$coefficients[2, "Pr(>|t|)"]
+pvalue_temp <- summary(lm_temp1)$coefficients[2, "Pr(>|t|)"]
+
+
+# Create the ggplot
+ggplot(fully_merged_long, aes(x = zscore, y = mod_gpp, colour = driver)) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE, aes(group = driver)) +
+  scale_colour_manual(values = c("dodgerblue", "orange")) +
+  labs(
+    x = "Anomaly",
+    y = "GPP (gC/m²/day)",
+    colour = "Driver"
+  ) +
+  theme(
+    legend.position = "right",
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "black"),
+    axis.title = element_text(size = 11),
+    axis.text = element_text(size = 9),
+    legend.text = element_text(size = 11)
+  ) +
+  stat_smooth(method = "lm", se = FALSE) 
+
 
 # RQ1: Modelling ecosystem productivity response to 2 major drought events ####
 # a) plotting timeseries of modelled and obs GPP over time (5 years) 
