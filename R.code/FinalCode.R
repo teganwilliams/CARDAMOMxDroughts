@@ -253,7 +253,7 @@ print(gpprelative_rmse2015)
 # Plot the relationships
 gppcorrelation2015 <- ggplot(data2015, aes(x = mod_gpp, y = obs_gpp)) +
   geom_point(colour = "#5A00C75E") +
-  labs(x = "Modelled GPP₂₀₁₈ (gC/m²/day)", y = "2015-2020 Observed GPP (gC/m²/day)") +
+  labs(x = "Modelled GPP₂₀₁₈ (gC/m²/day)", y = "Observed GPP₂₀₁₈ (gC/m²/day)") +
   geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2015$obs_gpp, na.rm = TRUE) / max(data2015$mod_gpp, na.rm = TRUE), linetype = "dashed", color = "black") +
   geom_text(aes(x = 0, 
@@ -273,7 +273,7 @@ plot(gppcorrelation2015)
 
 laicorrelation2015 <- ggplot(data2015, aes(x = mod_lai, y = obs_lai)) +
   geom_point(colour = "#059C0093") +
-  labs(x = "Modelled LAI (m² / m²)", y = "Observed LAI (m² / m²)") +
+  labs(x = "Modelled LAI₂₀₁₈ (m² / m²)", y = "Observed LAI₂₀₁₈ (m² / m²)") +
   geom_abline(intercept = 0, slope = 1, color = "darkgreen", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2015$obs_lai, na.rm = TRUE) / max(data2015$mod_lai, na.rm = TRUE), linetype = "dashed", color = "black") +
   geom_text(aes(x = 0, 
@@ -293,7 +293,7 @@ plot(laicorrelation2015)
 
 recocorrelation2015 <- ggplot(data2015, aes(x = mod_reco, y = obs_reco)) +
   geom_point(colour = "#eb1d129b") +
-  labs(x = "Modelled Reco (gC/m²/day)", y = "Observed Reco (gC/m²/day)") +
+  labs(x = "Modelled Reco₂₀₁₈ (gC/m²/day)", y = "Observed Reco₂₀₁₈ (gC/m²/day)") +
   geom_abline(intercept = 0, slope = 1, color = "#ba0d04e5", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2015$obs_reco, na.rm = TRUE) / max(data2015$mod_reco, na.rm = TRUE), linetype = "dashed", color = "black") +
   geom_text(aes(x = 0, 
