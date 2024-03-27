@@ -175,11 +175,11 @@ gppcorrelation2000 <- ggplot(data2000, aes(x = mod_gpp, y = obs_gpp)) +
   labs(x = "Modelled GPP (gC/m²/day)", y = "Observed GPP (gC/m²/day)") +
   geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2000$obs_gpp, na.rm = TRUE) / max(data2000$mod_gpp, na.rm = TRUE), linetype = "dashed", color = "black") +
-  geom_text(aes(x = 3, 
-                y = 12), 
-            label = paste("RMSE =", round(gpprmse2000, 3)), 
+  geom_text(aes(x = 0, 
+                y = 13), 
+            label = paste("RMSE =", round(gpprmse2000, 2)), 
             hjust = 0, vjust = 1,
-            size = 5, 
+            size = 4, 
             fontface = "bold", 
             colour = "#5D1CAD") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
@@ -195,11 +195,11 @@ laicorrelation2000 <- ggplot(data2000, aes(x = mod_lai, y = obs_lai)) +
   labs(x = "Modelled LAI (m² / m²)", y = "Observed LAI (m² / m²)") +
   geom_abline(intercept = 0, slope = 1, color = "darkgreen", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2000$obs_lai, na.rm = TRUE) / max(data2000$mod_lai, na.rm = TRUE), linetype = "dashed", color = "black") +
-  geom_text(aes(x = 1, 
+  geom_text(aes(x = 0, 
                 y = 6), 
-            label = paste("RMSE =", round(lairmse2000, 3)), 
+            label = paste("RMSE =", round(lairmse2000, 2)), 
             hjust = 0, vjust = 1,
-            size = 5, 
+            size = 4, 
             fontface = "bold", 
             colour = "darkgreen") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
@@ -215,11 +215,11 @@ recocorrelation2000 <- ggplot(data2000, aes(x = mod_reco, y = obs_reco)) +
   labs(x = "Modelled Reco (gC/m²/day)", y = "Observed Reco (gC/m²/day)") +
   geom_abline(intercept = 0, slope = 1, color = "darkorange2", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2000$obs_reco, na.rm = TRUE) / max(data2000$mod_reco, na.rm = TRUE), linetype = "dashed", color = "black") +
-  geom_text(aes(x = 2, 
-                y = 7), 
-            label = paste("RMSE =", round(recormse2000, 3)), 
+  geom_text(aes(x = 0, 
+                y = 6.5), 
+            label = paste("RMSE =", round(recormse2000, 2)), 
             hjust = 0, vjust = 1,
-            size = 5, 
+            size = 4, 
             fontface = "bold", 
             colour = "darkorange2") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
@@ -256,11 +256,11 @@ gppcorrelation2015 <- ggplot(data2015, aes(x = mod_gpp, y = obs_gpp)) +
   labs(x = "Modelled GPP (gC/m²/day)", y = "Observed GPP (gC/m²/day)") +
   geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2015$obs_gpp, na.rm = TRUE) / max(data2015$mod_gpp, na.rm = TRUE), linetype = "dashed", color = "black") +
-  geom_text(aes(x = 3, 
+  geom_text(aes(x = 0, 
                 y = 13), 
-            label = paste("RMSE =", round(gpprmse2015, 3)), 
+            label = paste("RMSE =", round(gpprmse2015, 2)), 
             hjust = 0, vjust = 1,
-            size = 5, 
+            size = 4, 
             fontface = "bold", 
             colour = "#5D1CAD") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
@@ -276,11 +276,11 @@ laicorrelation2015 <- ggplot(data2015, aes(x = mod_lai, y = obs_lai)) +
   labs(x = "Modelled LAI (m² / m²)", y = "Observed LAI (m² / m²)") +
   geom_abline(intercept = 0, slope = 1, color = "darkgreen", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2015$obs_lai, na.rm = TRUE) / max(data2015$mod_lai, na.rm = TRUE), linetype = "dashed", color = "black") +
-  geom_text(aes(x = 1, 
+  geom_text(aes(x = 0, 
                 y = 6), 
-            label = paste("RMSE =", round(lairmse2015, 3)), 
+            label = paste("RMSE =", round(lairmse2015, 2)), 
             hjust = 0, vjust = 1,
-            size = 5, 
+            size = 4, 
             fontface = "bold", 
             colour = "darkgreen") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
@@ -296,11 +296,11 @@ recocorrelation2015 <- ggplot(data2015, aes(x = mod_reco, y = obs_reco)) +
   labs(x = "Modelled Reco (gC/m²/day)", y = "Observed Reco (gC/m²/day)") +
   geom_abline(intercept = 0, slope = 1, color = "darkorange2", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2015$obs_reco, na.rm = TRUE) / max(data2015$mod_reco, na.rm = TRUE), linetype = "dashed", color = "black") +
-  geom_text(aes(x = 2, 
-                y = 6), 
-            label = paste("RMSE =", round(recormse2015, 3)), 
+  geom_text(aes(x = 0, 
+                y = 6.5), 
+            label = paste("RMSE =", round(recormse2015, 2)), 
             hjust = 0, vjust = 1,
-            size = 5, 
+            size = 4, 
             fontface = "bold", 
             colour = "darkorange2") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
@@ -320,7 +320,7 @@ combined_cor_plots <- grid.arrange(
   heights = c(1,1))
 
 
-ggsave("correlation_plots.png", path = "Plots", plot = combined_cor_plots, width = 5, height = 5, dpi = 500)
+ggsave("correlation_plots.png", path = "Plots", plot = combined_cor_plots, width = 10, height = 7, dpi = 500)
 ggsave("gpp2015_correlation.png", path = "Plots", plot = correlation2015, width = 5, height = 5, dpi = 500)
 
 # Statistical test to assess whether gpp is significantly different by year:
