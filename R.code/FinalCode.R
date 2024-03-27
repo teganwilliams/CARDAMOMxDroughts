@@ -63,26 +63,28 @@ ggsave("gpp2015_timeseries.png", path = "Plots", plot = drought2018, width = 7, 
 
 # b) RMSE // R squared calculations and plotting correlation! -> appendix?
 
-correlation2000 <- cor(merged_data2000$mod_gpp, merged_data2000$obs_gpp, use = "complete.obs")
-obs_gpp2000 <- merged_data2000$obs_gpp[!is.na(merged_data2000$obs_gpp)]
+correlation2000 <- cor(gpp2000$mod_gpp, gpp2000$obs_gpp, use = "complete.obs")
+obs_gpp2000 <- gpp2000$obs_gpp[!is.na(gpp2000$obs_gpp)]
 
 # Square the correlation coefficient to get R^2
 r_squared2000 <- correlation2000^2
-rmse2000 <- sqrt(mean((obs_gpp2000 - merged_data2000$mod_gpp)^2, na.rm = TRUE))
-relative_rmse2000 <- rmse2000 / (max(obs_gpp) - min(obs_gpp))
+rmse2000 <- sqrt(mean((gpp2000$obs_gpp - gpp2000$mod_gpp)^2, na.rm = TRUE))
+relative_rmse2000 <- rmse2000 / (max(obs_gpp2000) - min(obs_gpp2000))
 
 # Print the values
 print(paste("R^2 value:", round(r_squared2000, 3)))
+print(rmse2000)
+print(relative_rmse2000)
 
 # Plot the relationship
 correlation2000 <- ggplot(gpp2000, aes(x = mod_gpp, y = obs_gpp)) +
   geom_point(colour = "#5A00C75E") +
   labs(x = "Modelled GPP (gC/m²/day)", y = "Observed GPP (gC/m²/day)") +
   geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
-  geom_abline(intercept = 0, slope = max(merged_data2000$obs_gpp, na.rm = TRUE) / max(merged_data2000$mod_gpp, na.rm = TRUE), linetype = "dashed", color = "black") +
+  geom_abline(intercept = 0, slope = max(gpp2000$obs_gpp, na.rm = TRUE) / max(gpp2000$mod_gpp, na.rm = TRUE), linetype = "dashed", color = "black") +
   geom_text(aes(x = 11, 
                 y = 6), 
-            label = paste("R² =", round(r_squared2000, 3)), 
+            label = paste("RMSE =", round(rmse2000, 3)), 
             hjust = 0, vjust = 1,
             size = 5, 
             fontface = "bold", 
@@ -90,30 +92,32 @@ correlation2000 <- ggplot(gpp2000, aes(x = mod_gpp, y = obs_gpp)) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         axis.title = element_text(size=11),
         axis.text = element_text(size=9))
+
+plot(correlation2000)
 
 ## Same for 2015-2020
 # Linear model (R squared; correlation test)
-obs_gpp <- gpp2015$obs_gpp[!is.na(merged_data$obs_gpp)]
+obs_gpp2015 <- gpp2015$obs_gpp[!is.na(gpp2015$obs_gpp)]
 # Calculate correlation coefficient
-correlation2020 <- cor(merged_data$mod_gpp, merged_data$obs_gpp, use = "complete.obs")
+correlation2015 <- cor(gpp2015$mod_gpp, gpp2015$obs_gpp, use = "complete.obs")
 # Square the correlation coefficient to get R^2
-r_squared2020 <- correlation2020^2
-rmse2020 <- sqrt(mean((merged_data$obs_gpp - merged_data$mod_gpp)^2, na.rm = TRUE))
-relative_rmse2020 <- 1.337 / (max(obs_gpp) - min(obs_gpp))
+r_squared2015 <- correlation2015^2
+rmse2015 <- sqrt(mean((gpp2015$obs_gpp - gpp2015$mod_gpp)^2, na.rm = TRUE))
+relative_rmse2015 <- 1.337 / (max(obs_gpp2015) - min(obs_gpp2015))
 # Print the values
-print(paste("R^2 value:", round(r_squared2020, 3)))
-print(rmse2020)
-print(relative_rmse2020)
+print(paste("R^2 value:", round(r_squared2015, 3)))
+print(rmse2015)
+print(relative_rmse2015)
 
 # Plot the relationship
-correlation2015 <- ggplot(merged_data, aes(x = mod_gpp, y = obs_gpp)) +
+correlation2015 <- ggplot(gpp2015, aes(x = mod_gpp, y = obs_gpp)) +
   geom_point(colour = "#5A00C75E") +
   labs(x = "Modelled GPP (gC/m²/day)", y = "Observed GPP (gC/m²/day)") +
   geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
-  geom_abline(intercept = 0, slope = max(merged_data$obs_gpp, na.rm = TRUE) / max(merged_data$mod_gpp, na.rm = TRUE), linetype = "dashed", color = "black") +
+  geom_abline(intercept = 0, slope = max(gpp2015$obs_gpp, na.rm = TRUE) / max(gpp2015$mod_gpp, na.rm = TRUE), linetype = "dashed", color = "black") +
   geom_text(aes(x = 11, 
                 y = 6), 
-            label = paste("R² =", round(r_squared2020, 3)), 
+            label = paste("RMSE=", round(rmse2015, 3)), 
             hjust = 0, vjust = 1,
             size = 5, 
             fontface = "bold", 
@@ -121,9 +125,10 @@ correlation2015 <- ggplot(merged_data, aes(x = mod_gpp, y = obs_gpp)) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         axis.title = element_text(size=11),
         axis.text = element_text(size=9))
+plot(correlation2015)
 
-ggsave("gpp2000_correlation.png", path = "Plots", plot = correlation2000, width = 7, height = 5, dpi = 500)
-ggsave("gpp2015_correlation.png", path = "Plots", plot = correlation2015, width = 7, height = 5, dpi = 500)
+ggsave("gpp2000_correlation.png", path = "Plots", plot = correlation2000, width = 5, height = 5, dpi = 500)
+ggsave("gpp2015_correlation.png", path = "Plots", plot = correlation2015, width = 5, height = 5, dpi = 500)
 
 ### RQ2: Drivers vs response variables 
 # should i maybe include more drivers, such as VPD; also respiration??
