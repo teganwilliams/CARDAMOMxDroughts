@@ -160,7 +160,7 @@ anomaly_cor_gpp <- ggplot(fully_merged_long, aes(x = zscore, y = mod_gpp, colour
   scale_colour_manual(
     values = c("#1ea7f7b1", "#f2a60ebb"), 
     labels = c("sm z-score", "temp z-score")) +
-  labs(x = "Anomaly", 
+  labs(x = "Z-score", 
        y = "GPP (gC/m²/day)", 
        colour = "Driver") +
   # geom_text(aes(x = -3, y = 15), 
@@ -178,7 +178,7 @@ anomaly_cor_gpp <- ggplot(fully_merged_long, aes(x = zscore, y = mod_gpp, colour
 
 plot(anomaly_cor_gpp)
 
-ggsave("anomalies_correlation_gpp.png", path = "Plots", plot = anomaly_cor_gpp, width = 7, height = 5, dpi = 500)
+ggsave("anomalies_correlation_gpp.png", path = "Plots", plot = anomaly_cor_gpp, width = 8, height = 5, dpi = 500)
 
 
 # add R squared values next to the lines
@@ -211,7 +211,7 @@ ggplot(fully_merged_long, aes(x = zscore, y = mod_gpp, colour = driver)) +
   geom_smooth(method = lm, se = FALSE, aes(group = driver)) +
   scale_colour_manual(values = c("dodgerblue", "orange")) +
   labs(
-    x = "Anomaly",
+    x = "Z-score",
     y = "GPP (gC/m²/day)",
     colour = "Driver"
   ) +
