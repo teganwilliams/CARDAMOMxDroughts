@@ -5,6 +5,7 @@
 library(dplyr)
 library(tidyr)
 library(ggplot2) 
+library(gridExtra)
 
 ### Load datafiles
 
@@ -60,7 +61,7 @@ laidrought2003 <- ggplot(data2000, aes(x = day)) +
   geom_ribbon(aes(ymin = mod_lai - mod_lai_unc95, ymax = mod_lai + mod_lai_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
   geom_line(aes(y = mod_lai, colour = "Mod"), size = 0.6) +
   geom_point(aes(y = obs_lai, colour = "Obs"), size = 1.2) +
-  labs(x = "Time (year)", y = "LAI (m² x m²)", colour = "Data:") +
+  labs(x = "Time (year)", y = "LAI (m² / m²)", colour = "Data:") +
   scale_color_manual(values = c("Mod" = "#5D1CAD", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
@@ -80,7 +81,7 @@ laidrought2018 <- ggplot(data2015, aes(x = day)) +
   geom_ribbon(aes(ymin = mod_lai - mod_lai_unc95, ymax = mod_lai + mod_lai_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
   geom_line(aes(y = mod_lai, colour = "Mod"), size = 0.6) +
   geom_point(aes(y = obs_lai, colour = "Obs"), size = 1.2) +
-  labs(x = "Time (year)", y = "LAI (m² x m²)", colour = "Data:") +
+  labs(x = "Time (year)", y = "LAI (m² / m²)", colour = "Data:") +
   scale_color_manual(values = c("Mod" = "#5D1CAD", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
@@ -114,7 +115,6 @@ recodrought2003 <- ggplot(data2000, aes(x = day)) +
                      limits = c(0,2184)) +
   scale_y_continuous(expand = c(0, 0),
                      limits = c(0,8))
-
 
 recodrought2018 <- ggplot(data2015, aes(x = day)) +
   geom_ribbon(aes(ymin = obs_reco - obs_reco_unc, ymax = obs_reco + obs_reco_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
@@ -184,12 +184,16 @@ gppcorrelation2000 <- ggplot(data2000, aes(x = mod_gpp, y = obs_gpp)) +
             colour = "#5D1CAD") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         axis.title = element_text(size=11),
-        axis.text = element_text(size=9))
+        axis.text = element_text(size=9)) +
+  scale_x_continuous(limits = c(0,16)) +
+  scale_y_continuous(limits = c(0,16))
+
+plot(gppcorrelation2000)
 
 laicorrelation2000 <- ggplot(data2000, aes(x = mod_lai, y = obs_lai)) +
-  geom_point(colour = "#5A00C75E") +
-  labs(x = "Modelled LAI (m² x m²)", y = "Observed LAI (m² x m²)") +
-  geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
+  geom_point(colour = "#059C0093") +
+  labs(x = "Modelled LAI (m² / m²)", y = "Observed LAI (m² / m²)") +
+  geom_abline(intercept = 0, slope = 1, color = "darkgreen", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2000$obs_lai, na.rm = TRUE) / max(data2000$mod_lai, na.rm = TRUE), linetype = "dashed", color = "black") +
   geom_text(aes(x = 1, 
                 y = 6), 
@@ -197,15 +201,19 @@ laicorrelation2000 <- ggplot(data2000, aes(x = mod_lai, y = obs_lai)) +
             hjust = 0, vjust = 1,
             size = 5, 
             fontface = "bold", 
-            colour = "#5D1CAD") +
+            colour = "darkgreen") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         axis.title = element_text(size=11),
-        axis.text = element_text(size=9))
+        axis.text = element_text(size=9)) +
+  scale_x_continuous(limits = c(0,6)) +
+  scale_y_continuous(limits = c(0,7))
+
+plot(laicorrelation2000)
 
 recocorrelation2000 <- ggplot(data2000, aes(x = mod_reco, y = obs_reco)) +
-  geom_point(colour = "#5A00C75E") +
+  geom_point(colour = "orange") +
   labs(x = "Modelled Reco (gC/m²/day)", y = "Observed Reco (gC/m²/day)") +
-  geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
+  geom_abline(intercept = 0, slope = 1, color = "darkorange2", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2000$obs_reco, na.rm = TRUE) / max(data2000$mod_reco, na.rm = TRUE), linetype = "dashed", color = "black") +
   geom_text(aes(x = 2, 
                 y = 7), 
@@ -213,14 +221,13 @@ recocorrelation2000 <- ggplot(data2000, aes(x = mod_reco, y = obs_reco)) +
             hjust = 0, vjust = 1,
             size = 5, 
             fontface = "bold", 
-            colour = "#5D1CAD") +
+            colour = "darkorange2") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         axis.title = element_text(size=11),
-        axis.text = element_text(size=9))
+        axis.text = element_text(size=9)) +
+  scale_x_continuous(limits = c(0,6)) +
+  scale_y_continuous(limits = c(0,8))
 
-
-plot(gppcorrelation2000)
-plot(laicorrelation2000)
 plot(recocorrelation2000)
 
 
@@ -258,13 +265,16 @@ gppcorrelation2015 <- ggplot(data2015, aes(x = mod_gpp, y = obs_gpp)) +
             colour = "#5D1CAD") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         axis.title = element_text(size=11),
-        axis.text = element_text(size=9))
+        axis.text = element_text(size=9)) +
+  scale_x_continuous(limits = c(0,16)) +
+  scale_y_continuous(limits = c(0,16))
+
 plot(gppcorrelation2015)
 
 laicorrelation2015 <- ggplot(data2015, aes(x = mod_lai, y = obs_lai)) +
-  geom_point(colour = "#5A00C75E") +
-  labs(x = "Modelled LAI (m² x m²)", y = "Observed LAI (m² x m²)") +
-  geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
+  geom_point(colour = "#059C0093") +
+  labs(x = "Modelled LAI (m² / m²)", y = "Observed LAI (m² / m²)") +
+  geom_abline(intercept = 0, slope = 1, color = "darkgreen", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2015$obs_lai, na.rm = TRUE) / max(data2015$mod_lai, na.rm = TRUE), linetype = "dashed", color = "black") +
   geom_text(aes(x = 1, 
                 y = 6), 
@@ -272,16 +282,19 @@ laicorrelation2015 <- ggplot(data2015, aes(x = mod_lai, y = obs_lai)) +
             hjust = 0, vjust = 1,
             size = 5, 
             fontface = "bold", 
-            colour = "#5D1CAD") +
+            colour = "darkgreen") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         axis.title = element_text(size=11),
-        axis.text = element_text(size=9))
+        axis.text = element_text(size=9))+
+  scale_x_continuous(limits = c(0,6)) +
+  scale_y_continuous(limits = c(0,7))
+
 plot(laicorrelation2015)
 
 recocorrelation2015 <- ggplot(data2015, aes(x = mod_reco, y = obs_reco)) +
-  geom_point(colour = "#5A00C75E") +
+  geom_point(colour = "orange") +
   labs(x = "Modelled Reco (gC/m²/day)", y = "Observed Reco (gC/m²/day)") +
-  geom_abline(intercept = 0, slope = 1, color = "#5D1CAD", size = 0.6) +
+  geom_abline(intercept = 0, slope = 1, color = "darkorange2", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2015$obs_reco, na.rm = TRUE) / max(data2015$mod_reco, na.rm = TRUE), linetype = "dashed", color = "black") +
   geom_text(aes(x = 2, 
                 y = 6), 
@@ -289,16 +302,25 @@ recocorrelation2015 <- ggplot(data2015, aes(x = mod_reco, y = obs_reco)) +
             hjust = 0, vjust = 1,
             size = 5, 
             fontface = "bold", 
-            colour = "#5D1CAD") +
+            colour = "darkorange2") +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         axis.title = element_text(size=11),
-        axis.text = element_text(size=9))
+        axis.text = element_text(size=9)) +
+  scale_x_continuous(limits = c(0,6)) +
+  scale_y_continuous(limits = c(0,8))
 
 plot(recocorrelation2015)
 
-grid
+# combine the correlation plots
+combined_cor_plots <- grid.arrange(
+  gppcorrelation2000, recocorrelation2000, laicorrelation2000, 
+  gppcorrelation2015, recocorrelation2015, laicorrelation2015, 
+  nrow = 2, 
+  layout_matrix = rbind(c(1,2,3), c(4,5,6)), 
+  heights = c(1,1))
 
-ggsave("gpp2000_correlation.png", path = "Plots", plot = correlation2000, width = 5, height = 5, dpi = 500)
+
+ggsave("correlation_plots.png", path = "Plots", plot = combined_cor_plots, width = 5, height = 5, dpi = 500)
 ggsave("gpp2015_correlation.png", path = "Plots", plot = correlation2015, width = 5, height = 5, dpi = 500)
 
 # Statistical test to assess whether gpp is significantly different by year:
