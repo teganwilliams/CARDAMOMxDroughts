@@ -13,8 +13,10 @@ library(lme4)
 ### Load datafiles
 setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/diss_github")
 anomalies <- read.csv("Data/finalanomalies.csv", header = TRUE)
-data2000 <- read.csv("Data/data2000-2005.csv", header = TRUE)
-data2015 <- read.csv("Data/data2015-2020.csv", header = TRUE)
+data2000 <- read.csv("Data/newdata2000-2005.csv", header = TRUE)
+data2015 <- read.csv("Data/newdata2015-2020.csv", header = TRUE)
+datafull <- read.csv("Data/newdatafull.csv", header = TRUE)
+datasim <- read.csv("validationdata.csv", header = TRUE)
 
 # Anomalies ####
 
@@ -310,12 +312,12 @@ laidrought2018 <- ggplot(data2015, aes(x = day)) +
   scale_y_continuous(expand = c(0, 0),
                      limits = c(0,8))
 
-recodrought2003 <- ggplot(data2000, aes(x = day)) +
-  geom_ribbon(aes(ymin = obs_reco - obs_reco_unc, ymax = obs_reco + obs_reco_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
-  geom_ribbon(aes(ymin = mod_reco - mod_reco_unc95, ymax = mod_reco + mod_reco_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
-  geom_line(aes(y = mod_reco, colour = "Mod"), size = 0.6) +
-  geom_point(aes(y = obs_reco, colour = "Obs"), size = 1.2) +
-  labs(x = "Time (year)", y = "Reco (gC/m²/day)", colour = "Data:") +
+needrought2003 <- ggplot(data2000, aes(x = day)) +
+  geom_ribbon(aes(ymin = obs_nee - obs_nee_unc, ymax = obs_nee + obs_nee_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
+  geom_ribbon(aes(ymin = mod_nee - mod_nee_unc95, ymax = mod_nee + mod_nee_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
+  geom_line(aes(y = mod_nee, colour = "Mod"), size = 0.6) +
+  geom_point(aes(y = obs_nee, colour = "Obs"), size = 1.2) +
+  labs(x = "Time (year)", y = "NEE (gC/m²/day)", colour = "Data:") +
   scale_color_manual(values = c("Mod" = "#5D1CAD", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
@@ -328,14 +330,14 @@ recodrought2003 <- ggplot(data2000, aes(x = day)) +
                      expand = c(0, 0),
                      limits = c(0,2184)) +
   scale_y_continuous(expand = c(0, 0),
-                     limits = c(0,8))
+                     limits = c(-15,8))
 
-recodrought2018 <- ggplot(data2015, aes(x = day)) +
-  geom_ribbon(aes(ymin = obs_reco - obs_reco_unc, ymax = obs_reco + obs_reco_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
-  geom_ribbon(aes(ymin = mod_reco - mod_reco_unc95, ymax = mod_reco + mod_reco_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
-  geom_line(aes(y = mod_reco, colour = "Mod"), size = 0.6) +
-  geom_point(aes(y = obs_reco, colour = "Obs"), size = 1.2) +
-  labs(x = "Time (year)", y = "Reco (gC/m²/day)", colour = "Data:") +
+needrought2018 <- ggplot(data2015, aes(x = day)) +
+  geom_ribbon(aes(ymin = obs_nee - obs_nee_unc, ymax = obs_nee + obs_nee_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
+  geom_ribbon(aes(ymin = mod_nee - mod_nee_unc95, ymax = mod_nee + mod_nee_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
+  geom_line(aes(y = mod_nee, colour = "Mod"), size = 0.6) +
+  geom_point(aes(y = obs_nee, colour = "Obs"), size = 1.2) +
+  labs(x = "Time (year)", y = "NEE (gC/m²/day)", colour = "Data:") +
   scale_color_manual(values = c("Mod" = "#5D1CAD", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
@@ -348,21 +350,53 @@ recodrought2018 <- ggplot(data2015, aes(x = day)) +
                      expand = c(0, 0),
                      limits = c(0,2184)) +
   scale_y_continuous(expand = c(0, 0),
-                     limits = c(0,8))
+                     limits = c(-15,5))
 
 plot(gppdrought2003)
 plot(gppdrought2018)
 plot(laidrought2003)
 plot(laidrought2018)
-plot(recodrought2003)
-plot(recodrought2018)
+plot(needrought2003)
+plot(needrought2018)
 
 ggsave("gpp2000_timeseries.png", path = "Plots", plot = gppdrought2003, width = 7, height = 5, dpi = 500)
 ggsave("gpp2015_timeseries.png", path = "Plots", plot = gppdrought2018, width = 7, height = 5, dpi = 500)
 ggsave("lai2000_timeseries.png", path = "Plots", plot = laidrought2003, width = 7, height = 5, dpi = 500)
 ggsave("lai2015_timeseries.png", path = "Plots", plot = laidrought2018, width = 7, height = 5, dpi = 500)
-ggsave("reco2000_timeseries.png", path = "Plots", plot = recodrought2003, width = 7, height = 5, dpi = 500)
-ggsave("reco2015_timeseries.png", path = "Plots", plot = recodrought2018, width = 7, height = 5, dpi = 500)
+ggsave("nee2000_timeseries.png", path = "Plots", plot = needrought2003, width = 7, height = 5, dpi = 500)
+ggsave("nee2015_timeseries.png", path = "Plots", plot = needrought2018, width = 7, height = 5, dpi = 500)
+
+
+# Full run rmse values
+datafull1 <- datafull %>%
+  filter(year >= 2000 & year <= 2005)
+
+gpprmse1 <- sqrt(mean((datafull1$obs_gpp - datafull1$mod_gpp)^2, na.rm = TRUE))
+lairmse1 <- sqrt(mean((datafull1$obs_lai - datafull1$mod_lai)^2, na.rm = TRUE))
+neermse1 <- sqrt(mean((datafull1$obs_nee - datafull1$mod_nee)^2, na.rm = TRUE))
+
+print(gpprmse1)
+print(lairmse1)
+print(neermse1)
+
+datafull2 <- datafull %>%
+  filter(year >= 2015 & year <= 2020)
+
+gpprmse2 <- sqrt(mean((datafull2$obs_gpp - datafull2$mod_gpp)^2, na.rm = TRUE))
+lairmse2 <- sqrt(mean((datafull2$obs_lai - datafull2$mod_lai)^2, na.rm = TRUE))
+neermse2 <- sqrt(mean((datafull2$obs_nee - datafull2$mod_nee)^2, na.rm = TRUE))
+
+print(gpprmse2)
+print(lairmse2)
+print(neermse2)
+
+# Validation (simulation)
+
+gpprmsesim <- sqrt(mean((datasim$obs_gpp - datasim$mod_gpp_sim)^2, na.rm = TRUE))
+lairmsesim <- sqrt(mean((datasim$obs_lai - datasim$mod_lai_sim)^2, na.rm = TRUE))
+print(gpprmsesim)
+print(lairmsesim)
+
 
 # b) RMSE // R squared calculations and plotting correlation! -> appendix?
 
@@ -374,13 +408,15 @@ gppr_squared2000 <- gppcorrelation2000^2
 
 gpprmse2000 <- sqrt(mean((data2000$obs_gpp - data2000$mod_gpp)^2, na.rm = TRUE))
 lairmse2000 <- sqrt(mean((data2000$obs_lai - data2000$mod_lai)^2, na.rm = TRUE))
-recormse2000 <- sqrt(mean((data2000$obs_reco - data2000$mod_reco)^2, na.rm = TRUE))
+neermse2000 <- sqrt(mean((data2000$obs_nee - data2000$mod_nee)^2, na.rm = TRUE))
 
 gpprelative_rmse2000 <- gpprmse2000 / (max(obs_gpp2000) - min(obs_gpp2000))
 
 # Print the values
 print(paste("R^2 value:", round(gppr_squared2000, 3)))
 print(gpprmse2000)
+print(neermse2000)
+print(lairmse2000)
 print(gpprelative_rmse2000)
 
 # Plot the relationships
@@ -455,13 +491,15 @@ gppr_squared2015 <- gppcorrelation2015^2
 
 gpprmse2015 <- sqrt(mean((data2015$obs_gpp - data2015$mod_gpp)^2, na.rm = TRUE))
 lairmse2015 <- sqrt(mean((data2015$obs_lai - data2015$mod_lai)^2, na.rm = TRUE))
-recormse2015 <- sqrt(mean((data2015$obs_reco - data2015$mod_reco)^2, na.rm = TRUE))
+neermse2015 <- sqrt(mean((data2015$obs_nee - data2015$mod_nee)^2, na.rm = TRUE))
 
 gpprelative_rmse2015 <- 1.338 / (max(obs_gpp2015) - min(obs_gpp2015))
 
 # Print the values
 print(paste("R^2 value:", round(gppr_squared2015, 3)))
-print(gpprmse2015)
+print(neermse2015)
+print(gpprmse2015) 
+print(lairmse2015)
 print(gpprelative_rmse2015)
 
 # Plot the relationships
