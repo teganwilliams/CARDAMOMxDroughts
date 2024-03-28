@@ -598,35 +598,122 @@ summary(lm_annualgpp2015)
 
 
 
-fullmet <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_metSM.csv", header = TRUE)
-fullmet$order <- seq_len(nrow(fullmet))
-fullmet$year <- 2000 + floor((fullmet$order - 1) / 52)
+drivers <- read.csv("rq2data.csv", header = TRUE)
 
-met2000 <- fullmet %>%
-  filter(year >= 2000 & year <= 2005)
-
-met2015 <- fullmet %>%
-  filter(year >= 2015 & year <= 2020)
-
-met1 <- rbind(met2000, met2015)
-
-met1 <- met1 %>%
-  rename(minT = mint_C, maxT = maxt_C, airT = airt_C, co2 = co2_ppm, swr = swrad_MJm2day, vpd = vpd_kPa, precip = precip_kgm2s, windspd = wind_spd_ms, 
-         sm1 = SWC_1, sm2 = SWC_2, sm3 = SWC_3)
-
-met <- met1 %>%
-  filter(doy >= 126 & doy <= 252)
-
-merged_met <- merge(met, fully_merged, by = c("year", "doy"))
-
-merged_met$date <- as.factor(merged_met$date)
-
-finalmerged <- subset(merged_met,select = c(date, year, doy, mod_gpp, mod_lai, mod_reco, sm1, sm2, sm3, minT, maxT, airT, co2, swr, vpd, precip, windspd))
-
-write.csv(finalmerged, "rq2data.csv")
+drivers <- drivers %>%
+  mutate(condition = ifelse(year %in% c(2003, 2018), "drought", "normal"))
 
 
+# droughts years only 
+drought <- drivers %>%
+  filter(year == 2003 | year == 2018)
 
+non_drought <- drivers %>%
+  filter(!(year %in% c(2003, 2018)))
+
+model_main <- lm(mod_gpp ~ maxT + airT + sm2 + swr, data = drivers)
+model_drought <- lm(mod_gpp ~ maxT + airT + sm2 + swr, data = drought)
+model_norm <- lm(mod_gpp ~ maxT + airT + sm2 + swr, data = non_drought)
+
+summary(model_drought)
+summary(model_norm)
+
+model_all <-lm(mod_gpp ~ maxT + airT + sm1 + sm2 + sm3 + swr + precip, data = drought)
+
+# Summarize the model
+summary(model_all)
+summary(model_main)
+summary(model_sm_drought)
+
+
+# reporting results
+results_table <- data.frame(
+  Variable = c("maxT", "airT", "sm1", "sm2", "sm3", "swr", "precip"),
+  Coefficient = c(-1.64487, 1.84993, 0.20857, -0.22874, 0.09273, 0.37563, 8860.31294),
+  T_Value = c(-4.326, 4.655, 3.870, -5.918, 1.927, 6.474, 1.393),
+  P_Value = c(2.31e-05, 5.60e-06, 0.000143, 1.25e-08, 0.055265, 6.17e-10, 0.164945)
+)
+
+results_table
+
+
+ggplot(drivers, aes(x = mod_gpp, y = maxT, group = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "Relationship between GPP and maxT") +
+  theme_minimal()
+
+ggplot(drivers, aes(x = mod_gpp, y = airT, group = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "Relationship between GPP and airT") +
+  theme_minimal()
+
+ggplot(drivers, aes(x = mod_gpp, y = sm2, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "Relationship between GPP and sm2") +
+  theme_minimal()
+
+ggplot(drivers, aes(x = mod_gpp, y = swr, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "Relationship between GPP and swr") +
+  theme_minimal()
+
+
+# mixed effect model on drivers
+library(nlme)
+model_mixed <- lmer(mod_gpp ~ maxT+ sm1 + sm2 + sm3 + swr + vpd +(1|year) + (1|doy), data = drivers)
+model_null <- lmer(mod_gpp ~ (1|year) + (1|doy), data = drivers)
+
+
+summary(model_mixed)
+summary(model_null)
+
+ggplot(drivers, aes(x = mod_gpp)) +
+  geom_histogram(fill = "skyblue", color = "black", bins = 30) +
+  labs(title = "Distribution of mod_gpp",
+       x = "mod_gpp",
+       y = "Frequency") +
+  theme_minimal()
+shapiro_test <- shapiro.test(drivers$mod_gpp)
+shapiro_test <- shapiro.test(drivers$log_mod_gpp)
+print(shapiro_test)
+
+library(lme4)
+
+drivers_scaled <- as.data.frame(scale(drivers[, c("mod_gpp", "maxT", "sm1", "sm2", "sm3", "swr", "vpd")]))
+model_glmm <- glmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd, 
+                    data = drivers_scaled, family = Gamma(link = "log"))
+model_glmm <- glmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), 
+                    data = drivers, family = Gamma(link = "log"))
+
+# Summary of the GLMM
+summary(model_glmm)
+
+
+# drought years NOT INCLUDED
+model_mixed2 <- lmer(mod_gpp ~ airT + maxT+ sm1 + sm2 + sm3 + swr + (1|year) + (1|doy), data = non_drought)
+model_null2 <- lmer(mod_gpp ~ (1|year) + (1|doy), data = drivers)
+summary(model_mixed2)
+summary(model_null2)
+
+# Perform Likelihood Ratio Test
+lrt <- anova(model_mixed, model_null)
+print(lrt)
+
+
+
+# GLMM
+model_glmm <- glmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), data = drivers, family = gaussian)
+
+# Summary of the GLMM
+summary(model_glmm)
+
+
+# Summary of the GLMM
+summary(model_glmm)
 
 ### RQ3: Drivers vs response variables ####
 
