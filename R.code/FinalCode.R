@@ -17,6 +17,7 @@ data2000 <- read.csv("Data/newdata2000-2005.csv", header = TRUE)
 data2015 <- read.csv("Data/newdata2015-2020.csv", header = TRUE)
 datafull <- read.csv("Data/newdatafull.csv", header = TRUE)
 datasim <- read.csv("validationdata.csv", header = TRUE)
+met <- read.csv("droughtmetdata.csv", header = TRUE)
 
 # Anomalies ####
 
@@ -593,6 +594,36 @@ summary(lm_annualgpp2015)
 
 
 
+
+
+
+
+fullmet <- read.csv("Data/DE-Hai-2000-2020-weekly_timeseries_metSM.csv", header = TRUE)
+fullmet$order <- seq_len(nrow(fullmet))
+fullmet$year <- 2000 + floor((fullmet$order - 1) / 52)
+
+met2000 <- fullmet %>%
+  filter(year >= 2000 & year <= 2005)
+
+met2015 <- fullmet %>%
+  filter(year >= 2015 & year <= 2020)
+
+met1 <- rbind(met2000, met2015)
+
+met1 <- met1 %>%
+  rename(minT = mint_C, maxT = maxt_C, airT = airt_C, co2 = co2_ppm, swr = swrad_MJm2day, vpd = vpd_kPa, precip = precip_kgm2s, windspd = wind_spd_ms, 
+         sm1 = SWC_1, sm2 = SWC_2, sm3 = SWC_3)
+
+met <- met1 %>%
+  filter(doy >= 126 & doy <= 252)
+
+merged_met <- merge(met, fully_merged, by = c("year", "doy"))
+
+merged_met$date <- as.factor(merged_met$date)
+
+finalmerged <- subset(merged_met,select = c(date, year, doy, mod_gpp, mod_lai, mod_reco, sm1, sm2, sm3, minT, maxT, airT, co2, swr, vpd, precip, windspd))
+
+write.csv(finalmerged, "rq2data.csv")
 
 
 
