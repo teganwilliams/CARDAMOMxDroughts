@@ -599,31 +599,45 @@ summary(lm_annualgpp2015)
 
 
 drivers <- read.csv("rq2data.csv", header = TRUE)
+boxplot(drivers$mod_gpp, main="Boxplot of mod_gpp") # visualise data
+
 
 drivers <- drivers %>%
-  mutate(condition = ifelse(year %in% c(2003, 2018), "drought", "normal"))
+  mutate(condition = ifelse(year %in% c(2003, 2018, 2019, 2020), "drought", "normal"))
 
-
-# droughts years only 
+# drought years only 
 drought <- drivers %>%
-  filter(year == 2003 | year == 2018)
+  filter(year == 2003 | year == 2018 | year == 2019 | year == 2020)
 
 non_drought <- drivers %>%
-  filter(!(year %in% c(2003, 2018)))
+  filter(!(year %in% c(2003, 2018, 2019, 2020)))
 
-model_main <- lm(mod_gpp ~ maxT + airT + sm2 + swr, data = drivers)
-model_drought <- lm(mod_gpp ~ maxT + airT + sm2 + swr, data = drought)
-model_norm <- lm(mod_gpp ~ maxT + airT + sm2 + swr, data = non_drought)
+model_mixed_all <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), data = drought)
+summary(model_mixed_all)
 
-summary(model_drought)
-summary(model_norm)
+residuals_mixed_all <- resid(model_mixed_all)
+shapiro_test <- shapiro.test(residuals_mixed_all)
+print(shapiro_test) # residuals are normally distributed
+qqnorm(residuals_mixed_all) 
+qqline(residuals_mixed_all) # residuals fit qq line
 
-model_all <-lm(mod_gpp ~ maxT + airT + sm1 + sm2 + sm3 + swr + precip, data = drought)
+# same but for non-drought years
 
-# Summarize the model
-summary(model_all)
-summary(model_main)
-summary(model_sm_drought)
+model_mixed_non <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), data = non_drought_clean)
+summary(model_mixed_non)
+
+residuals_mixed_non <- resid(model_mixed_non)
+shapiro_test <- shapiro.test(residuals_mixed_non)
+print(shapiro_test) # residuals are normally distributed
+qqnorm(residuals_mixed_non) 
+qqline(residuals_mixed_non) # residuals fit qq line
+
+# remove outliers for normality
+outliers <- which(residuals_mixed_non > quantile(residuals_mixed_non, 0.97) | 
+                    residuals_mixed_non < quantile(residuals_mixed_non, 0.03))
+
+# Remove extreme outliers from the data
+non_drought_clean <- non_drought[-outliers, ]
 
 
 # reporting results
@@ -637,60 +651,129 @@ results_table <- data.frame(
 results_table
 
 
-ggplot(drivers, aes(x = mod_gpp, y = maxT, group = condition)) + 
+
+ggplot(drivers, aes(x = maxT, y = mod_gpp, group = condition, colour = condition)) + 
   geom_point() +
-  geom_smooth(method = "lm") +
+  geom_smooth(method = "lm", se = FALSE) +
   labs(title = "Relationship between GPP and maxT") +
   theme_minimal()
 
-ggplot(drivers, aes(x = mod_gpp, y = airT, group = condition)) + 
+ggplot(drivers, aes(x = sm2, y = mod_gpp, group = condition, colour = condition)) + 
   geom_point() +
-  geom_smooth(method = "lm") +
-  labs(title = "Relationship between GPP and airT") +
-  theme_minimal()
-
-ggplot(drivers, aes(x = mod_gpp, y = sm2, group = condition, colour = condition)) + 
-  geom_point() +
-  geom_smooth(method = "lm") +
+  geom_smooth(method = "lm", se = FALSE) +
   labs(title = "Relationship between GPP and sm2") +
   theme_minimal()
 
-ggplot(drivers, aes(x = mod_gpp, y = swr, group = condition, colour = condition)) + 
+ggplot(drivers, aes(x = swr, y = mod_gpp, group = condition, colour = condition)) + 
   geom_point() +
-  geom_smooth(method = "lm") +
+  geom_smooth(method = "lm", se = FALSE) +
   labs(title = "Relationship between GPP and swr") +
   theme_minimal()
+
+ggplot(drivers, aes(x = vpd, y = mod_gpp, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Relationship between GPP and vpd") +
+  theme_minimal()
+
+ggplot(drivers, aes(x = mod_gpp, y = precip, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Relationship between GPP and precip") +
+  theme_minimal()
+
+ggplot(drivers, aes(x = mod_gpp, y = sm1, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Relationship between GPP and sm1") +
+  theme_minimal()
+
+ggplot(drivers, aes(x = mod_gpp, y = sm3, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Relationship between GPP and sm3") +
+  theme_minimal()
+
+
+library(MASS)
+# Apply Box-Cox transformation with lambda = 2
+drivers$mod_gpp_boxcox <- drivers$mod_gpp^2
+
+# Fit the linear model with Box-Cox transformed mod_gpp
+model_lm_boxcox <- lm(mod_gpp_boxcox ~ maxT + sm1 + sm2 + sm3 + swr + vpd, data = drivers)
+# Check the normality of the residuals
+residuals_boxcox <- resid(model_lm_boxcox)
+qqnorm(residuals_boxcox)
+qqline(residuals_boxcox)
+
+# Fit the linear mixed model with Box-Cox transformed log_mod_gpp_boxcox
+model_mixed_boxcox <- lmer(mod_gpp_boxcox ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), data = drivers)
+summary(model_mixed_boxcox)
+
+# Check the normality of the residuals 
+residuals_mixed_boxcox <- resid(model_mixed_boxcox)
+qqnorm(residuals_mixed_boxcox)
+qqline(residuals_mixed_boxcox)
+
+# finding outliers
+boxplot(drivers$mod_gpp, main="Boxplot of mod_gpp")
+
+extreme_outliers <- which(residuals_mixed_boxcox > quantile(residuals_mixed_boxcox, 0.975) | 
+                            residuals_mixed_boxcox < quantile(residuals_mixed_boxcox, 0.010))
+
+# Remove extreme outliers from the data
+drivers_clean <- drivers[-extreme_outliers, ]
+
+model_mixed_boxcox_clean <- lmer(mod_gpp_boxcox ~ maxT + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), data = drivers_clean)
+summary(model_mixed_boxcox_clean)
+residuals_mixed_boxcox_clean <- resid(model_mixed_boxcox_clean)
+qqnorm(residuals_mixed_boxcox_clean)
+qqline(residuals_mixed_boxcox_clean)
+
+#  almost normality
+ggplot(drivers_clean, aes(x = mod_gpp_boxcox)) +
+  geom_histogram(fill = "skyblue", color = "black", bins = 20) +
+  labs(title = "Distribution of mod_gpp",
+       x = "mod_gpp",
+       y = "Frequency") +
+  theme_minimal()
+shapiro_test <- shapiro.test(drivers_clean$mod_gpp_boxcox)
+print(shapiro_test)
+
+# model time!
+model_mixed_boxcox_clean <- lmer(mod_gpp_boxcox ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), data = drivers_clean)
+
+# Check the diagnostics
+summary(model_mixed_boxcox_clean)
 
 
 # mixed effect model on drivers
 library(nlme)
+shapiro.test()
 model_mixed <- lmer(mod_gpp ~ maxT+ sm1 + sm2 + sm3 + swr + vpd +(1|year) + (1|doy), data = drivers)
 model_null <- lmer(mod_gpp ~ (1|year) + (1|doy), data = drivers)
+
+residuals_mixed <- resid(model_mixed)
+qqnorm(residuals_mixed)
+qqline(residuals_mixed)
+
+
 
 
 summary(model_mixed)
 summary(model_null)
 
-ggplot(drivers, aes(x = mod_gpp)) +
+ggplot(non_drought, aes(x = mod_gpp)) +
   geom_histogram(fill = "skyblue", color = "black", bins = 30) +
   labs(title = "Distribution of mod_gpp",
        x = "mod_gpp",
        y = "Frequency") +
   theme_minimal()
-shapiro_test <- shapiro.test(drivers$mod_gpp)
+shapiro_test <- shapiro.test(non_drought$mod_gpp)
 shapiro_test <- shapiro.test(drivers$log_mod_gpp)
 print(shapiro_test)
 
-library(lme4)
 
-drivers_scaled <- as.data.frame(scale(drivers[, c("mod_gpp", "maxT", "sm1", "sm2", "sm3", "swr", "vpd")]))
-model_glmm <- glmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd, 
-                    data = drivers_scaled, family = Gamma(link = "log"))
-model_glmm <- glmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), 
-                    data = drivers, family = Gamma(link = "log"))
-
-# Summary of the GLMM
-summary(model_glmm)
 
 
 # drought years NOT INCLUDED
@@ -705,15 +788,41 @@ print(lrt)
 
 
 
-# GLMM
-model_glmm <- glmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), data = drivers, family = gaussian)
-
-# Summary of the GLMM
-summary(model_glmm)
 
 
-# Summary of the GLMM
-summary(model_glmm)
+# Data for drought
+data_drought <- data.frame(
+  Driver = c("maxT", "sm1", "sm2", "sm3", "swr", "vpd"),
+  Estimate = c(0.4891, 0.1719, -0.2200, 0.0017, 0.5677, -9.4547),
+  SE = c(0.1231, 0.1356, 0.0926, 0.0908, 0.0905, 1.4347),
+  Dataset = "Drought"
+)
+
+# Data for non_drought
+data_non_drought <- data.frame(
+  Driver = c("maxT", "sm1", "sm2", "sm3", "swr", "vpd"),
+  Estimate = c(0.1569, 0.0351, -0.0524, 0.0034, 0.5717, -4.7522),
+  SE = c(0.0343, 0.0277, 0.0195, 0.0310, 0.0251, 0.4744),
+  Dataset = "Non-Drought"
+)
+
+# Combining data
+data_combined <- rbind(data_drought, data_non_drought)
+
+# Plot
+ggplot(data_combined, aes(x = Driver, y = Estimate, fill = Dataset)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  geom_errorbar(aes(ymin = Estimate - 1.96*SE, ymax = Estimate + 1.96*SE), 
+                position = position_dodge(0.7), width = 0.25) +
+  geom_hline(yintercept = 0, linetype="dashed", color = "red") +
+  labs(title = "Effect of Drivers on GPP", y = "Estimate", x = "Driver", fill = "Dataset") +
+  theme_minimal() +
+  theme(legend.position = "top")
+
+
+
+
+
 
 ### RQ3: Drivers vs response variables ####
 
