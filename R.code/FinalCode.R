@@ -600,17 +600,17 @@ summary(lm_annualgpp2015)
 
 drivers <- read.csv("rq2data.csv", header = TRUE)
 boxplot(drivers$mod_gpp, main="Boxplot of mod_gpp") # visualise data
-
+hist(drivers$diffGPP)
 
 drivers <- drivers %>%
-  mutate(condition = ifelse(year %in% c(2003, 2018, 2019, 2020), "drought", "normal"))
+  mutate(condition = ifelse(year %in% c(2003, 2018), "drought", "normal"))
 
 # drought years only 
 drought <- drivers %>%
-  filter(year == 2003 | year == 2018 | year == 2019 | year == 2020)
+  filter(year == 2003 | year == 2018)
 
 non_drought <- drivers %>%
-  filter(!(year %in% c(2003, 2018, 2019, 2020)))
+  filter(!(year %in% c(2003, 2018)))
 
 model_mixed_all <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), data = drought)
 summary(model_mixed_all)
@@ -821,7 +821,35 @@ ggplot(data_combined, aes(x = Driver, y = Estimate, fill = Dataset)) +
 
 
 
+#### method by only looking at differences in gpp rather than whole values
 
+# Calculate the average mod_gpp for each doy
+avg_gpp <- drivers %>%
+  group_by(doy) %>%
+  summarise(avg_mod_gpp = mean(mod_gpp, na.rm = TRUE))
+
+# Merge the average mod_gpp back to the original data frame
+drivers <- left_join(drivers, avg_gpp, by = "doy")
+
+# Calculate the relative difference
+drivers$diffGPP <- drivers$mod_gpp - drivers$avg_mod_gpp
+
+diffGPP <- drivers$diffGPP
+
+boxplot(drivers$mod_gpp, main="Boxplot of mod_gpp") # visualise data
+hist(drivers$diffGPP)
+shapiro_test <- shapiro.test(drivers$diffGPP)
+
+model_mixed_diff <- lmer(diffGPP ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year), data = drivers)
+summary(model_mixed_diff)
+
+residuals_mixed_all <- resid(model_mixed_diff)
+shapiro_test <- shapiro.test(residuals_mixed_diff)
+print(shapiro_test) # residuals are normally distributed
+qqnorm(residuals_mixed_diff) 
+qqline(residuals_mixed_diff)
+
+anova(model_mixed_diff)
 
 
 ### RQ3: Drivers vs response variables ####
