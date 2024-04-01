@@ -230,6 +230,106 @@ ggplot(fully_merged_long, aes(x = zscore, y = mod_gpp, colour = driver)) +
 
 
 # RQ1: Modelling ecosystem productivity response to 2 major drought events ####
+
+# Testing for inter-annual variability
+
+# merge both gpp datasets
+gpp_all <- rbind(gpp2000, gpp2015)
+gpp_all$group <- ifelse(gpp_all$year %in% c(2003, 2018), as.character(gpp_all$year), "other")
+
+gpp_all$group <- as.factor(gpp_all$group)
+gpp_all_summer <- gpp_all %>%
+  filter(doy >= 231 & doy <= 259)
+
+gpp_2003 <- gpp_all_summer %>%
+  filter(year >= 2000 & year <= 2005)
+gpp_2018 <- gpp_all_summer %>%
+  filter(year >= 2015 & year <= 2020)
+
+
+kruskal_test_2003 <- kruskal.test(mod_gpp ~ group, data = gpp_2003)
+print(kruskal_test_2003)
+
+kruskal_test_2018 <- kruskal.test(mod_gpp ~ year, data = gpp_2018)
+print(kruskal_test_2018)
+
+kruskal_test_fullyear <- kruskal.test(mod_gpp ~ group, data = gpp_all)
+print(kruskal_test_fullyear)
+
+kruskal_test_summer1 <- kruskal.test(mod_gpp ~ year, data = gpp_all_summer)
+print(kruskal_test_summer1)
+
+kruskal_test_summer2 <- kruskal.test(mod_gpp ~ group, data = gpp_all_summer)
+print(kruskal_test_summer2)
+
+
+
+
+model_interannual <- aov(mod_gpp ~ year, data = gpp_all)
+model_interannual <- aov(mod_gpp ~ year, data = gpp_all_summer)
+anova_result <- summary(model_interannual)
+print(anova_result)
+
+anova_summary <- anova(model_interannual)
+print(anova_summary)
+
+if (anova_summary$"Pr(>F)"[1] < 0.05) {
+  print("Significant difference in GPP between years.")
+} else {
+  print("No significant difference in GPP between years.")
+}
+
+ggplot(gpp_all, aes(x = year, y = mod_gpp, group = year)) +
+  geom_boxplot() +
+  labs(title = "Inter-Annual Variability of GPP",
+       x = "Year",
+       y = "GPP") +
+  theme_minimal()
+
+gpp_all_summer$year <- as.factor(gpp_all_summer$year)
+
+
+# Levene's test for homogeneity of variances
+levene_test <- car::leveneTest(mod_gpp ~ group, data = gpp_all_summer)
+print(levene_test)
+
+# Shapiro-Wilk test for normality
+residuals <- residuals(model_interannual)
+shapiro_test <- shapiro.test(residuals)
+print(shapiro_test)
+
+# Calculate mean and standard deviation of annual GPP
+mean_gpp <- aggregate(mod_gpp ~ year, data = gpp_all, FUN = mean)
+sd_gpp <- aggregate(mod_gpp ~ year, data = gpp_all, FUN = sd)
+annual_gpp <- gpp_all %>%
+  group_by(year) %>%
+  summarise(annual_gpp = mean(mod_gpp, na.rm = TRUE)*365)
+
+annual_gpp <- gpp_all %>%
+  group_by(year) %>%
+  summarise(
+    annual_gpp = mean(mod_gpp, na.rm = TRUE) * 365,
+    annual_unc = sqrt(sum(mod_gpp_unc95^2))
+  )
+
+
+# Merge the mean and standard deviation data
+summary_stats <- merge(mean_gpp, sd_gpp, by = "year", suffixes = c("_mean", "_sd"))
+
+annual <- merge(summary_stats, annual_gpp, by = "year")
+
+annual1 <- filter(annual, year >= 2000 & year <=2005)
+five_year_mean1 <- mean(annual1$annual_gpp, na.rm = TRUE)
+annual1$mean <- five_year_mean1
+annual1$percent_variation <- (annual1$annual_gpp / annual1$mean) * 100 - 100
+
+annual2 <- filter(annual, year >= 2015 & year <=2020)
+five_year_mean2 <- mean(annual2$annual_gpp, na.rm = TRUE)
+annual2$mean <- five_year_mean2
+annual2$percent_variation <- (annual2$annual_gpp / annual2$mean) * 100 - 100
+
+
+
 # a) plotting timeseries of modelled and obs GPP over time (5 years) 
 # ALSO need to include my calculations of annual GPP here!
 
