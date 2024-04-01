@@ -687,8 +687,6 @@ ggsave("gpp_variation_plot.png", path = "Plots", plot = gpp_variation_plot, widt
 
 
 ### RQ2: Drivers vs response variables ####
-# should i maybe include more drivers, such as VPD; also respiration??
-
 drivers <- read.csv("rq2data.csv", header = TRUE)
 boxplot(drivers$mod_gpp, main="Boxplot of mod_gpp") # visualise data
 
@@ -702,7 +700,72 @@ drought <- drivers %>%
 non_drought <- drivers %>%
   filter(!(year %in% c(2003, 2018)))
 
-model_mixed_drought <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|doy), data = drought)
+model_swr <- lm(mod_gpp ~ swr, data = drivers)
+summary(model_swr)
+
+
+
+## scale values to use glmer 
+
+# Rescale the continuous variables
+drivers$maxT.2 <- scale(drivers$maxT)
+drivers$sm1.2 <- scale(drivers$sm1)
+drivers$sm2.2 <- scale(drivers$sm2)
+drivers$sm3.2 <- scale(drivers$sm3)
+drivers$vpd.2 <- scale(drivers$vpd)
+drivers$swr.2 <- scale(drivers$swr)
+
+# Fit the model again
+model_lm_drought <- lm(mod_gpp ~ airT + maxT + minT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
+summary(model_lm_drought)
+
+model_lm_non <- lm(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr, data = non_drought)
+summary(model_lm_non)
+
+
+model_mixed <- lmer(mod_gpp ~ maxT.2 + sm1.2 + sm2.2 + sm3.2 + vpd.2 + swr.2 + (1|year), data = drivers)
+model_drought <- lmer(mod_gpp ~ maxT.2 + sm1.2 + sm2.2 + sm3.2 + vpd.2 + swr.2 + (1|doy),  data = drought)
+model_non <-  lmer(mod_gpp ~ maxT.2 + sm1.2 + sm2.2 + sm3.2 + vpd.2 + swr.2 + (1|doy), data = non_drought)
+
+summary(model_mixed)
+summary(model_drought)
+summary(model_non)
+
+shapiro_test <- shapiro.test(resid(model_lm_drought))
+print(shapiro_test)
+qqnorm(resid(model_lm_drought))
+qqline(resid(model_lm_drought))
+plot(model_drought)
+
+shapiro_test <- shapiro.test(resid(model_non))
+print(shapiro_test)
+qqnorm(resid(model_non))
+qqline(resid(model_non))
+plot(model_non)
+
+
+model_mixed_drought <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr + (1|doy), data = drought)
+summary(model_mixed)
+model_mixed_non <- lmer(mod_gpp ~  airT + maxT + minT + sm1 + sm2 + sm3 + vpd + swr + (1|doy), data = non_drought)
+summary(model_mixed_non)
+
+AIC_lm <- AIC(model_lm_drought)
+AIC_mixed <- AIC(model_mixed_drought)
+
+AIC_lm <- AIC(model_lm_non)
+AIC_mixed <- AIC(model_mixed_non)
+
+# Print AIC values
+print(AIC_lm) # lm better for drought years
+print(AIC_mixed) # lmer better fit for non-drought years
+
+residuals_mixed <- resid(model_mixed_non)
+shapiro_test <- shapiro.test(residuals_mixed)
+print(shapiro_test) # residuals are normally distributed
+qqnorm(residuals_mixed) 
+qqline(residuals_mixed)
+
+model_mixed_drought <- lmer(mod_gpp ~ minT + maxT + sm1 + sm2 + sm3 + vpd + (1|doy), data = drought)
 summary(model_mixed_drought)
 
 residuals_mixed_drought <- resid(model_mixed_drought)
@@ -712,7 +775,7 @@ qqnorm(residuals_mixed_all)
 qqline(residuals_mixed_all) # residuals fit qq line
 
 # same but for non-drought years
-model_mixed_non <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|doy), data = non_drought)
+model_mixed_non <- lmer(mod_gpp ~ airT + maxT + sm1 + sm2 + sm3 + vpd + swr +(1|doy), data = non_drought)
 summary(model_mixed_non)
 
 residuals_mixed_non <- resid(model_mixed_non)
@@ -721,63 +784,26 @@ print(shapiro_test) # residuals are normally distributed
 qqnorm(residuals_mixed_non) 
 qqline(residuals_mixed_non) # residuals fit qq line
 
-
-ggplot(drivers, aes(x = maxT, y = mod_gpp, group = condition, colour = condition)) + 
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "Relationship between GPP and maxT") +
-  theme_minimal()
-
-ggplot(drivers, aes(x = sm2, y = mod_gpp, group = condition, colour = condition)) + 
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "Relationship between GPP and sm2") +
-  theme_minimal()
-
-ggplot(drivers, aes(x = swr, y = mod_gpp, group = condition, colour = condition)) + 
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "Relationship between GPP and swr") +
-  theme_minimal()
-
-ggplot(drivers, aes(x = vpd, y = mod_gpp, group = condition, colour = condition)) + 
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "Relationship between GPP and vpd") +
-  theme_minimal()
-
-ggplot(drivers, aes(x = mod_gpp, y = precip, group = condition, colour = condition)) + 
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "Relationship between GPP and precip") +
-  theme_minimal()
-
-ggplot(drivers, aes(x = mod_gpp, y = sm1, group = condition, colour = condition)) + 
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "Relationship between GPP and sm1") +
-  theme_minimal()
-
-ggplot(drivers, aes(x = mod_gpp, y = sm3, group = condition, colour = condition)) + 
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "Relationship between GPP and sm3") +
-  theme_minimal()
+anova(model_mixed_non)
+anova(model_mixed_drought)
 
 # null models
-library(nlme)
+model_nulldrought <- lmer(mod_gpp ~ (1|doy), data = drought)
+model_nullnon <- lmer(mod_gpp ~ (1|doy), data = non_drought)
 
-model_null1 <- lmer(mod_gpp ~ (1|doy), data = drought)
-model_null2 <- lmer(mod_gpp ~ (1|doy), data = non_drought)
-
-residuals_null <- resid(model_null1)
+residuals_null <- resid(model_nullnon)
 qqnorm(residuals_null)
 qqline(residuals_null)
 
-summary(model_null1)
-summary(model_null2)
+summary(model_nulldrought)
+summary(model_nullnon)
 summary(model_mixed_drought)
 summary(model_mixed_non)
+
+
+
+### end here!
+
 
 
 # drought years NOT INCLUDED
@@ -944,6 +970,7 @@ text_data <- data.frame(
 
 
 
+
 # Plotting 
 
 maxTplot <- ggplot(drivers, aes(x = maxT, y = mod_gpp, group = condition, colour = condition, shape = condition)) + 
@@ -1028,8 +1055,9 @@ combined_rq2_plots <- grid.arrange(
   layout_matrix = rbind(c(1,2,3), c(4,5,6)), 
   heights = c(1,1))
 
-
-ggsave("RQ2_plots.png", path = "Plots", plot = combined_rq2_plots, width = 10, height = 7, dpi = 500)
+# Save the plot as a PNG file to GitHub
+setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/droughts")
+ggsave("rq2_plots.png", path = "Plots", plot = combined_rq2_plots, width = 10, height = 7, dpi = 500)
 
 
 
