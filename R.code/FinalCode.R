@@ -329,7 +329,6 @@ annual2$mean <- five_year_mean2
 annual2$percent_variation <- (annual2$annual_gpp / annual2$mean) * 100 - 100
 
 
-
 # a) plotting timeseries of modelled and obs GPP over time (5 years) 
 # ALSO need to include my calculations of annual GPP here!
 
@@ -499,7 +498,7 @@ print(gpprmsesim)
 print(lairmsesim)
 
 
-# b) RMSE // R squared calculations and plotting correlation! -> appendix?
+# RMSE // R squared calculations and plotting correlation! -> appendix?
 
 gppcorrelation2000 <- cor(data2000$mod_gpp, data2000$obs_gpp, use = "complete.obs")
 obs_gpp2000 <- data2000$obs_gpp[!is.na(data2000$obs_gpp)]
@@ -676,13 +675,40 @@ combined_cor_plots <- grid.arrange(
 ggsave("correlation_plots.png", path = "Plots", plot = combined_cor_plots, width = 10, height = 7, dpi = 500)
 
 
-# Statistical test to assess whether gpp is significantly different by year:
+#### RQ1 visualisation ####
 
-lm_annualgpp2000 <- lm(mod_gpp ~ mod_lai, data = data2000)
-lm_annualgpp2015 <- lm(mod_gpp ~ obs_gpp, data = data2015)
-lm_annualgppboth <- lm(mod_gpp ~ year, data = combinedyears)
+palette_gpp <- c("#3EA85A", "#D6A400", "#CCCCCCA2")
 
-summary(lm_annualgpp2015)
+
+gpp_variation_plot <- ggplot(gpp_all, aes(x = doy, y = mod_gpp, colour = group, group = year)) +
+  geom_line(size = 0.8) +
+  geom_hline(yintercept = 0, size = 0.4, colour = "black") +
+  # geom_text(aes(x = 35.2, y = -0.4, label = "Norm"), colour = "black") + 
+  # geom_text(aes(x = 34, y = 5.2, label = "95th percentile"), colour = "darkorange", size = 3) + 
+  labs(title = "",
+       x = "Time (months)",
+       y = "Weekly GPP (gC/m2/day))",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_gpp) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(28, 56, 91, 119, 154, 182, 217, 245, 273, 308, 336), 
+                     labels = c("Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
+                     expand = c(0, 0),
+                     limits = c(7, 366)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(0,15))
+
+plot(gpp_variation_plot)
+
+# Save the plot as a PNG file to GitHub
+ggsave("gpp_variation_plot.png", path = "Plots", plot = gpp_variation_plot, width = 7, height = 5, dpi = 500)
+
 
 
 
