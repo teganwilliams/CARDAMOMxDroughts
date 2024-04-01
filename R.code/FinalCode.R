@@ -832,10 +832,20 @@ ggplot(data_combined, aes(x = Driver, y = Estimate, fill = Dataset)) +
 drivers3 <- drivers %>%
   filter(!doy == 126)
 
-drivers2000 <- drivers3 %>%
+drivers4 <- drivers3 %>%
+  mutate(month = case_when(
+    doy %in% 126:151 ~ "May",
+    doy %in% 152:181 ~ "June",
+    doy %in% 182:212 ~ "July",
+    doy %in% 213:243 ~ "August",
+    doy %in% 244:273 ~ "September",
+    TRUE ~ NA_character_
+  ))
+
+drivers2000 <- drivers4 %>%
   filter(year >= 2000 & year<= 2005)
 
-drivers2015 <- drivers3 %>%
+drivers2015 <- drivers4 %>%
   filter(year >= 2015 & year<= 2020)
 
 avg_gpp2000 <- drivers2000 %>%
@@ -850,12 +860,12 @@ drivers2000$mean <- rep(avg_gpp2000$avg_mod_gpp, length.out = nrow(drivers2000))
 drivers2015$mean <- rep(avg_gpp2015$avg_mod_gpp, length.out = nrow(drivers2015))
 
 #if using full 12 years for mean #
-avg_gpp <- drivers %>%
+avg_gpp <- drivers4 %>%
   group_by(doy) %>%
   summarise(avg_mod_gpp = mean(mod_gpp, na.rm = TRUE))
 # Merge the average mod_gpp back to the original data frame
-drivers$mean <- rep(avg_gpp$avg_mod_gpp, length.out = nrow(drivers))
-drivers$diffGPP <- drivers$mod_gpp - drivers$mean
+drivers4$mean <- rep(avg_gpp$avg_mod_gpp, length.out = nrow(drivers4))
+drivers4$diffGPP <- drivers4$mod_gpp - drivers4$mean
 
 # Calculate the relative difference
 drivers2000$diffGPP <- drivers2000$mod_gpp - drivers2000$mean
@@ -874,17 +884,19 @@ non_drought <- drivers %>%
   filter(!(year %in% c(2003, 2018)))
 
 
-drought2 <- drivers2 %>%
+drought2 <- drivers4 %>%
   filter(year == 2003 | year == 2018)
-non_drought2 <- drivers2 %>%
+non_drought2 <- drivers4 %>%
   filter(!(year %in% c(2003, 2018)))
 non_drought2000 <- drivers2 %>%
   filter((year %in% c(2000, 2001, 2002, 2004, 2005)))
 non_drought2015 <- drivers2 %>%
   filter((year %in% c(2015, 2016, 2017, 2019, 2020)))
 
+drivers4$month <- as.factor(drivers4$month)
+
 #all data
-model_mixed_diff <- lmer(diffGPP ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year), data = drivers)
+model_mixed_diff <- lmer(diffGPP ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|month), data = drivers4)
 summary(model_mixed_diff)
 residuals_mixed_diff <- resid(model_mixed_diff)
 shapiro_test <- shapiro.test(residuals_mixed_diff)
@@ -892,8 +904,10 @@ print(shapiro_test) # residuals are normally distributed
 qqnorm(residuals_mixed_diff) 
 qqline(residuals_mixed_diff)
 
+drought2$month <- as.factor(drought2$month)
+
 # drought years only
-model_diffdrought <- lmer(diffGPP ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year), data = drought)
+model_diffdrought <- lmer(mod_gpp ~  maxT + sm1 + sm2 + sm3 + swr + vpd + (1|month), data = drought2)
 summary(model_diffdrought)
 residuals_diffdrought <- resid(model_diffdrought)
 shapiro_test <- shapiro.test(residuals_diffdrought)
@@ -901,19 +915,38 @@ print(shapiro_test) # residuals are normally distributed
 qqnorm(residuals_diffdrought) 
 qqline(residuals_diffdrought)
 
-model_diffnon <- lmer(diffGPP ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year), data = non_drought)
+
+# filter outliers from non-drought model residuals to pass tests
+model_diffnon1 <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|month), data = non_drought2)
+residuals <- resid(model_diffnon1)
+# Identify outliers
+outliers <- boxplot.stats(residuals)$out
+# Remove outliers from the dataset
+non_drought2_filt <- non_drought2[-which(residuals %in% outliers), ]
+
+model_diffnon <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|month), data = non_drought2_filt)
 summary(model_diffnon)
 
 residuals_diffnon <- resid(model_diffnon)
 shapiro_test <- shapiro.test(residuals_diffnon)
-print(shapiro_test) # residuals are normally distributed
+print(shapiro_test) # residuals are almost normally distributed
 qqnorm(residuals_diffnon) 
-qqline(residuals_diffnon)
+qqline(residuals_diffnon) # passes qq test
 
 
-# plotting 
+# Create the text for the plot
+text_data <- data.frame(
+  year = rep(unique(drivers$year), each = length(fe)),
+  fe = rep(fe, length(unique(drivers$year))),
+  se = rep(se, length(unique(drivers$year))),
+  p_values = rep(p_values, length(unique(drivers$year)))
+)
 
-maxTplot <- ggplot(drivers, aes(x = maxT, y = diffGPP, group = condition, colour = condition)) + 
+
+
+# Plotting 
+
+maxTplot <- ggplot(drivers, aes(x = maxT, y = mod_gpp, group = condition, colour = condition)) + 
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
   scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
@@ -922,32 +955,10 @@ maxTplot <- ggplot(drivers, aes(x = maxT, y = diffGPP, group = condition, colour
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
         legend.title = element_text(size = 11, face = "bold")) +
-  labs(x = "Max Temperature (°C)", y = "ΔGPPₛᵤₘₘₑᵣ (gC/m²/day)")
+  labs(x = "Max temperature (°C)", y = "GPPₛᵤₘₘₑᵣ (gC/m²/day)")
 plot(maxTplot)
 
-sm2plot <- ggplot(drivers, aes(x = sm2, y = diffGPP, group = condition, colour = condition)) + 
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
-  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
-        plot.title = element_text(size=12, hjust=0.5),
-        axis.title = element_text(size=11),
-        axis.text = element_text(size=9),
-        legend.title = element_text(size = 11, face = "bold")) +
-  labs(x = "SM2 (mm)", y = "ΔGPPₛᵤₘₘₑᵣ (gC/m²/day)") 
-
-swrplot <- ggplot(drivers, aes(x = swr, y = diffGPP, group = condition, colour = condition)) + 
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
-  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
-        plot.title = element_text(size=12, hjust=0.5),
-        axis.title = element_text(size=11),
-        axis.text = element_text(size=9),
-        legend.title = element_text(size = 11, face = "bold"),
-  labs(x = "SWR (MJ/m²/day)", y = "ΔGPPₛᵤₘₘₑᵣ (gC/m²/day)") )
-
-vpdplot <- ggplot(drivers, aes(x = vpd, y = diffGPP, group = condition, colour = condition)) + 
+sm2plot <- ggplot(drivers, aes(x = sm2, y = mod_gpp, group = condition, colour = condition)) + 
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
   scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
@@ -956,9 +967,9 @@ vpdplot <- ggplot(drivers, aes(x = vpd, y = diffGPP, group = condition, colour =
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
         legend.title = element_text(size = 11, face = "bold")) +
-  labs(x = "VPD (kPa)", y = "ΔGPPₛᵤₘₘₑᵣ (gC/m²/day)")  
+  labs(x = "SM2 (?)", y = "GPPₛᵤₘₘₑᵣ (gC/m²/day)") 
 
-sm1plot <- ggplot(drivers, aes(x = sm1, y = diffGPP, group = condition, colour = condition)) + 
+swrplot <- ggplot(drivers, aes(x = swr, y = mod_gpp, group = condition, colour = condition)) + 
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
   scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
@@ -967,9 +978,9 @@ sm1plot <- ggplot(drivers, aes(x = sm1, y = diffGPP, group = condition, colour =
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
         legend.title = element_text(size = 11, face = "bold")) +
-  labs(x = "SM1 (mm)", y = "ΔGPPₛᵤₘₘₑᵣ (gC/m²/day)")  
+  labs(x = "SWR (MJ/m²/day)", y = "GPPₛᵤₘₘₑᵣ (gC/m²/day)") 
 
-sm3plot <- ggplot(drivers, aes(x = sm3, y = diffGPP, group = condition, colour = condition)) + 
+vpdplot <- ggplot(drivers, aes(x = vpd, y = mod_gpp, group = condition, colour = condition)) + 
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
   scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
@@ -978,11 +989,33 @@ sm3plot <- ggplot(drivers, aes(x = sm3, y = diffGPP, group = condition, colour =
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
         legend.title = element_text(size = 11, face = "bold")) +
-  labs(x = "SM3 (mm)", y = "ΔGPPₛᵤₘₘₑᵣ (gC/m²/day)")  
+  labs(x = "VPD (kPa)", y = "GPPₛᵤₘₘₑᵣ (gC/m²/day)")  
+
+sm1plot <- ggplot(drivers, aes(x = sm1, y = mod_gpp, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "SM1 (?)", y = "GPPₛᵤₘₘₑᵣ (gC/m²/day)")  
+
+sm3plot <- ggplot(drivers, aes(x = sm3, y = mod_gpp, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "SM3 (?)", y = "GPPₛᵤₘₘₑᵣ (gC/m²/day)")  
 
 
 # combine the correlation plots
-combined_cor_plots <- grid.arrange(
+combined_rq2_plots <- grid.arrange(
   maxTplot, vpdplot, swrplot, 
   sm1plot, sm2plot, sm3plot, 
   nrow = 2, 
@@ -990,7 +1023,7 @@ combined_cor_plots <- grid.arrange(
   heights = c(1,1))
 
 
-ggsave("correlation_plots.png", path = "Plots", plot = combined_cor_plots, width = 10, height = 7, dpi = 500)
+ggsave("RQ2_plots.png", path = "Plots", plot = combined_rq2_plots, width = 10, height = 7, dpi = 500)
 
 
 
