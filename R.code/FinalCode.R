@@ -955,6 +955,30 @@ avg_gpp <- drivers %>%
   summarise(avg_mod_gpp = mean(mod_gpp, na.rm = TRUE))
 
 # Merge the average mod_gpp back to the original data frame
+drivers$mean <- rep(avg_gpp$avg_mod_gpp, length.out = nrow(drivers))
+
+# Calculate the relative difference
+drivers$diffGPP <- drivers$mod_gpp - drivers$mean
+diffGPP <- drivers$diffGPP
+
+boxplot(drivers$mod_gpp, main="Boxplot of mod_gpp") # visualise data
+hist(drivers$diffGPP)
+shapiro_test <- shapiro.test(drivers$diffGPP)
+print(shapiro_test)
+
+model_mixed_diff <- lmer(diffGPP ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year), data = drivers)
+summary(model_mixed_diff)
+
+residuals_mixed_diff <- resid(model_mixed_diff)
+shapiro_test <- shapiro.test(residuals_mixed_diff)
+print(shapiro_test) # residuals are normally distributed
+qqnorm(residuals_mixed_diff) 
+qqline(residuals_mixed_diff)
+
+
+#before
+
+# Merge the average mod_gpp back to the original data frame
 drivers <- left_join(drivers, avg_gpp, by = "doy")
 
 # Calculate the relative difference
