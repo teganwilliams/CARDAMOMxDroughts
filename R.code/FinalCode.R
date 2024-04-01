@@ -11,7 +11,7 @@ library(corrplot)
 library(lme4)
 
 ### Load datafiles
-setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/diss_github")
+setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/droughts")
 anomalies <- read.csv("Data/finalanomalies.csv", header = TRUE)
 data2000 <- read.csv("Data/newdata2000-2005.csv", header = TRUE)
 data2015 <- read.csv("Data/newdata2015-2020.csv", header = TRUE)
@@ -114,6 +114,7 @@ corrplot(correlation_matrix, method = "circle", type = "upper", tl.cex = 0.8)
 
 anomaly_colour_palette <- c("#00BA38", "darkgreen", "deepskyblue", "blue3", "orangered", "orange2")
 
+
 # SUMMER anomaly timeseries
 ggplot() +
   # geom_ribbon(data = fully_merged_summer, aes(ymin = mod_gpp - mod_gpp_unc95, ymax = mod_gpp + mod_gpp_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
@@ -186,9 +187,6 @@ ggsave("anomalies_correlation_gpp.png", path = "Plots", plot = anomaly_cor_gpp, 
 
 # add R squared values next to the lines
 
-library(ggplot2)
-library(dplyr)
-
 # Example data
 # fully_merged_long <- data.frame(zscore = rnorm(100), mod_gpp = rnorm(100), driver = rep(c("sm_z_scores", "temp_z_scores"), 50))
 
@@ -234,7 +232,7 @@ ggplot(fully_merged_long, aes(x = zscore, y = mod_gpp, colour = driver)) +
 # Testing for inter-annual variability
 
 # merge both gpp datasets
-gpp_all <- rbind(gpp2000, gpp2015)
+gpp_all <- rbind(data2000, data2015)
 gpp_all$group <- ifelse(gpp_all$year %in% c(2003, 2018), as.character(gpp_all$year), "other")
 
 gpp_all$group <- as.factor(gpp_all$group)
@@ -250,7 +248,7 @@ gpp_2018 <- gpp_all_summer %>%
 kruskal_test_2003 <- kruskal.test(mod_gpp ~ group, data = gpp_2003)
 print(kruskal_test_2003)
 
-kruskal_test_2018 <- kruskal.test(mod_gpp ~ year, data = gpp_2018)
+kruskal_test_2018 <- kruskal.test(mod_gpp ~ group, data = gpp_2018)
 print(kruskal_test_2018)
 
 kruskal_test_fullyear <- kruskal.test(mod_gpp ~ group, data = gpp_all)
@@ -263,22 +261,6 @@ kruskal_test_summer2 <- kruskal.test(mod_gpp ~ group, data = gpp_all_summer)
 print(kruskal_test_summer2)
 
 
-
-
-model_interannual <- aov(mod_gpp ~ year, data = gpp_all)
-model_interannual <- aov(mod_gpp ~ year, data = gpp_all_summer)
-anova_result <- summary(model_interannual)
-print(anova_result)
-
-anova_summary <- anova(model_interannual)
-print(anova_summary)
-
-if (anova_summary$"Pr(>F)"[1] < 0.05) {
-  print("Significant difference in GPP between years.")
-} else {
-  print("No significant difference in GPP between years.")
-}
-
 ggplot(gpp_all, aes(x = year, y = mod_gpp, group = year)) +
   geom_boxplot() +
   labs(title = "Inter-Annual Variability of GPP",
@@ -290,15 +272,12 @@ gpp_all_summer$year <- as.factor(gpp_all_summer$year)
 
 
 # Levene's test for homogeneity of variances
-levene_test <- car::leveneTest(mod_gpp ~ group, data = gpp_all_summer)
+levene_test <- car::leveneTest(mod_gpp ~ group, data = gpp_2003)
 print(levene_test)
 
-# Shapiro-Wilk test for normality
-residuals <- residuals(model_interannual)
-shapiro_test <- shapiro.test(residuals)
-print(shapiro_test)
 
-# Calculate mean and standard deviation of annual GPP
+
+### Calculate mean and standard deviation of annual GPP
 mean_gpp <- aggregate(mod_gpp ~ year, data = gpp_all, FUN = mean)
 sd_gpp <- aggregate(mod_gpp ~ year, data = gpp_all, FUN = sd)
 annual_gpp <- gpp_all %>%
@@ -311,7 +290,6 @@ annual_gpp <- gpp_all %>%
     annual_gpp = mean(mod_gpp, na.rm = TRUE) * 365,
     annual_unc = sqrt(sum(mod_gpp_unc95^2))
   )
-
 
 # Merge the mean and standard deviation data
 summary_stats <- merge(mean_gpp, sd_gpp, by = "year", suffixes = c("_mean", "_sd"))
@@ -495,7 +473,7 @@ print(neermse2)
 gpprmsesim <- sqrt(mean((datasim$obs_gpp - datasim$mod_gpp_sim)^2, na.rm = TRUE))
 lairmsesim <- sqrt(mean((datasim$obs_lai - datasim$mod_lai_sim)^2, na.rm = TRUE))
 print(gpprmsesim)
-print(lairmsesim)
+print(lairmsesim) # missing modelled lai and nee in dataset!
 
 
 # RMSE // R squared calculations and plotting correlation! -> appendix?
@@ -510,14 +488,11 @@ gpprmse2000 <- sqrt(mean((data2000$obs_gpp - data2000$mod_gpp)^2, na.rm = TRUE))
 lairmse2000 <- sqrt(mean((data2000$obs_lai - data2000$mod_lai)^2, na.rm = TRUE))
 neermse2000 <- sqrt(mean((data2000$obs_nee - data2000$mod_nee)^2, na.rm = TRUE))
 
-gpprelative_rmse2000 <- gpprmse2000 / (max(obs_gpp2000) - min(obs_gpp2000))
-
 # Print the values
 print(paste("R^2 value:", round(gppr_squared2000, 3)))
 print(gpprmse2000)
 print(neermse2000)
 print(lairmse2000)
-print(gpprelative_rmse2000)
 
 # Plot the relationships
 gppcorrelation2000 <- ggplot(data2000, aes(x = mod_gpp, y = obs_gpp)) +
@@ -560,14 +535,14 @@ laicorrelation2000 <- ggplot(data2000, aes(x = mod_lai, y = obs_lai)) +
 
 plot(laicorrelation2000)
 
-recocorrelation2000 <- ggplot(data2000, aes(x = mod_reco, y = obs_reco)) +
+neecorrelation2000 <- ggplot(data2000, aes(x = mod_nee, y = obs_nee)) +
   geom_point(colour = "#eb1d129b") +
-  labs(x = "Modelled Reco₂₀₀₃ (gC/m²/day)", y = "Observed Reco₂₀₀₃ (gC/m²/day)") +
+  labs(x = "Modelled NEE₂₀₀₃ (gC/m²/day)", y = "Observed NEE₂₀₀₃ (gC/m²/day)") +
   geom_abline(intercept = 0, slope = 1, color = "#ba0d04e5", size = 0.6) +
   # geom_abline(intercept = 0, slope = max(data2000$obs_reco, na.rm = TRUE) / max(data2000$mod_reco, na.rm = TRUE), linetype = "dashed", color = "black") +
   geom_text(aes(x = 0, 
                 y = 6.5), 
-            label = paste("RMSE =", round(recormse2000, 2)), 
+            label = paste("RMSE =", round(neermse2000, 2)), 
             hjust = 0, vjust = 1,
             size = 4, 
             fontface = "bold", 
@@ -575,10 +550,10 @@ recocorrelation2000 <- ggplot(data2000, aes(x = mod_reco, y = obs_reco)) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         axis.title = element_text(size=11),
         axis.text = element_text(size=9)) +
-  scale_x_continuous(limits = c(0,6)) +
-  scale_y_continuous(limits = c(0,8))
+  scale_x_continuous(limits = c(-10,6)) +
+  scale_y_continuous(limits = c(-11,6))
 
-plot(recocorrelation2000)
+plot(neecorrelation2000)
 
 
 ## Same for 2015-2020
@@ -711,22 +686,11 @@ ggsave("gpp_variation_plot.png", path = "Plots", plot = gpp_variation_plot, widt
 
 
 
-
-
 ### RQ2: Drivers vs response variables ####
 # should i maybe include more drivers, such as VPD; also respiration??
 
-
-
-
-
-
-
-
-
 drivers <- read.csv("rq2data.csv", header = TRUE)
 boxplot(drivers$mod_gpp, main="Boxplot of mod_gpp") # visualise data
-hist(drivers$diffGPP)
 
 drivers <- drivers %>%
   mutate(condition = ifelse(year %in% c(2003, 2018), "drought", "normal"))
@@ -738,18 +702,17 @@ drought <- drivers %>%
 non_drought <- drivers %>%
   filter(!(year %in% c(2003, 2018)))
 
-model_mixed_all <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), data = drought)
-summary(model_mixed_all)
+model_mixed_drought <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|doy), data = drought)
+summary(model_mixed_drought)
 
-residuals_mixed_all <- resid(model_mixed_all)
-shapiro_test <- shapiro.test(residuals_mixed_all)
+residuals_mixed_drought <- resid(model_mixed_drought)
+shapiro_test <- shapiro.test(residuals_mixed_drought)
 print(shapiro_test) # residuals are normally distributed
 qqnorm(residuals_mixed_all) 
 qqline(residuals_mixed_all) # residuals fit qq line
 
 # same but for non-drought years
-
-model_mixed_non <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), data = non_drought_clean)
+model_mixed_non <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|doy), data = non_drought)
 summary(model_mixed_non)
 
 residuals_mixed_non <- resid(model_mixed_non)
@@ -757,25 +720,6 @@ shapiro_test <- shapiro.test(residuals_mixed_non)
 print(shapiro_test) # residuals are normally distributed
 qqnorm(residuals_mixed_non) 
 qqline(residuals_mixed_non) # residuals fit qq line
-
-# remove outliers for normality
-outliers <- which(residuals_mixed_non > quantile(residuals_mixed_non, 0.97) | 
-                    residuals_mixed_non < quantile(residuals_mixed_non, 0.03))
-
-# Remove extreme outliers from the data
-non_drought_clean <- non_drought[-outliers, ]
-
-
-# reporting results
-results_table <- data.frame(
-  Variable = c("maxT", "airT", "sm1", "sm2", "sm3", "swr", "precip"),
-  Coefficient = c(-1.64487, 1.84993, 0.20857, -0.22874, 0.09273, 0.37563, 8860.31294),
-  T_Value = c(-4.326, 4.655, 3.870, -5.918, 1.927, 6.474, 1.393),
-  P_Value = c(2.31e-05, 5.60e-06, 0.000143, 1.25e-08, 0.055265, 6.17e-10, 0.164945)
-)
-
-results_table
-
 
 
 ggplot(drivers, aes(x = maxT, y = mod_gpp, group = condition, colour = condition)) + 
@@ -820,96 +764,30 @@ ggplot(drivers, aes(x = mod_gpp, y = sm3, group = condition, colour = condition)
   labs(title = "Relationship between GPP and sm3") +
   theme_minimal()
 
-
-library(MASS)
-# Apply Box-Cox transformation with lambda = 2
-drivers$mod_gpp_boxcox <- drivers$mod_gpp^2
-
-# Fit the linear model with Box-Cox transformed mod_gpp
-model_lm_boxcox <- lm(mod_gpp_boxcox ~ maxT + sm1 + sm2 + sm3 + swr + vpd, data = drivers)
-# Check the normality of the residuals
-residuals_boxcox <- resid(model_lm_boxcox)
-qqnorm(residuals_boxcox)
-qqline(residuals_boxcox)
-
-# Fit the linear mixed model with Box-Cox transformed log_mod_gpp_boxcox
-model_mixed_boxcox <- lmer(mod_gpp_boxcox ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), data = drivers)
-summary(model_mixed_boxcox)
-
-# Check the normality of the residuals 
-residuals_mixed_boxcox <- resid(model_mixed_boxcox)
-qqnorm(residuals_mixed_boxcox)
-qqline(residuals_mixed_boxcox)
-
-# finding outliers
-boxplot(drivers$mod_gpp, main="Boxplot of mod_gpp")
-
-extreme_outliers <- which(residuals_mixed_boxcox > quantile(residuals_mixed_boxcox, 0.975) | 
-                            residuals_mixed_boxcox < quantile(residuals_mixed_boxcox, 0.010))
-
-# Remove extreme outliers from the data
-drivers_clean <- drivers[-extreme_outliers, ]
-
-model_mixed_boxcox_clean <- lmer(mod_gpp_boxcox ~ maxT + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), data = drivers_clean)
-summary(model_mixed_boxcox_clean)
-residuals_mixed_boxcox_clean <- resid(model_mixed_boxcox_clean)
-qqnorm(residuals_mixed_boxcox_clean)
-qqline(residuals_mixed_boxcox_clean)
-
-#  almost normality
-ggplot(drivers_clean, aes(x = mod_gpp_boxcox)) +
-  geom_histogram(fill = "skyblue", color = "black", bins = 20) +
-  labs(title = "Distribution of mod_gpp",
-       x = "mod_gpp",
-       y = "Frequency") +
-  theme_minimal()
-shapiro_test <- shapiro.test(drivers_clean$mod_gpp_boxcox)
-print(shapiro_test)
-
-# model time!
-model_mixed_boxcox_clean <- lmer(mod_gpp_boxcox ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year) + (1|doy), data = drivers_clean)
-
-# Check the diagnostics
-summary(model_mixed_boxcox_clean)
-
-
-# mixed effect model on drivers
+# null models
 library(nlme)
-shapiro.test()
-model_mixed <- lmer(mod_gpp ~ maxT+ sm1 + sm2 + sm3 + swr + vpd +(1|year) + (1|doy), data = drivers)
-model_null <- lmer(mod_gpp ~ (1|year) + (1|doy), data = drivers)
 
-residuals_mixed <- resid(model_mixed)
-qqnorm(residuals_mixed)
-qqline(residuals_mixed)
+model_null1 <- lmer(mod_gpp ~ (1|doy), data = drought)
+model_null2 <- lmer(mod_gpp ~ (1|doy), data = non_drought)
 
+residuals_null <- resid(model_null1)
+qqnorm(residuals_null)
+qqline(residuals_null)
 
-
-
-summary(model_mixed)
-summary(model_null)
-
-ggplot(non_drought, aes(x = mod_gpp)) +
-  geom_histogram(fill = "skyblue", color = "black", bins = 30) +
-  labs(title = "Distribution of mod_gpp",
-       x = "mod_gpp",
-       y = "Frequency") +
-  theme_minimal()
-shapiro_test <- shapiro.test(non_drought$mod_gpp)
-shapiro_test <- shapiro.test(drivers$log_mod_gpp)
-print(shapiro_test)
-
-
+summary(model_null1)
+summary(model_null2)
+summary(model_mixed_drought)
+summary(model_mixed_non)
 
 
 # drought years NOT INCLUDED
-model_mixed2 <- lmer(mod_gpp ~ airT + maxT+ sm1 + sm2 + sm3 + swr + (1|year) + (1|doy), data = non_drought)
-model_null2 <- lmer(mod_gpp ~ (1|year) + (1|doy), data = drivers)
+model_mixed2 <- lmer(mod_gpp ~ airT + maxT+ sm1 + sm2 + sm3 + swr + (1|doy), data = non_drought)
+model_null2 <- lmer(mod_gpp ~ (1|doy), data = non-drought)
 summary(model_mixed2)
 summary(model_null2)
 
 # Perform Likelihood Ratio Test
-lrt <- anova(model_mixed, model_null)
+lrt <- anova(model_mixed_drought, model_mixed_non)
 print(lrt)
 
 
@@ -949,57 +827,171 @@ ggplot(data_combined, aes(x = Driver, y = Estimate, fill = Dataset)) +
 
 #### method by only looking at differences in gpp rather than whole values
 
-# Calculate the average mod_gpp for each doy
-avg_gpp <- drivers %>%
+# Calculate the average mod_gpp for each doy (within 5-year periods)
+
+drivers3 <- drivers %>%
+  filter(!doy == 126)
+
+drivers2000 <- drivers3 %>%
+  filter(year >= 2000 & year<= 2005)
+
+drivers2015 <- drivers3 %>%
+  filter(year >= 2015 & year<= 2020)
+
+avg_gpp2000 <- drivers2000 %>%
   group_by(doy) %>%
   summarise(avg_mod_gpp = mean(mod_gpp, na.rm = TRUE))
 
+avg_gpp2015 <- drivers %>%
+  group_by(doy) %>%
+  summarise(avg_mod_gpp = mean(mod_gpp, na.rm = TRUE))
+
+drivers2000$mean <- rep(avg_gpp2000$avg_mod_gpp, length.out = nrow(drivers2000))
+drivers2015$mean <- rep(avg_gpp2015$avg_mod_gpp, length.out = nrow(drivers2015))
+
+#if using full 12 years for mean #
+avg_gpp <- drivers %>%
+  group_by(doy) %>%
+  summarise(avg_mod_gpp = mean(mod_gpp, na.rm = TRUE))
 # Merge the average mod_gpp back to the original data frame
 drivers$mean <- rep(avg_gpp$avg_mod_gpp, length.out = nrow(drivers))
+drivers$diffGPP <- drivers$mod_gpp - drivers$mean
 
 # Calculate the relative difference
-drivers$diffGPP <- drivers$mod_gpp - drivers$mean
-diffGPP <- drivers$diffGPP
+drivers2000$diffGPP <- drivers2000$mod_gpp - drivers2000$mean
+drivers2015$diffGPP <- drivers2015$mod_gpp - drivers2015$mean
 
-boxplot(drivers$mod_gpp, main="Boxplot of mod_gpp") # visualise data
-hist(drivers$diffGPP)
-shapiro_test <- shapiro.test(drivers$diffGPP)
+# Combine 2000-2005 and 2015-2020
+drivers2 <- rbind(drivers2000, drivers2015)
+
+boxplot(drivers2$diffGPP, main="Boxplot of mod_gpp") # visualise dat
+shapiro_test <- shapiro.test(drivers2$diffGPP)
 print(shapiro_test)
 
+drought <- drivers %>%
+  filter(year == 2003 | year == 2018)
+non_drought <- drivers %>%
+  filter(!(year %in% c(2003, 2018)))
+
+
+drought2 <- drivers2 %>%
+  filter(year == 2003 | year == 2018)
+non_drought2 <- drivers2 %>%
+  filter(!(year %in% c(2003, 2018)))
+non_drought2000 <- drivers2 %>%
+  filter((year %in% c(2000, 2001, 2002, 2004, 2005)))
+non_drought2015 <- drivers2 %>%
+  filter((year %in% c(2015, 2016, 2017, 2019, 2020)))
+
+#all data
 model_mixed_diff <- lmer(diffGPP ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year), data = drivers)
 summary(model_mixed_diff)
-
 residuals_mixed_diff <- resid(model_mixed_diff)
 shapiro_test <- shapiro.test(residuals_mixed_diff)
 print(shapiro_test) # residuals are normally distributed
 qqnorm(residuals_mixed_diff) 
 qqline(residuals_mixed_diff)
 
-
-#before
-
-# Merge the average mod_gpp back to the original data frame
-drivers <- left_join(drivers, avg_gpp, by = "doy")
-
-# Calculate the relative difference
-drivers$diffGPP <- drivers$mod_gpp - drivers$avg_mod_gpp
-
-diffGPP <- drivers$diffGPP
-
-boxplot(drivers$mod_gpp, main="Boxplot of mod_gpp") # visualise data
-hist(drivers$diffGPP)
-shapiro_test <- shapiro.test(drivers$diffGPP)
-
-model_mixed_diff <- lmer(diffGPP ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year), data = drivers)
-summary(model_mixed_diff)
-
-residuals_mixed_all <- resid(model_mixed_diff)
-shapiro_test <- shapiro.test(residuals_mixed_diff)
+# drought years only
+model_diffdrought <- lmer(diffGPP ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year), data = drought)
+summary(model_diffdrought)
+residuals_diffdrought <- resid(model_diffdrought)
+shapiro_test <- shapiro.test(residuals_diffdrought)
 print(shapiro_test) # residuals are normally distributed
-qqnorm(residuals_mixed_diff) 
-qqline(residuals_mixed_diff)
+qqnorm(residuals_diffdrought) 
+qqline(residuals_diffdrought)
 
-anova(model_mixed_diff)
+model_diffnon <- lmer(diffGPP ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|year), data = non_drought)
+summary(model_diffnon)
+
+residuals_diffnon <- resid(model_diffnon)
+shapiro_test <- shapiro.test(residuals_diffnon)
+print(shapiro_test) # residuals are normally distributed
+qqnorm(residuals_diffnon) 
+qqline(residuals_diffnon)
+
+
+# plotting 
+
+maxTplot <- ggplot(drivers, aes(x = maxT, y = diffGPP, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "Max Temperature (°C)", y = "ΔGPPₛᵤₘₘₑᵣ (gC/m²/day)")
+plot(maxTplot)
+
+sm2plot <- ggplot(drivers, aes(x = sm2, y = diffGPP, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "SM2 (mm)", y = "ΔGPPₛᵤₘₘₑᵣ (gC/m²/day)") 
+
+swrplot <- ggplot(drivers, aes(x = swr, y = diffGPP, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold"),
+  labs(x = "SWR (MJ/m²/day)", y = "ΔGPPₛᵤₘₘₑᵣ (gC/m²/day)") )
+
+vpdplot <- ggplot(drivers, aes(x = vpd, y = diffGPP, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "VPD (kPa)", y = "ΔGPPₛᵤₘₘₑᵣ (gC/m²/day)")  
+
+sm1plot <- ggplot(drivers, aes(x = sm1, y = diffGPP, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "SM1 (mm)", y = "ΔGPPₛᵤₘₘₑᵣ (gC/m²/day)")  
+
+sm3plot <- ggplot(drivers, aes(x = sm3, y = diffGPP, group = condition, colour = condition)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "SM3 (mm)", y = "ΔGPPₛᵤₘₘₑᵣ (gC/m²/day)")  
+
+
+# combine the correlation plots
+combined_cor_plots <- grid.arrange(
+  maxTplot, vpdplot, swrplot, 
+  sm1plot, sm2plot, sm3plot, 
+  nrow = 2, 
+  layout_matrix = rbind(c(1,2,3), c(4,5,6)), 
+  heights = c(1,1))
+
+
+ggsave("correlation_plots.png", path = "Plots", plot = combined_cor_plots, width = 10, height = 7, dpi = 500)
+
 
 
 ### RQ3: Drivers vs response variables ####
