@@ -946,10 +946,11 @@ text_data <- data.frame(
 
 # Plotting 
 
-maxTplot <- ggplot(drivers, aes(x = maxT, y = mod_gpp, group = condition, colour = condition)) + 
+maxTplot <- ggplot(drivers, aes(x = maxT, y = mod_gpp, group = condition, colour = condition, shape = condition)) + 
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
-  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  scale_color_manual(values = c("normal" = "#2A95C7AD", "drought" = "#F59B00C4")) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
   theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
@@ -958,10 +959,11 @@ maxTplot <- ggplot(drivers, aes(x = maxT, y = mod_gpp, group = condition, colour
   labs(x = "Max temperature (°C)", y = "GPPₛᵤₘₘₑᵣ (gC/m²/day)")
 plot(maxTplot)
 
-sm2plot <- ggplot(drivers, aes(x = sm2, y = mod_gpp, group = condition, colour = condition)) + 
+sm2plot <- ggplot(drivers, aes(x = sm2, y = mod_gpp, group = condition, colour = condition, shape = condition)) + 
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
-  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  scale_color_manual(values = c("normal" = "#2A95C7AD", "drought" = "#F59B00C4")) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
   theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
@@ -969,10 +971,11 @@ sm2plot <- ggplot(drivers, aes(x = sm2, y = mod_gpp, group = condition, colour =
         legend.title = element_text(size = 11, face = "bold")) +
   labs(x = "SM2 (?)", y = "GPPₛᵤₘₘₑᵣ (gC/m²/day)") 
 
-swrplot <- ggplot(drivers, aes(x = swr, y = mod_gpp, group = condition, colour = condition)) + 
+swrplot <- ggplot(drivers, aes(x = swr, y = mod_gpp, group = condition, colour = condition, shape = condition)) + 
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
-  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  scale_color_manual(values = c("normal" = "#2A95C7AD", "drought" = "#F59B00C4")) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
   theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
@@ -980,10 +983,11 @@ swrplot <- ggplot(drivers, aes(x = swr, y = mod_gpp, group = condition, colour =
         legend.title = element_text(size = 11, face = "bold")) +
   labs(x = "SWR (MJ/m²/day)", y = "GPPₛᵤₘₘₑᵣ (gC/m²/day)") 
 
-vpdplot <- ggplot(drivers, aes(x = vpd, y = mod_gpp, group = condition, colour = condition)) + 
+vpdplot <- ggplot(drivers, aes(x = vpd, y = mod_gpp, group = condition, colour = condition, shape = condition)) + 
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
-  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  scale_color_manual(values = c("normal" = "#2A95C7AD", "drought" = "#F59B00C4")) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
   theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
@@ -991,10 +995,11 @@ vpdplot <- ggplot(drivers, aes(x = vpd, y = mod_gpp, group = condition, colour =
         legend.title = element_text(size = 11, face = "bold")) +
   labs(x = "VPD (kPa)", y = "GPPₛᵤₘₘₑᵣ (gC/m²/day)")  
 
-sm1plot <- ggplot(drivers, aes(x = sm1, y = mod_gpp, group = condition, colour = condition)) + 
+sm1plot <- ggplot(drivers, aes(x = sm1, y = mod_gpp, group = condition, colour = condition, shape = condition)) + 
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
-  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  scale_color_manual(values = c("normal" = "#2A95C7AD", "drought" = "#F59B00C4")) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
   theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
@@ -1002,10 +1007,11 @@ sm1plot <- ggplot(drivers, aes(x = sm1, y = mod_gpp, group = condition, colour =
         legend.title = element_text(size = 11, face = "bold")) +
   labs(x = "SM1 (?)", y = "GPPₛᵤₘₘₑᵣ (gC/m²/day)")  
 
-sm3plot <- ggplot(drivers, aes(x = sm3, y = mod_gpp, group = condition, colour = condition)) + 
+sm3plot <- ggplot(drivers, aes(x = sm3, y = mod_gpp, group = condition, colour = condition, shape = condition)) + 
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  scale_color_manual(values = c("normal" = "#005CF091", "drought" = "#F2003871")) +
+  geom_smooth(method = "lm", se = FALSE, aes(colour = condition)) +
+  scale_color_manual(values = c("normal" = "#2A95C7AD", "drought" = "#F59B00C4")) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +  # Change point shapes
   theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
