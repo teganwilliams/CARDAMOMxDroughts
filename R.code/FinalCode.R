@@ -832,14 +832,40 @@ summary(model_mixed_non)
 ## Using 2000-2005 vs 2015-2020
 library(lme4)
 
+# Rescale the continuous variables
+drivers$maxT.2 <- scale(drivers$maxT)
+drivers$airT.2 <- scale(drivers$airT)
+drivers$sm1.2 <- scale(drivers$sm1)
+drivers$sm2.2 <- scale(drivers$sm2)
+drivers$sm3.2 <- scale(drivers$sm3)
+drivers$vpd.2 <- scale(drivers$vpd)
+drivers$swr.2 <- scale(drivers$swr)
+
 drivers2000 <- non_drought %>%
   filter(year >= 2000 & year <= 2005) 
 
 drivers2015 <- non_drought %>%
   filter(year >= 2015 & year <= 2020)
 
-model_lm_drought <- lm(mod_gpp ~  airT + maxT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
+model_lm_drought <- lm(mod_gpp ~  maxT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
 summary(model_lm_drought)
+
+model_lm_drought2 <- lm(mod_gpp ~  airT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
+summary(model_lm_drought2)
+
+model_lm_drought3 <- lm(mod_gpp ~ maxT.2 * airT.2 * swr.2 + sm1.2 * sm2.2 * sm3.2 + vpd.2, data = drought)
+summary(model_lm_drought3)
+
+AIC_lmd <- AIC(model_lm_drought)
+AIC_lmd2 <- AIC(model_lm_drought2)
+AIC_lmd3 <- AIC(model_lm_drought3)
+AIC_nulld <- AIC(model_nulldrought)
+
+print(AIC_lmd) 
+print(AIC_lmd2) 
+print(AIC_lmd3)
+print(AIC_nulld) 
+
 
 model_lm2000 <- lm(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr, data = drivers2000)
 summary(model_lm2000)
@@ -847,18 +873,18 @@ summary(model_lm2000)
 model_lm2015 <- lm(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr, data = drivers2015)
 summary(model_lm2015)
 
-model_mixed2000 <- lmer(mod_gpp ~ maxT + airT + sm1 + sm2 + sm3 + vpd + swr + (1|doy), data = drivers2000)
-model_mixed2015 <- lmer(mod_gpp ~ maxT + airT + sm1 + sm2 + sm3 + vpd + swr + (1|doy),  data = drivers2015)
+model_mixed2000 <- lmer(mod_gpp ~ maxT.2 * airT.2 * swr.2 + sm1.2 * sm2.2 * sm3.2 + vpd.2 + (1|doy), data = drivers2000)
+model_mixed2015 <- lmer(mod_gpp ~ maxT.2 * airT.2 * swr.2 + sm1.2 * sm2.2 * sm3.2 + vpd.2 + (1|doy),  data = drivers2015)
 
 model_mixed2000_drought <-  lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr + (1|year), data = drivers2000)
 
 summary(model_mixed2000)
 summary(model_mixed2015)
 
-shapiro_test <- shapiro.test(resid(model_lm_drought))
+shapiro_test <- shapiro.test(resid(model_lm_drought3))
 print(shapiro_test)
-qqnorm(resid(model_lm_drought))
-qqline(resid(model_lm_drought))
+qqnorm(resid(model_lm_drought3))
+qqline(resid(model_lm_drought3))
 
 shapiro_test <- shapiro.test(resid(model_mixed2000))
 print(shapiro_test)
@@ -1041,7 +1067,134 @@ qqline(residuals_diffnon) # passes qq test
 
 
 
-# Plotting 
+
+
+# NEW PLOTS
+
+# Predicted values using lm and lmer models
+drivers$pred_gpp_drought <- predict(model_lm_drought, newdata = drivers, re.form = NA)
+drivers$pred_gpp_2000 <- predict(model_mixed2000, newdata = drivers, re.form = NA)
+drivers$pred_gpp_2015 <- predict(model_mixed2015, newdata = drivers, re.form = NA)
+
+
+palette_drivers <- c("#96DB6B", "#FF8400E0", "#F2E857", "#FF8400E0", "#96DB6B", "#F2E857")
+
+maxTplot <- ggplot(drivers, aes(x = maxT, y = mod_gpp, colour = group)) + 
+  geom_point(aes(colour = group, shape = condition)) +
+  geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2000, colour ="LMER 2000-2005"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
+  scale_color_manual(values = palette_drivers) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "Max T(°C)", y = "GPP (gC/m²/day)")
+
+airTplot <- ggplot(drivers, aes(x = airT, y = mod_gpp, colour = group)) + 
+  geom_point(aes(colour = group, shape = condition)) +
+  geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2000, colour ="LMER 2000-2005"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
+  scale_color_manual(values = palette_drivers) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "Air T(°C)", y = "GPP (gC/m²/day)")
+
+swrplot <- ggplot(drivers, aes(x = swr, y = mod_gpp, colour = group)) + 
+  geom_point(aes(colour = group, shape = condition)) +
+  geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2000, colour ="LMER 2000-2005"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
+  scale_color_manual(values = palette_drivers) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "SWR (MJ/m²/day)", y = "GPP (gC/m²/day)")
+
+sm1plot <- ggplot(drivers, aes(x = sm1, y = mod_gpp, colour = group)) + 
+  geom_point(aes(colour = group, shape = condition)) +
+  geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2000, colour ="LMER 2000-2005"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
+  scale_color_manual(values = palette_drivers) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "SM1 (?)", y = "GPP (gC/m²/day)")
+
+sm2plot <- ggplot(drivers, aes(x = sm2, y = mod_gpp, colour = group)) + 
+  geom_point(aes(colour = group, shape = condition)) +
+  geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2000, colour ="LMER 2000-2005"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
+  scale_color_manual(values = palette_drivers) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "SM2 (?)", y = "GPP (gC/m²/day)")
+
+sm3plot <- ggplot(drivers, aes(x = sm3, y = mod_gpp, colour = group)) + 
+  geom_point(aes(colour = group, shape = condition)) +
+  geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2000, colour ="LMER 2000-2005"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
+  scale_color_manual(values = palette_drivers) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "SM3 (?)", y = "GPP (gC/m²/day)")
+
+vpdplot <- ggplot(drivers, aes(x = vpd, y = mod_gpp, colour = group)) + 
+  geom_point(aes(colour = group, shape = condition)) +
+  geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2000, colour ="LMER 2000-2005"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
+  scale_color_manual(values = palette_drivers) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "VPD (kPa)", y = "GPP (gC/m²/day)")
+
+
+# combine the correlation plots
+combined_rq2_plots <- grid.arrange(
+  maxTplot, vpdplot, swrplot, 
+  sm1plot, sm2plot, sm3plot, 
+  nrow = 2, 
+  layout_matrix = rbind(c(1,2,3), c(4,5,6)), 
+  heights = c(1,1))
+
+# Save the plot as a PNG file to GitHub
+setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/droughts")
+ggsave("rq2_plots.png", path = "Plots", plot = combined_rq2_plots, width = 10, height = 7, dpi = 500)
+
+
+
+
+
+# Plotting (BEFORE)
 
 drivers$group <- ifelse(drivers$year %in% c(2000, 2001, 2002, 2004, 2005), "2000-2005",
                         ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
@@ -1065,6 +1218,7 @@ maxTplot <- ggplot(drivers, aes(x = maxT, y = mod_gpp, group = group, colour = g
         legend.title = element_text(size = 11, face = "bold")) +
   labs(x = "Max temperature (°C)", y = "GPP (gC/m²/day)")
 plot(maxTplot)
+
 
 sm2plot <- ggplot(drivers, aes(x = sm2, y = mod_gpp, group = group, colour = group, shape = condition)) + 
   geom_point() +
@@ -1092,7 +1246,7 @@ swrplot <- ggplot(drivers, aes(x = swr, y = mod_gpp, group = group, colour = gro
 
 vpdplot <- ggplot(drivers, aes(x = vpd, y = mod_gpp, group = group, colour = group, shape = condition)) + 
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, aes(colour = group)) +
+  geom_smooth(method = "lmer", se = FALSE, aes(colour = group)) +
   scale_color_manual(values =  palette_drivers) +
   scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
   theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
@@ -1100,7 +1254,9 @@ vpdplot <- ggplot(drivers, aes(x = vpd, y = mod_gpp, group = group, colour = gro
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
         legend.title = element_text(size = 11, face = "bold")) +
-  labs(x = "VPD (kPa)", y = "GPP (gC/m²/day)")  
+  labs(x = "VPD (kPa)", y = "GPP (gC/m²/day)")
+
+plot(vpdplot)
 
 sm1plot <- ggplot(drivers, aes(x = sm1, y = mod_gpp, group = group, colour = group, shape = condition)) + 
   geom_point() +
