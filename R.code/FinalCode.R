@@ -244,6 +244,7 @@ gpp_2003 <- gpp_all_summer %>%
 gpp_2018 <- gpp_all_summer %>%
   filter(year >= 2015 & year <= 2020)
 
+gpp_2003$group <- as.factor(gpp_2003$group)
 
 kruskal_test_2003 <- kruskal.test(mod_gpp ~ group, data = gpp_2003)
 print(kruskal_test_2003)
@@ -260,21 +261,57 @@ print(kruskal_test_summer1)
 kruskal_test_summer2 <- kruskal.test(mod_gpp ~ group, data = gpp_all_summer)
 print(kruskal_test_summer2)
 
+pairwise_comp2003 <- pairwise.wilcox.test(gpp_2003$mod_gpp, gpp_2003$group, p.adjust.method = "bonferroni")
+print(pairwise_comp2003)
 
-ggplot(gpp_all, aes(x = year, y = mod_gpp, group = year)) +
-  geom_boxplot() +
-  labs(title = "Inter-Annual Variability of GPP",
-       x = "Year",
-       y = "GPP") +
-  theme_minimal()
+pairwise_comp2018 <- pairwise.wilcox.test(gpp_2018$mod_gpp, gpp_2018$group, p.adjust.method = "bonferroni")
+print(pairwise_comp2018)
 
-gpp_all_summer$year <- as.factor(gpp_all_summer$year)
+palette2003 <- c("#96DB6B", "#CCCCCCA2")
+palette2018 <- c("#F2E857", "#CCCCCCA2")
+
+variability2003 <- ggplot(gpp_2003, aes(x = year, y = mod_gpp, group = year)) +
+  geom_boxplot(aes(fill = group)) +
+  labs(x = "Year",
+       y = "July GPP (gC/m²/day)") +
+  scale_fill_manual(values = palette2003) +
+  theme(panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold"),
+        legend.text = element_text(size = 11),
+        legend.position = 'none') +
+  scale_x_continuous(breaks = c(2000, 2001, 2002, 2003, 2004, 2005))
+
+plot(variability2003)
+
+variability2018 <- ggplot(gpp_2018, aes(x = year, y = mod_gpp, group = year)) +
+  geom_boxplot(aes(fill = group)) +
+  labs(x = "Year",
+       y = "July GPP (gC/m²/day)") +
+  scale_fill_manual(values = palette2018) +
+  theme(panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+                 axis.title = element_text(size=11),
+                 axis.text = element_text(size=9),
+                 legend.title = element_text(size = 11, face = "bold"),
+                 legend.text = element_text(size = 11),
+                 legend.position = 'none') +
+  scale_x_continuous(breaks = c(2015, 2016, 2017, 2018, 2019, 2020))
+
+# combine the inter-annual variability plots
+combined_variability_plots <- grid.arrange(
+  variability2003, variability2018,
+  nrow = 1, 
+  layout_matrix = rbind(c(1,2)), 
+  heights = c(1))
+
+ggsave("interannual_variability.png", path = "Plots", plot = combined_variability_plots, width = 10, height = 5, dpi = 500)
+
 
 
 # Levene's test for homogeneity of variances
 levene_test <- car::leveneTest(mod_gpp ~ group, data = gpp_2003)
 print(levene_test)
-
 
 
 ### Calculate mean and standard deviation of annual GPP
