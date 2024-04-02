@@ -847,15 +847,30 @@ drivers2000 <- non_drought %>%
 drivers2015 <- non_drought %>%
   filter(year >= 2015 & year <= 2020)
 
+model_null <- lm(mod_gpp ~ 1, data = drought)
+
+model_sm2 <- lm(mod_gpp ~ sm2, data = drought)
+summary(model_sm2)
+
 model_lm_drought <- lm(mod_gpp ~  maxT + airT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
 summary(model_lm_drought)
 
 model_lm_drought2 <- lm(mod_gpp ~  airT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
 summary(model_lm_drought2)
 
-model_lm_drought3 <- lm(mod_gpp ~ maxT * sm1 * sm2 * sm3 + swr + vpd, data = drought)
-summary(model_lm_drought3)
+model_lm_drought4 <- lm(mod_gpp ~  maxT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
+summary(model_lm_drought4)
 
+model_lm_drought3 <- lm(mod_gpp ~ maxT * airT * sm1 * sm2 * sm3 + swr + vpd, data = drought)
+summary(model_lm_drought3)
+plot(model_lm_drought3)
+shapiro.test(resid(model_lm_drought3))
+
+plot(mod_gpp ~ maxT, data = drought)
+abline(model_lm_drought3)
+
+AIC(model_null, model_lm_drought, model_lm_drought2, model_lm_drought3, model_lm_drought4)
+autoplot((model_lm_drought3))
 
 AIC_lmd <- AIC(model_lm_drought)
 AIC_lmd2 <- AIC(model_lm_drought2)
@@ -868,6 +883,7 @@ print(AIC_lmd3)
 print(AIC_nulld) 
 
 
+
 model_lm2000 <- lm(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr, data = drivers2000)
 summary(model_lm2000)
 
@@ -875,7 +891,7 @@ model_lm2015 <- lm(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr, data = drivers2
 summary(model_lm2015)
 
 model_mixed2000 <- lmer(mod_gpp ~ maxT.2 * airT.2 * sm1.2 * sm2.2 * sm3.2 + swr.2 + vpd.2 + (1|doy), data = drivers2000)
-model_mixed2015 <- lmer(mod_gpp ~ maxT.2 * airT.2 * sm1.2 * sm2.2 * sm3.2 + swr.2 + vpd.2 + (1|doy),  data = drivers2015)
+model_mixed2015 <- lmer(mod_gpp ~ maxT.2 * airT.2 + sm1.2 * sm2.2 * sm3.2 + swr.2 + vpd.2 + (1|doy),  data = drivers2015)
 
 model_mixed2000_drought <-  lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr + (1|year), data = drivers2000)
 
@@ -1228,7 +1244,7 @@ plot(maxTplot)
 
 sm2plot <- ggplot(drivers, aes(x = sm2, y = mod_gpp, group = group, colour = group, shape = condition)) + 
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, aes(colour = group)) +
+  geom_smooth(method = "glm", se = FALSE, aes(colour = group)) +
   scale_color_manual(values =  palette_drivers) +
   scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
   theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
@@ -1252,7 +1268,7 @@ swrplot <- ggplot(drivers, aes(x = swr, y = mod_gpp, group = group, colour = gro
 
 vpdplot <- ggplot(drivers, aes(x = vpd, y = mod_gpp, group = group, colour = group, shape = condition)) + 
   geom_point() +
-  geom_smooth(method = "lmer", se = FALSE, aes(colour = group)) +
+  geom_smooth(method = "lm", se = FALSE, aes(colour = group)) +
   scale_color_manual(values =  palette_drivers) +
   scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
   theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
@@ -1266,7 +1282,7 @@ plot(vpdplot)
 
 sm1plot <- ggplot(drivers, aes(x = sm1, y = mod_gpp, group = group, colour = group, shape = condition)) + 
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, aes(colour = group)) +
+  geom_smooth(method = "glm", se = FALSE, aes(colour = group)) +
   scale_color_manual(values =  palette_drivers) +
   scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
   theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
@@ -1288,6 +1304,11 @@ sm3plot <- ggplot(drivers, aes(x = sm3, y = mod_gpp, group = group, colour = gro
         legend.title = element_text(size = 11, face = "bold")) +
   labs(x = "SM3 (?)", y = "GPP (gC/m²/day)")  
 
+sm2_lm <- lm(mod_gpp ~ sm2, data = drought)
+plot(sm2_lm)
+shapiro.test(resid(sm2_lm)) #non-normal
+
+
 
 # combine the correlation plots
 combined_rq2_plots <- grid.arrange(
@@ -1301,6 +1322,18 @@ combined_rq2_plots <- grid.arrange(
 # Save the plot as a PNG file to GitHub
 setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/droughts")
 ggsave("rq2_plots.png", path = "Plots", plot = combined_rq2_plots, width = 10, height = 7, dpi = 500)
+
+
+
+#### NMDS
+
+
+
+
+
+
+
+
 
 
 
