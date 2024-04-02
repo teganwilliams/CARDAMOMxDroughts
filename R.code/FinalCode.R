@@ -1325,16 +1325,61 @@ ggsave("rq2_plots.png", path = "Plots", plot = combined_rq2_plots, width = 10, h
 
 
 
-#### NMDS
+#### RQ2 NMDS ####
+
+install.packages("vegan")
+library(vegan)
 
 
+drivers_new <- drivers %>%
+  select(maxT, airT, sm1, sm2, sm3, vpd, swr)
+  
+drivers_new$group <- ifelse(drivers$year %in% c(2000, 2001, 2002, 2004, 2005), "2000-2005",
+                        ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
+                               ifelse(drivers$year %in% c(2003, 2018), "2003 & 2018", NA)))
 
+# run NMDS
+set.seed(123) # for reproducibility
+nmds <- metaMDS(drivers_new, distance = "euclidean", k = 2)
+nmds_coords <- as.data.frame(scores(nmds, "sites"))
+nmds_coords$group <- drivers_new$group
+# Plot NMDS
+plot(nmds, type = "n") # create empty plot
+points(nmds, col = as.factor(drivers_new), pch = 16) # add points colored by GPP
+text(nmds, labels = rownames(drivers_new), cex = 0.8, pos = 3) # add sample labels
 
+stressplot(nmds)
+nmds$stress
 
+plot(nmds$diss, nmds$dist)
 
+diss_matrix <- vegdist(drivers_new, method = "euclidean")
+anosim(diss_matrix, drivers_new$group, permutations = 9999)
+# significance = 1e-04; R = 0.1565
 
+en = envfit(nmds, drivers_new, permutations = 999, na.rm = TRUE)
+en #this shows you the correlation of each variable with each NMDS
+plot(nmds)
+plot(en)
 
+nmds_coords <- as.data.frame(scores(nmds, "sites"))
+nmds_coords$group <- drivers_new$group
 
+hull.data <- data.frame()
+for (i in unique(nmds_coords$group)) {
+  temp <- nmds_coords[nmds_coords$group == i, ][chull(nmds_coords[nmds_coords$group == i, c("NMDS1", "NMDS2")]), ]
+  hull.data <- rbind(hull.data, temp)
+}
+
+en_coords = as.data.frame(scores(en, "vectors")) *ordiArrowMul(en)
+
+ggplot(nmds_coords, aes(x = NMDS1, y = NMDS2)) +
+  geom_polygon(data = hull.data, aes(x = NMDS1, y = NMDS2, group = group, fill = group)) +
+  geom_point(data = nmds_coords, aes(x = NMDS1, y = NMDS2)) +
+  geom_segment(data = en_coords, aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+               size = 1, alpha = 0.5, colour = "black") +
+  geom_text(data = en_coords, aes(x = NMDS1, y = NMDS2), 
+            colour = "black", fontface = "bold", label = row.names(en_coords))
 
 
 ### RQ3: Drivers vs response variables ####
