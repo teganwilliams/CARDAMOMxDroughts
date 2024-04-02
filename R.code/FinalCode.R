@@ -684,12 +684,14 @@ ggsave("correlation_plots.png", path = "Plots", plot = combined_cor_plots, width
 
 #### RQ1 visualisation ####
 
-palette_gpp <- c("#3EA85A", "#D6A400", "#CCCCCCA2")
-
+palette_gpp <- c("#52CC00", "#EDD100", "#CCCCCCA2")
+palette_gpp2 <- c("#3EA85A", "#D6A400", "#CCCCCCA2")
+palette2003 <- c("#96DB6B", "#CCCCCCA2")
+palette2018 <- c("#F2E857", "#CCCCCCA2")
 
 gpp_variation_plot <- ggplot(gpp_all, aes(x = doy, y = mod_gpp, colour = group, group = year)) +
-  geom_line(size = 0.8) +
-  geom_hline(yintercept = 0, size = 0.4, colour = "black") +
+  geom_line(linewidth = 0.8) +
+  geom_hline(yintercept = 0, linewidth = 0.4, colour = "black") +
   # geom_text(aes(x = 35.2, y = -0.4, label = "Norm"), colour = "black") + 
   # geom_text(aes(x = 34, y = 5.2, label = "95th percentile"), colour = "darkorange", size = 3) + 
   labs(title = "",
