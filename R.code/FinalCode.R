@@ -684,19 +684,16 @@ ggsave("correlation_plots.png", path = "Plots", plot = combined_cor_plots, width
 
 #### RQ1 visualisation ####
 
-palette_gpp <- c("#52CC00", "#EDD100", "#CCCCCCA2")
+palette_gpp <- c("#4CBF00", "#EBC800", "#CCCCCCA2")
 palette_gpp2 <- c("#3EA85A", "#D6A400", "#CCCCCCA2")
 palette2003 <- c("#96DB6B", "#CCCCCCA2")
 palette2018 <- c("#F2E857", "#CCCCCCA2")
 
 gpp_variation_plot <- ggplot(gpp_all, aes(x = doy, y = mod_gpp, colour = group, group = year)) +
-  geom_line(linewidth = 0.8) +
-  geom_hline(yintercept = 0, linewidth = 0.4, colour = "black") +
-  # geom_text(aes(x = 35.2, y = -0.4, label = "Norm"), colour = "black") + 
-  # geom_text(aes(x = 34, y = 5.2, label = "95th percentile"), colour = "darkorange", size = 3) + 
+  geom_line(linewidth = 0.9) +
   labs(title = "",
-       x = "Time (months)",
-       y = "Weekly GPP (gC/m2/day))",
+       x = "Time (month)",
+       y = "Weekly GPP (gC/m²/day)",
        colour = "Year:") +
   scale_colour_manual(values = palette_gpp) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
