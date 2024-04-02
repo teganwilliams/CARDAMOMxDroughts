@@ -237,7 +237,7 @@ gpp_all$group <- ifelse(gpp_all$year %in% c(2003, 2018), as.character(gpp_all$ye
 
 gpp_all$group <- as.factor(gpp_all$group)
 gpp_all_summer <- gpp_all %>%
-  filter(doy >= 231 & doy <= 259)
+  filter(doy >= 210 & doy <= 259)
 
 gpp_2003 <- gpp_all_summer %>%
   filter(year >= 2000 & year <= 2005)
@@ -255,11 +255,6 @@ print(kruskal_test_2018)
 kruskal_test_fullyear <- kruskal.test(mod_gpp ~ group, data = gpp_all)
 print(kruskal_test_fullyear)
 
-kruskal_test_summer1 <- kruskal.test(mod_gpp ~ year, data = gpp_all_summer)
-print(kruskal_test_summer1)
-
-kruskal_test_summer2 <- kruskal.test(mod_gpp ~ group, data = gpp_all_summer)
-print(kruskal_test_summer2)
 
 pairwise_comp2003 <- pairwise.wilcox.test(gpp_2003$mod_gpp, gpp_2003$group, p.adjust.method = "bonferroni")
 print(pairwise_comp2003)
@@ -273,7 +268,7 @@ palette2018 <- c("#F2E857", "#CCCCCCA2")
 variability2003 <- ggplot(gpp_2003, aes(x = year, y = mod_gpp, group = year)) +
   geom_boxplot(aes(fill = group)) +
   labs(x = "Year",
-       y = "July GPP (gC/m²/day)") +
+       y = "GPP (gC/m²/day)") +
   scale_fill_manual(values = palette2003) +
   theme(panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         axis.title = element_text(size=11),
@@ -288,7 +283,7 @@ plot(variability2003)
 variability2018 <- ggplot(gpp_2018, aes(x = year, y = mod_gpp, group = year)) +
   geom_boxplot(aes(fill = group)) +
   labs(x = "Year",
-       y = "July GPP (gC/m²/day)") +
+       y = "GPP (gC/m²/day)") +
   scale_fill_manual(values = palette2018) +
   theme(panel.background = element_blank(), axis.line = element_line(colour = "black"), 
                  axis.title = element_text(size=11),
