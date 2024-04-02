@@ -847,14 +847,15 @@ drivers2000 <- non_drought %>%
 drivers2015 <- non_drought %>%
   filter(year >= 2015 & year <= 2020)
 
-model_lm_drought <- lm(mod_gpp ~  maxT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
+model_lm_drought <- lm(mod_gpp ~  maxT + airT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
 summary(model_lm_drought)
 
 model_lm_drought2 <- lm(mod_gpp ~  airT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
 summary(model_lm_drought2)
 
-model_lm_drought3 <- lm(mod_gpp ~ maxT.2 * airT.2 * swr.2 + sm1.2 * sm2.2 * sm3.2 + vpd.2, data = drought)
+model_lm_drought3 <- lm(mod_gpp ~ maxT * sm1 * sm2 * sm3 + swr + vpd, data = drought)
 summary(model_lm_drought3)
+
 
 AIC_lmd <- AIC(model_lm_drought)
 AIC_lmd2 <- AIC(model_lm_drought2)
@@ -873,8 +874,8 @@ summary(model_lm2000)
 model_lm2015 <- lm(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr, data = drivers2015)
 summary(model_lm2015)
 
-model_mixed2000 <- lmer(mod_gpp ~ maxT.2 * airT.2 * swr.2 + sm1.2 * sm2.2 * sm3.2 + vpd.2 + (1|doy), data = drivers2000)
-model_mixed2015 <- lmer(mod_gpp ~ maxT.2 * airT.2 * swr.2 + sm1.2 * sm2.2 * sm3.2 + vpd.2 + (1|doy),  data = drivers2015)
+model_mixed2000 <- lmer(mod_gpp ~ maxT.2 * airT.2 * sm1.2 * sm2.2 * sm3.2 + swr.2 + vpd.2 + (1|doy), data = drivers2000)
+model_mixed2015 <- lmer(mod_gpp ~ maxT.2 * airT.2 * sm1.2 * sm2.2 * sm3.2 + swr.2 + vpd.2 + (1|doy),  data = drivers2015)
 
 model_mixed2000_drought <-  lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr + (1|year), data = drivers2000)
 
@@ -1072,10 +1073,13 @@ qqline(residuals_diffnon) # passes qq test
 # NEW PLOTS
 
 # Predicted values using lm and lmer models
-drivers$pred_gpp_drought <- predict(model_lm_drought, newdata = drivers, re.form = NA)
+drivers$pred_gpp_drought <- predict(model_lm_drought3, newdata = drivers, re.form = NA)
 drivers$pred_gpp_2000 <- predict(model_mixed2000, newdata = drivers, re.form = NA)
 drivers$pred_gpp_2015 <- predict(model_mixed2015, newdata = drivers, re.form = NA)
 
+drivers$group <- ifelse(drivers$year %in% c(2000, 2001, 2002, 2004, 2005), "2000-2005",
+                        ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
+                               ifelse(drivers$year %in% c(2003, 2018), "2003 & 2018", NA)))
 
 palette_drivers <- c("#96DB6B", "#FF8400E0", "#F2E857", "#FF8400E0", "#96DB6B", "#F2E857")
 
@@ -1092,6 +1096,8 @@ maxTplot <- ggplot(drivers, aes(x = maxT, y = mod_gpp, colour = group)) +
         axis.text = element_text(size=9),
         legend.title = element_text(size = 11, face = "bold")) +
   labs(x = "Max T(°C)", y = "GPP (gC/m²/day)")
+
+plot(maxTplot)
 
 airTplot <- ggplot(drivers, aes(x = airT, y = mod_gpp, colour = group)) + 
   geom_point(aes(colour = group, shape = condition)) +
