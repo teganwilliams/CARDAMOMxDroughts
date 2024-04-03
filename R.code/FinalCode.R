@@ -16,7 +16,7 @@ anomalies <- read.csv("Data/finalanomalies.csv", header = TRUE)
 data2000 <- read.csv("Data/newdata2000-2005.csv", header = TRUE)
 data2015 <- read.csv("Data/newdata2015-2020.csv", header = TRUE)
 datafull <- read.csv("Data/newdatafull.csv", header = TRUE)
-datasim <- read.csv("validationdata.csv", header = TRUE)
+sim <- read.csv("Data/simulationdata.csv", header = TRUE)
 met <- read.csv("droughtmetdata.csv", header = TRUE)
 
 # Anomalies ####
@@ -1423,6 +1423,37 @@ ggplot(nmds_coords, aes(x = NMDS1, y = NMDS2)) +
 
 
 ### RQ3: Drivers vs response variables ####
+
+sim <- subset(sim, select = c(date, mod_gpp_sim, mod_gpp_unc95_sim, mod_lai_sim, mod_lai_unc95_sim, mod_nee_sim))
+calxsim <- merge(sim, data2015, by = c("date"))
+
+calxsim2 <- subset(calxsim, select = c(date, day, mod_gpp_sim, mod_gpp_unc95_sim, mod_gpp, mod_gpp_unc95, obs_gpp, obs_gpp_unc))
+
+
+# Plot
+compared_simulation <- ggplot(calxsim2, aes(x = day)) +
+  # geom_ribbon(aes(ymin = obs_gpp.x - obs_gpp_unc.x, ymax = obs_gpp.x + obs_gpp_unc.x, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
+  geom_ribbon(aes(ymin = mod_gpp_sim - mod_gpp_unc95_sim, ymax = mod_gpp_sim + mod_gpp_unc95_sim ), fill = "#5D1CAD", alpha = 0.3) +
+  geom_line(aes(y = mod_gpp, colour = "Mod_cal"), size = 0.5) +
+  geom_line(aes(y = mod_gpp_sim, colour = "Mod_sim"), size = 0.5) +
+  geom_point(aes(y = obs_gpp, colour = "Obs"), size = 1.2) +
+  labs(x = "Time (year)", y = "GPP (gC/m²/day)", colour = "Data:") +
+  scale_color_manual(values = c("Mod_cal" = "#5D1CAD","Mod_sim" = "#00AEC974", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold"),
+        legend.text = element_text(size = 11)) +
+  scale_x_continuous(breaks = c(182, 553, 917, 1281, 1645, 2009), 
+                     labels = c("2015", "2016", "2017", "2018", "2019", "2020"),
+                     expand = c(0, 0),
+                     limits = c(0,2184)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(0,17))
+plot(compared_simulation)
+
+calxsim2$date <- as.factor(calxsim2$date)
 
 
 
