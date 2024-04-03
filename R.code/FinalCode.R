@@ -861,7 +861,7 @@ summary(model_lm_drought2)
 model_lm_drought4 <- lm(mod_gpp ~  maxT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
 summary(model_lm_drought4)
 
-model_lm_drought3 <- lm(mod_gpp ~ maxT * airT * sm1 * sm2 * sm3 + swr + vpd, data = drought)
+model_lm_drought3 <- lm(mod_gpp ~ maxT * airT * sm1 * sm3 * sm2 + swr + vpd, data = drought)
 summary(model_lm_drought3)
 plot(model_lm_drought3)
 shapiro.test(resid(model_lm_drought3))
@@ -883,6 +883,17 @@ print(AIC_lmd3)
 print(AIC_nulld) 
 
 
+maxT2000 <- lm(mod_gpp ~ maxT, data = drivers2000)
+summary(maxT2000)
+maxT2015 <- lm(mod_gpp ~ maxT, data = drivers2015)
+summary(maxT2015)
+maxTdrought <- lm(mod_gpp ~ maxT, data = drought)
+summary(maxTdrought)
+
+shapiro_test <- shapiro.test(resid(maxT2000))
+print(shapiro_test)
+qqnorm(resid(maxT2000))
+qqline(resid(maxT2000))
 
 model_lm2000 <- lm(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr, data = drivers2000)
 summary(model_lm2000)
@@ -890,11 +901,9 @@ summary(model_lm2000)
 model_lm2015 <- lm(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr, data = drivers2015)
 summary(model_lm2015)
 
+library(lme4)
 model_mixed2000 <- lmer(mod_gpp ~ maxT.2 * airT.2 * sm1.2 * sm2.2 * sm3.2 + swr.2 + vpd.2 + (1|doy), data = drivers2000)
-model_mixed2015 <- lmer(mod_gpp ~ maxT.2 * airT.2 + sm1.2 * sm2.2 * sm3.2 + swr.2 + vpd.2 + (1|doy),  data = drivers2015)
-
-model_mixed2000_drought <-  lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr + (1|year), data = drivers2000)
-
+model_mixed2015 <- lmer(mod_gpp ~ maxT.2 * airT.2 * sm1.2 * sm2.2 * sm3.2 + swr.2 + vpd.2 + (1|doy),  data = drivers2015)
 summary(model_mixed2000)
 summary(model_mixed2015)
 
@@ -1086,7 +1095,32 @@ qqline(residuals_diffnon) # passes qq test
 
 
 
-# NEW PLOTS
+
+# using ggpredict
+
+model2000 <- lmer(mod_gpp ~ maxT.2 * airT.2 * sm1.2 * sm2.2 * sm3.2 + swr.2 + vpd.2 + (1|doy), data = drivers2000)
+model2015 <- lmer(mod_gpp ~ maxT.2 * airT.2 * sm1.2 * sm2.2 * sm3.2 + swr.2 + vpd.2 + (1|doy),  data = drivers2015)
+modeldrought <- lm(mod_gpp ~ maxT * airT * sm1 * sm2 * sm3 + swr + vpd, data = drought )
+summary(model2000)
+summary(model2015)
+
+# Generate partial dependence plots
+install.packages("Hmisc")
+install.packages("rms")
+library(Hmisc)
+library(rms)
+
+# Compute the marginal effects
+effects2000 <- allEffects(model2000)
+effects2015 <- allEffects(model2015)
+effectsdrought <- allEffects(modeldrought)
+
+# Plot the marginal effects
+plot(effects2000)
+plot(effects2015)
+plot(effects_drought)
+
+# NEW PLOTS ####
 
 # Predicted values using lm and lmer models
 drivers$pred_gpp_drought <- predict(model_lm_drought3, newdata = drivers, re.form = NA)
@@ -1101,7 +1135,7 @@ palette_drivers <- c("#96DB6B", "#FF8400E0", "#F2E857", "#FF8400E0", "#96DB6B", 
 
 maxTplot <- ggplot(drivers, aes(x = maxT, y = mod_gpp, colour = group)) + 
   geom_point(aes(colour = group, shape = condition)) +
-  geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
+  # geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
   geom_smooth(aes(y = pred_gpp_2000, colour ="LMER 2000-2005"), se = FALSE, method = "lm") +
   geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
   scale_color_manual(values = palette_drivers) +
@@ -1117,7 +1151,7 @@ plot(maxTplot)
 
 airTplot <- ggplot(drivers, aes(x = airT, y = mod_gpp, colour = group)) + 
   geom_point(aes(colour = group, shape = condition)) +
-  geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
+  # geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
   geom_smooth(aes(y = pred_gpp_2000, colour ="LMER 2000-2005"), se = FALSE, method = "lm") +
   geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
   scale_color_manual(values = palette_drivers) +
@@ -1330,13 +1364,18 @@ ggsave("rq2_plots.png", path = "Plots", plot = combined_rq2_plots, width = 10, h
 install.packages("vegan")
 library(vegan)
 
+drivers$group <- ifelse(drivers$year %in% c(2000, 2001, 2002, 2004, 2005), "2000-2005",
+                        ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
+                               ifelse(drivers$year %in% c(2003), "2003",
+                                      ifelse(drivers$year %in% c(2018), "2018", NA))))
 
 drivers_new <- drivers %>%
-  select(maxT, airT, sm1, sm2, sm3, vpd, swr)
+  select(maxT, airT, sm1, sm2, sm3, vpd, swr, group)
   
 drivers_new$group <- ifelse(drivers$year %in% c(2000, 2001, 2002, 2004, 2005), "2000-2005",
                         ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
-                               ifelse(drivers$year %in% c(2003, 2018), "2003 & 2018", NA)))
+                               ifelse(drivers$year %in% c(2003), "2003",
+                                      ifelse(drivers$year %in% c(2018), "2018", NA))))
 
 # run NMDS
 set.seed(123) # for reproducibility
@@ -1380,6 +1419,7 @@ ggplot(nmds_coords, aes(x = NMDS1, y = NMDS2)) +
                size = 1, alpha = 0.5, colour = "black") +
   geom_text(data = en_coords, aes(x = NMDS1, y = NMDS2), 
             colour = "black", fontface = "bold", label = row.names(en_coords))
+
 
 
 ### RQ3: Drivers vs response variables ####
