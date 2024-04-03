@@ -890,6 +890,26 @@ ggplot(drought, aes(x = sm1)) +
   labs(y = "Residuals", colour = "Model") +
   theme_minimal()
 
+model_2000 <- glmer(mod_gpp ~  maxT.2 + sm2.2 + vpd.2 + swr.2 + (1|doy), data = drivers2000, family = Gamma(link = "log"))
+summary(model_2000)
+
+model_2015 <- glmer(mod_gpp ~  maxT.2 + sm2.2 + vpd.2 + swr.2 + (1|doy), data = drivers2015, family = Gamma(link = "log"))
+summary(model_2015)
+
+model_2015 <- glm(mod_gpp ~  maxT + sm2 + vpd + swr, data = drivers2015)
+summary(model_2015)
+
+glm_drought <- glm(mod_gpp ~  maxT + sm2 + vpd + swr, data = drought)
+summary(model_drought)
+
+glmer_drought <- glmer(mod_gpp ~  maxT + sm2 + vpd + swr + (1|doy), data = drought, family = Gamma(link = "log"))
+summary(model_drought)
+
+residuals_glm <- resid(model_drought)
+shapiro.test(residuals_glm)
+qqnorm(residuals_glm) 
+qqline(residuals_glm) # passes qq test
+
 
 
 model_drought <- lm(mod_gpp ~  maxT + sm2 + vpd + swr, data = drought)
@@ -902,7 +922,9 @@ model_2015 <- lmer(mod_gpp ~  maxT + sm2 + vpd + swr + (1|doy),data = drivers201
 summary(model_2015)
 
 
-residuals_glm <- resid(model_drought)
+
+
+residuals_glm <- resid(model_2015)
 shapiro.test(residuals_glm)
 qqnorm(residuals_glm) 
 qqline(residuals_glm) # passes qq test
