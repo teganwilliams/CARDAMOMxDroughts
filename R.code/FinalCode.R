@@ -750,7 +750,7 @@ model_lm_non <- lm(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr, data = non_drou
 summary(model_lm_non)
 
 
-model_mixed <- lmer(mod_gpp ~ maxT.2 + sm1.2 + sm2.2 + sm3.2 + vpd.2 + swr.2 + (1|year), data = drivers)
+model_mixed <- lmer(mod_gpp ~ maxT + sm3 + vpd + swr + (1|group), data = drivers)
 model_drought <- lmer(mod_gpp ~ maxT.2 + sm1.2 + sm2.2 + sm3.2 + vpd.2 + swr.2 + (1|doy),  data = drought)
 model_non <-  lmer(mod_gpp ~ maxT.2 + sm1.2 + sm2.2 + sm3.2 + vpd.2 + swr.2 + (1|doy), data = non_drought)
 
@@ -758,11 +758,11 @@ summary(model_mixed)
 summary(model_drought)
 summary(model_non)
 
-shapiro_test <- shapiro.test(resid(model_lm_drought))
+shapiro_test <- shapiro.test(resid(model_mixed))
 print(shapiro_test)
-qqnorm(resid(model_lm_drought))
+qqnorm(resid(model_mixed))
 qqline(resid(model_lm_drought))
-plot(model_drought)
+plot(model_mixed)
 
 shapiro_test <- shapiro.test(resid(model_non))
 print(shapiro_test)
@@ -852,7 +852,7 @@ model_null <- lm(mod_gpp ~ 1, data = drought)
 model_sm2 <- lm(mod_gpp ~ sm2, data = drought)
 summary(model_sm2)
 
-model_lm_drought <- lm(mod_gpp ~  maxT + airT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
+model_lmer_drought <- lmer(mod_gpp ~  maxT + sm1 + sm3 + sm2 + vpd + swr + (1|doy), data = drought, control = lmerControl(optCtrl = list(maxfun = 10000, optimizer = "nloptwrap", calc.derivs = FALSE)))
 summary(model_lm_drought)
 
 model_lm_drought2 <- lm(mod_gpp ~  airT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
@@ -861,15 +861,26 @@ summary(model_lm_drought2)
 model_lm_drought4 <- lm(mod_gpp ~  maxT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
 summary(model_lm_drought4)
 
-model_lm_drought3 <- lm(mod_gpp ~ maxT * airT * sm1 * sm3 * sm2 + swr + vpd, data = drought)
+model_lm_drought3 <- lm(mod_gpp ~ maxT + sm1 * sm2 * sm3 + swr + vpd, data = drought)
 summary(model_lm_drought3)
-plot(model_lm_drought3)
-shapiro.test(resid(model_lm_drought3))
+
+shapiro_test <- shapiro.test(resid(model_lm_drought))
+print(shapiro_test)
+qqnorm(resid(model_lm_drought))
+qqline(resid(model_lm_drought))
+
+
+install.packages('performance')
+library(performance)
+check_model(model_lm_drought3)
+
+plot(model_lm_drought)
+shapiro.test(resid(model_lm_drought))
 
 plot(mod_gpp ~ maxT, data = drought)
 abline(model_lm_drought3)
 
-AIC(model_null, model_lm_drought, model_lm_drought2, model_lm_drought3, model_lm_drought4)
+AIC(model_null, model_lmer_drought, model_lm_drought2, model_lm_drought3, model_lm_drought4)
 autoplot((model_lm_drought3))
 
 AIC_lmd <- AIC(model_lm_drought)
@@ -890,7 +901,7 @@ summary(maxT2015)
 maxTdrought <- lm(mod_gpp ~ maxT, data = drought)
 summary(maxTdrought)
 
-shapiro_test <- shapiro.test(resid(maxT2000))
+shapiro_test <- shapiro.test(resid())
 print(shapiro_test)
 qqnorm(resid(maxT2000))
 qqline(resid(maxT2000))
@@ -902,15 +913,29 @@ model_lm2015 <- lm(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr, data = drivers2
 summary(model_lm2015)
 
 library(lme4)
-model_mixed2000 <- lmer(mod_gpp ~ maxT.2 * airT.2 * sm1.2 * sm2.2 * sm3.2 + swr.2 + vpd.2 + (1|doy), data = drivers2000)
-model_mixed2015 <- lmer(mod_gpp ~ maxT.2 * airT.2 * sm1.2 * sm2.2 * sm3.2 + swr.2 + vpd.2 + (1|doy),  data = drivers2015)
+model_mixed2000 <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|doy), data = drivers2000)
+model_mixed2015 <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|doy),  data = drivers2015)
 summary(model_mixed2000)
 summary(model_mixed2015)
 
-shapiro_test <- shapiro.test(resid(model_lm_drought3))
+model0 <- lm(mod_gpp ~ maxT + sm1 * sm2 * sm3 + swr + vpd, data = drivers2000)
+
+model1 <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|doy), data = drivers2000)
+model2 <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|doy), data = drivers2000)
+model3 <- lmer(mod_gpp ~ maxT + sm1 + sm2 + sm3 + swr + vpd + (1|doy), data = drivers2000)
+
+AIC(model_null, model0, model1, model_lm_drought3, model_lm_drought4)
+
+shapiro_test <- shapiro.test(resid(model0))
 print(shapiro_test)
-qqnorm(resid(model_lm_drought3))
-qqline(resid(model_lm_drought3))
+qqnorm(resid(model0))
+qqline(resid(model0))
+
+
+shapiro_test <- shapiro.test(resid(model_lmer_drought))
+print(shapiro_test)
+qqnorm(resid(model_lmer_drought))
+qqline(resid(model_lmer_drought))
 
 shapiro_test <- shapiro.test(resid(model_mixed2000))
 print(shapiro_test)
@@ -1123,7 +1148,7 @@ plot(effects_drought)
 # NEW PLOTS ####
 
 # Predicted values using lm and lmer models
-drivers$pred_gpp_drought <- predict(model_lm_drought3, newdata = drivers, re.form = NA)
+drivers$pred_gpp_drought <- predict(model_lmer_drought, newdata = drivers, re.form = NA)
 drivers$pred_gpp_2000 <- predict(model_mixed2000, newdata = drivers, re.form = NA)
 drivers$pred_gpp_2015 <- predict(model_mixed2015, newdata = drivers, re.form = NA)
 
@@ -1135,7 +1160,7 @@ palette_drivers <- c("#96DB6B", "#FF8400E0", "#F2E857", "#FF8400E0", "#96DB6B", 
 
 maxTplot <- ggplot(drivers, aes(x = maxT, y = mod_gpp, colour = group)) + 
   geom_point(aes(colour = group, shape = condition)) +
-  # geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
   geom_smooth(aes(y = pred_gpp_2000, colour ="LMER 2000-2005"), se = FALSE, method = "lm") +
   geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
   scale_color_manual(values = palette_drivers) +
@@ -1151,7 +1176,7 @@ plot(maxTplot)
 
 airTplot <- ggplot(drivers, aes(x = airT, y = mod_gpp, colour = group)) + 
   geom_point(aes(colour = group, shape = condition)) +
-  # geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = pred_gpp_drought, colour ="LM drought years"), se = FALSE, method = "lm") +
   geom_smooth(aes(y = pred_gpp_2000, colour ="LMER 2000-2005"), se = FALSE, method = "lm") +
   geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
   scale_color_manual(values = palette_drivers) +
@@ -1434,8 +1459,8 @@ calxsim2 <- subset(calxsim, select = c(date, day, mod_gpp_sim, mod_gpp_unc95_sim
 compared_simulation <- ggplot(calxsim2, aes(x = day)) +
   # geom_ribbon(aes(ymin = obs_gpp.x - obs_gpp_unc.x, ymax = obs_gpp.x + obs_gpp_unc.x, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
   geom_ribbon(aes(ymin = mod_gpp_sim - mod_gpp_unc95_sim, ymax = mod_gpp_sim + mod_gpp_unc95_sim ), fill = "#5D1CAD", alpha = 0.3) +
-  geom_line(aes(y = mod_gpp, colour = "Mod_cal"), size = 0.5) +
-  geom_line(aes(y = mod_gpp_sim, colour = "Mod_sim"), size = 0.5) +
+  geom_line(aes(y = mod_gpp, colour = "Mod_cal"), linewidth = 0.5) +
+  geom_line(aes(y = mod_gpp_sim, colour = "Mod_sim"), linewidth = 0.5) +
   geom_point(aes(y = obs_gpp, colour = "Obs"), size = 1.2) +
   labs(x = "Time (year)", y = "GPP (gC/m²/day)", colour = "Data:") +
   scale_color_manual(values = c("Mod_cal" = "#5D1CAD","Mod_sim" = "#00AEC974", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
@@ -1451,9 +1476,12 @@ compared_simulation <- ggplot(calxsim2, aes(x = day)) +
                      limits = c(0,2184)) +
   scale_y_continuous(expand = c(0, 0),
                      limits = c(0,17))
+
 plot(compared_simulation)
 
 calxsim2$date <- as.factor(calxsim2$date)
+
+
 
 
 
