@@ -724,12 +724,207 @@ boxplot(drivers$mod_gpp, main="Boxplot of mod_gpp") # visualise data
 drivers <- drivers %>%
   mutate(condition = ifelse(year %in% c(2003, 2018), "drought", "normal"))
 
-# drought years only 
-drought <- drivers %>%
-  filter(year == 2003 | year == 2018)
+drivers$year_group <- as.factor(drivers$year_group)
 
-non_drought <- drivers %>%
-  filter(!(year %in% c(2003, 2018)))
+drivers$year_group <- ifelse(drivers$year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020), "normal",
+                        # ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
+                               ifelse(drivers$year %in% c(2003), "2003", 
+                                      ifelse(drivers$year %in% c(2018), "2018", NA)))
+
+drought <- drought %>%
+  group_by(year) %>%
+  mutate(mean_maxT = maxT, mean_gpp = mod_gpp, mean_sm2 = sm2, mean_vpd = vpd, mean_swr = swr) %>%
+  ungroup()
+
+non_drought <- non_drought %>%
+  group_by(doy) %>%
+  mutate(mean_gpp = mean(mod_gpp, na.rm = TRUE),
+         mean_maxT = mean(maxT, na.rm = TRUE),
+         mean_sm2 = mean(sm2, na.rm = TRUE),
+         mean_vpd = mean(vpd, na.rm = TRUE),
+         mean_swr = mean(swr, na.rm = TRUE)) %>%
+  ungroup()
+
+new <- rbind(drought, non_drought)
+
+palette_anomalies <- c("#D6D6D686", "#D6A400", "#B80422", "#7362BA")
+palette_anomalies <- c("#29B071", "#D6A400", "darkgrey")
+
+maxT_plot <- ggplot(new, aes(x = doy, y = mean_maxT, group = year_group, colour = year_group, linetype = condition)) +
+  geom_line(size = 0.8) +
+  labs(title = "",
+       x = "Summer months",
+       y = "Max temperature (°C)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  #scale_shape_manual() + 
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  # scale_x_continuous(breaks = c(125, 22, 27, 32, 255), 
+                    # labels = c("May", "Jun", "Jul", "Aug", "Sep"),
+                    # expand = c(0, 0),
+                    # limits = c(18, 36)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(10, 32))
+
+plot(maxT_plot)
+
+
+gpp_plot <- ggplot(new, aes(x = doy, y = mean_gpp, group = year_group, colour = year_group, linetype = condition)) +
+  geom_line(size = 0.8) +
+  labs(title = "",
+       x = "Summer months",
+       y = "Max temperature (°C)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  #scale_shape_manual() + 
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) 
+  # scale_x_continuous(breaks = c(125, 22, 27, 32, 255), 
+  # labels = c("May", "Jun", "Jul", "Aug", "Sep"),
+  # expand = c(0, 0),
+  # limits = c(18, 36)) +
+  # scale_y_continuous(expand = c(0, 0),
+                    #  limits = c(, 32))
+plot(gpp_plot)
+
+
+
+
+sm2_plot <- ggplot(new, aes(x = doy, y = mean_sm2, group = year_group, colour = year_group, linetype = condition)) +
+  geom_line(size = 0.8) +
+  labs(title = "",
+       x = "Summer months",
+       y = "Soil moisture at depth 2 (X)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  #scale_shape_manual() + 
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) 
+# scale_x_continuous(breaks = c(125, 22, 27, 32, 255), 
+# labels = c("May", "Jun", "Jul", "Aug", "Sep"),
+# expand = c(0, 0),
+# limits = c(18, 36)) +
+# scale_y_continuous(expand = c(0, 0),
+#  limits = c(, 32))
+plot(sm2_plot)
+
+
+vpd_plot <- ggplot(new, aes(x = doy, y = mean_vpd, group = year_group, colour = year_group, linetype = condition)) +
+  geom_line(size = 0.8) +
+  labs(title = "",
+       x = "Summer months",
+       y = "VPD (kPa)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  #scale_shape_manual() + 
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) 
+# scale_x_continuous(breaks = c(125, 22, 27, 32, 255), 
+# labels = c("May", "Jun", "Jul", "Aug", "Sep"),
+# expand = c(0, 0),
+# limits = c(18, 36)) +
+# scale_y_continuous(expand = c(0, 0),
+#  limits = c(, 32))
+plot(vpd_plot)
+
+swr_plot <- ggplot(new, aes(x = doy, y = mean_swr, group = year_group, colour = year_group, linetype = condition)) +
+  geom_line(size = 0.8) +
+  labs(title = "",
+       x = "Summer months",
+       y = "SWR (..)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  #scale_shape_manual() + 
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) 
+# scale_x_continuous(breaks = c(125, 22, 27, 32, 255), 
+# labels = c("May", "Jun", "Jul", "Aug", "Sep"),
+# expand = c(0, 0),
+# limits = c(18, 36)) +
+# scale_y_continuous(expand = c(0, 0),
+#  limits = c(, 32))
+plot(swr_plot)
+
+
+
+
+### Partial correlation test
+
+install.packages("ppcor")
+library(ppcor)
+
+# Partial correlation between sm1 and gpp controlling for maxT, vpd, and swr
+
+pcor_test_sm2 <- pcor.test(driver$mod_gpp, drivers2000$sm2, 
+                            x = drivers2000[, c("maxT", "vpd", "swr")])
+
+pcor_test_maxT <- pcor.test(drivers2000$mod_gpp, drivers2000$maxT, 
+                            x = drivers2000[, c("sm2", "vpd", "swr")])
+
+pcor_test_vpd <- pcor.test(drivers2000$mod_gpp, drivers2000$vpd, 
+                           x = drivers2000[, c("sm2", "maxT", "swr")])
+
+pcor_test_swr <- pcor.test(drivers2000$mod_gpp, drivers2000$swr, 
+                           x = drivers2000[, c("sm2", "maxT", "vpd")])
+
+cor_results <- cor(drivers2015[, c("mod_gpp", "maxT", "sm1", "sm2", "sm3", "vpd", "swr")])
+
+# drought
+
+pcor_test_sm2 <- pcor.test(drought$mod_gpp, drought$sm2, 
+                           x = drought[, c("maxT", "vpd", "swr")])
+
+pcor_test_maxT <- pcor.test(drought$mod_gpp, drought$maxT, 
+                            x = drought[, c("sm2", "vpd", "swr")])
+
+# Partial correlation between mod_gpp and vpd, controlling for sm1, sm2, sm3, maxT, swr
+pcor_test_vpd <- pcor.test(drought$mod_gpp, drought$vpd, 
+                           x = drought[, c("sm2", "maxT", "swr")])
+
+# Partial correlation between mod_gpp and swr, controlling for sm1, sm2, sm3, maxT, vpd
+pcor_test_swr <- pcor.test(drought$mod_gpp, drought$swr, 
+                           x = drought[, c("sm2", "maxT", "vpd")])
+
+
+# Results
+pcor_resultsdrought <- data.frame(
+  Variable = c("sm2", "maxT", "vpd", "swr"),
+  Partial_Correlation = c(pcor_test_sm2$estimate, pcor_test_maxT$estimate, pcor_test_vpd$estimate, pcor_test_swr$estimate),
+  P_Value = c(pcor_test_sm2$p.value, pcor_test_maxT$p.value, pcor_test_vpd$p.value, pcor_test_swr$p.value)
+)
+
+print(pcor_results2015)
+print(pcor_results2000)
+print(pcor_resultsdrought)
+
+
+
 
 
 ## Scale values to use glmer 
