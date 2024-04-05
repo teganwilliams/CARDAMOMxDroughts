@@ -753,24 +753,20 @@ palette_anomalies <- c("#29B071", "#D6A400", "darkgrey")
 maxT_plot <- ggplot(new, aes(x = doy, y = mean_maxT, group = year_group, colour = year_group, linetype = condition)) +
   geom_line(size = 0.8) +
   labs(title = "",
-       x = "Summer months",
+       x = "Time (months)",
        y = "Max temperature (°C)",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   #scale_shape_manual() + 
-  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
         legend.title = element_text(size = 11, face = "bold", ),
         legend.text = element_text(size = 11),
         plot.margin = margin(1, 1, 1, 1, "cm")) +
-  # scale_x_continuous(breaks = c(125, 22, 27, 32, 255), 
-                    # labels = c("May", "Jun", "Jul", "Aug", "Sep"),
-                    # expand = c(0, 0),
-                    # limits = c(18, 36)) +
-  scale_y_continuous(expand = c(0, 0),
-                     limits = c(10, 32))
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
 
 plot(maxT_plot)
 
@@ -779,23 +775,20 @@ gpp_plot <- ggplot(new, aes(x = doy, y = mean_gpp, group = year_group, colour = 
   geom_line(size = 0.8) +
   labs(title = "",
        x = "Summer months",
-       y = "Max temperature (°C)",
+       y = "GPP (gC/m²/day)",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   #scale_shape_manual() + 
-  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
         legend.title = element_text(size = 11, face = "bold", ),
         legend.text = element_text(size = 11),
-        plot.margin = margin(1, 1, 1, 1, "cm")) 
-  # scale_x_continuous(breaks = c(125, 22, 27, 32, 255), 
-  # labels = c("May", "Jun", "Jul", "Aug", "Sep"),
-  # expand = c(0, 0),
-  # limits = c(18, 36)) +
-  # scale_y_continuous(expand = c(0, 0),
-                    #  limits = c(, 32))
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+        labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+
 plot(gpp_plot)
 
 
@@ -804,72 +797,76 @@ plot(gpp_plot)
 sm2_plot <- ggplot(new, aes(x = doy, y = mean_sm2, group = year_group, colour = year_group, linetype = condition)) +
   geom_line(size = 0.8) +
   labs(title = "",
-       x = "Summer months",
+       x = "Time (month)",
        y = "Soil moisture at depth 2 (X)",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   #scale_shape_manual() + 
-  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
         legend.title = element_text(size = 11, face = "bold", ),
         legend.text = element_text(size = 11),
-        plot.margin = margin(1, 1, 1, 1, "cm")) 
-# scale_x_continuous(breaks = c(125, 22, 27, 32, 255), 
-# labels = c("May", "Jun", "Jul", "Aug", "Sep"),
-# expand = c(0, 0),
-# limits = c(18, 36)) +
-# scale_y_continuous(expand = c(0, 0),
-#  limits = c(, 32))
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+
 plot(sm2_plot)
 
 
 vpd_plot <- ggplot(new, aes(x = doy, y = mean_vpd, group = year_group, colour = year_group, linetype = condition)) +
   geom_line(size = 0.8) +
   labs(title = "",
-       x = "Summer months",
+       x = "Time (month)",
        y = "VPD (kPa)",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   #scale_shape_manual() + 
-  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
         legend.title = element_text(size = 11, face = "bold", ),
         legend.text = element_text(size = 11),
-        plot.margin = margin(1, 1, 1, 1, "cm")) 
-# scale_x_continuous(breaks = c(125, 22, 27, 32, 255), 
-# labels = c("May", "Jun", "Jul", "Aug", "Sep"),
-# expand = c(0, 0),
-# limits = c(18, 36)) +
-# scale_y_continuous(expand = c(0, 0),
-#  limits = c(, 32))
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
 plot(vpd_plot)
 
 swr_plot <- ggplot(new, aes(x = doy, y = mean_swr, group = year_group, colour = year_group, linetype = condition)) +
   geom_line(size = 0.8) +
   labs(title = "",
-       x = "Summer months",
-       y = "SWR (..)",
+       x = "Time (months)",
+       y = "SWR (MJ/m²/day)",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   #scale_shape_manual() + 
-  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
         legend.title = element_text(size = 11, face = "bold", ),
         legend.text = element_text(size = 11),
-        plot.margin = margin(1, 1, 1, 1, "cm")) 
-# scale_x_continuous(breaks = c(125, 22, 27, 32, 255), 
-# labels = c("May", "Jun", "Jul", "Aug", "Sep"),
-# expand = c(0, 0),
-# limits = c(18, 36)) +
-# scale_y_continuous(expand = c(0, 0),
-#  limits = c(, 32))
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
 plot(swr_plot)
+
+
+combined_rq2_plots <- grid.arrange(
+  gpp_plot, maxT_plot, sm2_plot, 
+  vpd_plot, swr_plot, 
+  nrow = 2,
+  layout_matrix = rbind(c(1,1,2), c(5,4,3)), 
+  widths = c(1,1,1.5),
+  heights = c(1, 1)
+)
+
+# Save the plot as a PNG file to GitHub
+setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/Diss_GitHub")
+ggsave("rq2_plots.png", path = "Plots", plot = combined_rq2_plots, width = 10, height = 7, dpi = 500)
+
 
 
 
@@ -1635,7 +1632,7 @@ sm1plot <- ggplot(drivers, aes(x = sm1, y = mod_gpp, colour = group)) +
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
-        legend.title = element_text(size = 11, face = "bold")) +
+        legend.title = element_text(size = 11, face = "bold")) +http://127.0.0.1:18153/graphics/plot_zoom_png?width=1088&height=672
   labs(x = "SM1 (?)", y = "GPP (gC/m²/day)")
 
 sm2plot <- ggplot(drivers, aes(x = sm2, y = mod_gpp, colour = group)) + 
