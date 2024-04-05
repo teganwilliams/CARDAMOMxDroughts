@@ -38,6 +38,38 @@ met2015to2020 <- met_data[met_data$year >= 2015 & met_data$year <= 2020, ]
 met2003 <- met_data[met_data$year >= 2003 & met_data$year <= 2003, ]
 met2018 <- met_data[met_data$year >= 2018 & met_data$year <= 2018, ]
 
+
+
+### Using the full dataset to create anomalies for sm1, sm2, sm3, maxT, vpd, swr and precip
+  
+weekly_average_data <- met_data %>%
+  group_by(week = ceiling(as.numeric(doy)/7)) %>%
+  summarise(meanT = mean(maxt_C, na.rm = TRUE),
+            sdT = sd(maxt_C, na.rm = TRUE),
+            meanSM1 = mean(SWC_1, na.rm = TRUE),
+            sdSM1 = sd(SWC_1, na.rm = TRUE),
+            meanSM2 = mean(SWC_2, na.rm = TRUE),
+            sdSM2 = sd(SWC_2, na.rm = TRUE),
+            meanSM3 = mean(SWC_3, na.rm = TRUE),
+            sdSM3 = sd(SWC_3, na.rm = TRUE),
+            meanVPD = mean(vpd_kPa, na.rm = TRUE),
+            sdVPD = sd(vpd_kPa, na.rm = TRUE),
+            meanSWR = mean(swrad_MJm2day, na.rm = TRUE),
+            sdSWR = sd(swrad_MJm2day, na.rm = TRUE),
+            meanPrecip = mean(precip_kgm2s, na.rm = TRUE),
+            sdPrecip = sd(precip_kgm2s, na.rm = TRUE),
+            )
+
+fullmet_data1 <- cbind(weekly_average_data, met_data)
+
+fullmet_data <- fullmet_data1 %>%
+  rename(date = full_date, maxT = maxt_C, sm1 = SWC_1, sm2 = SWC_2, sm3 = SWC_3, vpd = vpd_kPa, swr = swrad_MJm2day, precip = precip_kgm2s)
+  
+# calculate anomaly values (z-scores)
+
+
+
+
 #### Plots of raw Meteorological data time series ####
 
 # Air Temperature over Time for 2000 to 2005
