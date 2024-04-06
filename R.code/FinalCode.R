@@ -423,32 +423,13 @@ laidrought2018 <- ggplot(data2015, aes(x = day)) +
                      limits = c(0,8))
 
 needrought2003 <- ggplot(data2000, aes(x = day)) +
-  geom_ribbon(aes(ymin = obs_nee - obs_nee_unc, ymax = obs_nee + obs_nee_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
-  geom_ribbon(aes(ymin = mod_nee - mod_nee_unc95, ymax = mod_nee + mod_nee_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
+  geom_hline(yintercept = 0, color = "black", linetype = "solid", linewidth = 0.4) +
+  geom_ribbon(aes(ymin = obs_nee - obs_nee_unc, ymax = obs_nee + obs_nee_unc, colour = "Obs unc"), fill = "#FF730085",  colour = "#FF73001F", alpha = 0.2) +
+  geom_ribbon(aes(ymin = mod_nee - 0.2*abs(mod_nee_unc95), ymax = mod_nee + 0.2*abs(mod_nee_unc95), colour = "Mod unc"), fill = "#1000bfb5", colour = "#1704c436", alpha = 0.2) +
   geom_line(aes(y = mod_nee, colour = "Mod"), size = 0.6) +
   geom_point(aes(y = obs_nee, colour = "Obs"), size = 1.2) +
   labs(x = "Time (year)", y = "NEE (gC/m²/day)", colour = "Data:") +
-  scale_color_manual(values = c("Mod" = "#5D1CAD", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
-  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
-        plot.title = element_text(size=12, hjust=0.5),
-        axis.title = element_text(size=11),
-        axis.text = element_text(size=9),
-        legend.title = element_text(size = 11, face = "bold"),
-        legend.text = element_text(size = 11)) +
-  scale_x_continuous(breaks = c(182, 553, 917, 1281, 1645, 2009), 
-                     labels = c("2000", "2001", "2002", "2003", "2004", "2005"),
-                     expand = c(0, 0),
-                     limits = c(0,2184)) +
-  scale_y_continuous(expand = c(0, 0),
-                     limits = c(-15,8))
-
-needrought2018 <- ggplot(data2015, aes(x = day)) +
-  geom_ribbon(aes(ymin = obs_nee - obs_nee_unc, ymax = obs_nee + obs_nee_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
-  geom_ribbon(aes(ymin = mod_nee - mod_nee_unc95, ymax = mod_nee + mod_nee_unc95 ), fill = "#5D1CAD", alpha = 0.3) +
-  geom_line(aes(y = mod_nee, colour = "Mod"), size = 0.6) +
-  geom_point(aes(y = obs_nee, colour = "Obs"), size = 1.2) +
-  labs(x = "Time (year)", y = "NEE (gC/m²/day)", colour = "Data:") +
-  scale_color_manual(values = c("Mod" = "#5D1CAD", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
+  scale_color_manual(values = c("Mod" = "#1000bfee", "Mod unc" ="#1704c436", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
@@ -460,7 +441,28 @@ needrought2018 <- ggplot(data2015, aes(x = day)) +
                      expand = c(0, 0),
                      limits = c(0,2184)) +
   scale_y_continuous(expand = c(0, 0),
-                     limits = c(-15,5))
+                     limits = c(-13,5))
+
+needrought2018 <- ggplot(data2015, aes(x = day)) +
+  geom_hline(yintercept = 0, color = "black", linetype = "solid", linewidth = 0.4) +
+  geom_ribbon(aes(ymin = obs_nee - obs_nee_unc, ymax = obs_nee + obs_nee_unc, colour = "Obs unc"), fill = "#FF730085",  colour = "#FF73001F", alpha = 0.2) +
+  geom_ribbon(aes(ymin = mod_nee - 0.2*abs(mod_nee_unc95), ymax = mod_nee + 0.2*abs(mod_nee_unc95), colour = "Mod unc"), fill = "#1000bfb5", colour = "#1704c436", alpha = 0.2) +
+  geom_line(aes(y = mod_nee, colour = "Mod"), size = 0.6) +
+  geom_point(aes(y = obs_nee, colour = "Obs"), size = 1.2) +
+  labs(x = "Time (year)", y = "NEE (gC/m²/day)", colour = "Data:") +
+  scale_color_manual(values = c("Mod" = "#1000bfee", "Mod unc" ="#1704c436", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold"),
+        legend.text = element_text(size = 11)) +
+  scale_x_continuous(breaks = c(182, 553, 917, 1281, 1645, 2009), 
+                     labels = c("2015", "2016", "2017", "2018", "2019", "2020"),
+                     expand = c(0, 0),
+                     limits = c(0,2184)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(-13,5))
 
 plot(gppdrought2003)
 plot(gppdrought2018)
