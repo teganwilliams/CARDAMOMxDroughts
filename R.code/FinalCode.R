@@ -323,6 +323,21 @@ annual_gpp <- gpp_all %>%
     annual_unc = sqrt(sum(mod_gpp_unc95^2))
   )
 
+# same for NEE
+mean_nee <- aggregate(mod_nee ~ year, data = gpp_all, FUN = mean)
+sd_nee <- aggregate(mod_nee ~ year, data = gpp_all, FUN = sd)
+annual_nee <- gpp_all %>%
+  group_by(year) %>%
+  summarise(annual_nee = mean(mod_nee, na.rm = TRUE)*365)
+
+annual_nee <- gpp_all %>%
+  group_by(year) %>%
+  summarise(
+    annual_nee = mean(mod_nee, na.rm = TRUE) * 365,
+    annual_nee_unc = sqrt(sum(mod_nee_unc95^2))
+  )
+
+
 # Merge the mean and standard deviation data
 summary_stats <- merge(mean_gpp, sd_gpp, by = "year", suffixes = c("_mean", "_sd"))
 
