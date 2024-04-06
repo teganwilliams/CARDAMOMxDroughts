@@ -173,12 +173,16 @@ merged_data_swr <- merged_data_swr %>%
 
 
 # All combining anomalies
-anomalies_combined <- merge(merged_data_temp, merged_data_sm1, merged_data_sm2, merged_data_sm3, merged_data_vpd, merged_data_swr, by = (c("year", "week")))
+anomalies_combined <- cbind(merged_data_temp, merged_data_sm1, merged_data_sm2, merged_data_sm3, merged_data_vpd, merged_data_swr, by = (c("order")))
 
 View(anomalies_combined)
+anomalies1 <- subset(anomalies_combined, select = c(date, year, month, week, doy, temp_z_scores, sm1_z_scores, sm2_z_scores, sm3_z_scores, vpd_z_scores, swr_z_scores))
+
+anomalies <- anomalies1 %>%
+  filter(year >= 2000 & year <= 2005 | year >=2015 & year <= 2020)
 
 setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/")
-write.csv(anomalies_combined, "fullanomalies.csv")
+write.csv(anomalies, "fullanomalies.csv")
 
 
 # GPP anomaly
