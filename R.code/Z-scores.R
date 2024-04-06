@@ -67,140 +67,109 @@ shapiro.test(summermet$meanT) # non-normal distribution for full-dataset, but no
 
 
 # Calculate z-scores for temperature anomalies
-temp_anomalies <- met_full %>%
-  select(year, week, SM1, meanSM1, sdSM1)
 
-maxT <- metfull$SM1
-meanT <- metfull$meanSM1
-sdT <- metfull$sdSM1
-
+# Calculate z-scores for temperature anomalies
+temp_anomalies <- subset(metfull, select = c(year, week, maxT, meanT, sdT))
+metfull <- metfull %>%
+  arrange(year)
+maxT <- metfull$maxT
+meanT <- metfull$meanT
+sdT <- metfull$sdT
 temp_z_scores <- (maxT - meanT) / sdT
 temp_z_scores <- as.data.frame(temp_z_scores)
-# temp_z_scores$year <- rep(seq(1989, 2020), each = num_weeks)
-# temp_z_scores$week <- rep(1:num_weeks, times = num_years)
 temp_z_scores$order <- seq_len(nrow(temp_z_scores))
 temp_anomalies$order <- seq_len(nrow(temp_anomalies))
-
 merged_data_temp <- merge(temp_z_scores, temp_anomalies , by = (c("order")))
-# temp_z_scores <- temp_z_scores %>%
- # filter(week >= 18 & week <= 36) 
-
-
-# Calculate z-scores for SM 1 anomalies
-sm1_anomalies <- met_full %>%
-  select(year, week, SM1, meanSM1, sdSM1)
-SM1 <- metfull$SM1
-meanSM1 <- metfull$meanSM1
-sdSM1 <- metfull$sdSM1
-sm1_z_scores <- (SM1 - meanSM1) / sdSM1
-sm1_z_scores <- as.data.frame(sm1_z_scores)
-sm1_anomalies$order <- seq_len(nrow(sm1_anomalies))
-sm1_z_scores$order <- seq_len(nrow(sm1_z_scores))
-sm1_z_scores2 <- merge(sm1_z_scores, sm1_anomalies, by = c("order"), all.x = TRUE)
-sm1_z_scores3 <- subset(sm1_z_scores2, select = c(year, week, sm1_z_scores))
-incomplete_template2 <- expand.grid(year = 2000, week = 1:9, sm1_z_scores = NA)
-merged_template <- rbind(incomplete_template, incomplete_template2)
-merged_data_sm1 <- rbind(incomplete_template2, sm1_z_scores3)
-merged_data_sm1 <- merged_data_sm1 %>%
+merged_data_temp <- merged_data_temp %>%
   arrange(year)
 
 
+# Calculate z-scores for SM 1 anomalies
+sm1_anomalies <- subset(metfull, select = c(year, week, sm1, meanSM1, sdSM1))
+sm1_anomalies <- metfull %>%
+  arrange(year)
+sm1 <- metfull$sm1
+meanSM1 <- metfull$meanSM1
+sdSM1 <- metfull$sdSM1
+sm1_z_scores <- (sm1 - meanSM1) / sdSM1
+sm1_z_scores <- as.data.frame(sm1_z_scores)
+sm1_anomalies$order <- seq_len(nrow(sm1_anomalies))
+sm1_z_scores$order <- seq_len(nrow(sm1_z_scores))
+merged_data_sm1 <- merge(sm1_z_scores, sm1_anomalies , by = (c("order")))
+merged_data_sm1 <- merged_data_sm1 %>%
+  arrange(year)
+
+# sm1_z_scores2 <- merge(sm1_z_scores, sm1_anomalies, by = c("order"), all.x = TRUE)
+# sm1_z_scores3 <- subset(sm1_z_scores2, select = c(year, week, sm1_z_scores))
+# incomplete_template2 <- expand.grid(year = 2000, week = 1:9, sm1_z_scores = NA)
+# merged_template <- rbind(incomplete_template, incomplete_template2)
+# merged_data_sm1 <- rbind(incomplete_template2, sm1_z_scores3)
+# merged_data_sm1 <- merged_data_sm1 %>%
+  # arrange(year)
+
+
 # SM2 
-sm2_anomalies <- met_full %>%
-  select(year, week, SM2, meanSM2, sdSM2)
-SM2 <- metfull$SM2
+sm2_anomalies <- metfull %>%
+  arrange(year)
+sm2_anomalies <- subset(metfull, values = c(year, week, sm2, meanSM2, sdSM2))
+sm2 <- metfull$sm2
 meanSM2 <- metfull$meanSM2
 sdSM2 <- metfull$sdSM2
-sm2_z_scores <- (SM2 - meanSM2) / sdSM2
+sm2_z_scores <- (sm2 - meanSM2) / sdSM2
 sm2_z_scores <- as.data.frame(sm2_z_scores)
 sm2_anomalies$order <- seq_len(nrow(sm2_anomalies))
 sm2_z_scores$order <- seq_len(nrow(sm2_z_scores))
-sm2_z_scores2 <- merge(sm2_z_scores, sm2_anomalies, by = c("order"), all.x = TRUE)
-sm2_z_scores3 <- subset(sm2_z_scores2, select = c(year, week, sm2_z_scores))
-incomplete_template2 <- expand.grid(year = 2000, week = 1:9, sm2_z_scores = NA)
-merged_template <- rbind(incomplete_template, incomplete_template2)
-merged_data_sm2 <- rbind(incomplete_template2, sm2_z_scores3)
+merged_data_sm2 <- merge(sm2_z_scores, sm2_anomalies , by = (c("order")))
 merged_data_sm2 <- merged_data_sm2 %>%
   arrange(year)
 
 # SM3
-sm3_anomalies <- met_full %>%
-  select(year, week, SM3, meanSM3, sdSM3)
-SM3 <- metfull$SM3
+sm3_anomalies <- metfull %>%
+  arrange(year)
+sm3_anomalies <- subset(metfull, values = c(year, week, sm3, meanSM3, sdSM3))
+sm3 <- metfull$sm3
 meanSM3 <- metfull$meanSM3
 sdSM3 <- metfull$sdSM3
-sm3_z_scores <- (SM3 - meanSM3) / sdSM3
+sm3_z_scores <- (sm3 - meanSM3) / sdSM3
 sm3_z_scores <- as.data.frame(sm3_z_scores)
 sm3_anomalies$order <- seq_len(nrow(sm3_anomalies))
 sm3_z_scores$order <- seq_len(nrow(sm3_z_scores))
-sm3_z_scores2 <- merge(sm3_z_scores, sm3_anomalies, by = c("order"), all.x = TRUE)
-sm3_z_scores3 <- subset(sm3_z_scores2, select = c(year, week, sm3_z_scores))
-incomplete_template2 <- expand.grid(year = 2000, week = 1:9, sm3_z_scores = NA)
-merged_template <- rbind(incomplete_template, incomplete_template2)
-merged_data_sm3 <- rbind(incomplete_template2, sm3_z_scores3)
+merged_data_sm3 <- merge(sm3_z_scores, sm3_anomalies , by = (c("order")))
 merged_data_sm3 <- merged_data_sm3 %>%
   arrange(year)
 
 
-# Calculate z-scores for SM 1 anomalies
-sm1_anomalies <- met_full %>%
-  select(year, week, SM1, meanSM1, sdSM1)
-SM1 <- metfull$SM1
-meanSM1 <- metfull$meanSM1
-sdSM1 <- metfull$sdSM1
-sm1_z_scores <- (SM1 - meanSM1) / sdSM1
-sm1_z_scores <- as.data.frame(sm1_z_scores)
-sm1_anomalies$order <- seq_len(nrow(sm1_anomalies))
-sm1_z_scores$order <- seq_len(nrow(sm1_z_scores))
-sm1_z_scores2 <- merge(sm1_z_scores, sm1_anomalies, by = c("order"), all.x = TRUE)
-sm1_z_scores3 <- subset(sm1_z_scores2, select = c(year, week, sm1_z_scores))
-incomplete_template2 <- expand.grid(year = 2000, week = 1:9, sm1_z_scores = NA)
-merged_template <- rbind(incomplete_template, incomplete_template2)
-merged_data_sm1 <- rbind(incomplete_template2, sm1_z_scores3)
-merged_data_sm1 <- merged_data_sm1 %>%
-  arrange(year)
-
 
 # VPD
-vpd_anomalies <- met_full %>%
-  select(year, week, vpd, meanVPD, sdVPD)
-vpd <- metfull$VPD
+vpd_anomalies <- metfull %>%
+  arrange(year)
+vpd_anomalies <- subset(metfull, values = c(year, week, vpd, meanVPD, sdVPD))
+vpd <- metfull$vpd
 meanVPD <- metfull$meanVPD
 sdVPD <- metfull$sdVPD
 vpd_z_scores <- (vpd - meanVPD) / sdVPD
 vpd_z_scores <- as.data.frame(vpd_z_scores)
 vpd_anomalies$order <- seq_len(nrow(vpd_anomalies))
 vpd_z_scores$order <- seq_len(nrow(vpd_z_scores))
-
-vpd_z_scores2 <- merge(vpd_z_scores, vpd_anomalies, by = c("order"), all.x = TRUE)
-vpd_z_scores3 <- subset(vpd_z_scores2, select = c(year, week, vpd_z_scores))
-
-incomplete_template2 <- expand.grid(year = 2000, week = 1:9, vpd_z_scores = NA)
-merged_template <- rbind(incomplete_template, incomplete_template2)
-merged_data_vpd <- rbind(incomplete_template2, vpd_z_scores3)
+merged_data_vpd <- merge(vpd_z_scores, vpd_anomalies , by = (c("order")))
 merged_data_vpd <- merged_data_vpd %>%
   arrange(year)
 
 
 # SWR
-swr_anomalies <- met_full %>%
-  select(year, week, swr, meanSWR, sdSWR)
-swr <- metfull$SWR
+swr_anomalies <- metfull %>%
+  arrange(year)
+swr_anomalies <- subset(metfull, values = c(year, week, swr, meanSWR, sdSWR))
+swr <- metfull$swr
 meanSWR <- metfull$meanSWR
 sdSWR <- metfull$sdSWR
 swr_z_scores <- (swr - meanSWR) / sdSWR
 swr_z_scores <- as.data.frame(swr_z_scores)
 swr_anomalies$order <- seq_len(nrow(swr_anomalies))
 swr_z_scores$order <- seq_len(nrow(swr_z_scores))
-swr_z_scores2 <- merge(swr_z_scores, vpd_anomalies, by = c("order"), all.x = TRUE)
-swr_z_scores3 <- subset(swr_z_scores2, select = c(year, week, swr_z_scores))
-incomplete_template2 <- expand.grid(year = 2000, week = 1:9, swr_z_scores = NA)
-merged_template <- rbind(incomplete_template, incomplete_template2)
-merged_data_swr <- rbind(incomplete_template2, swr_z_scores3)
+merged_data_swr <- merge(swr_z_scores, swr_anomalies, by = c("order"), all.x = TRUE)
 merged_data_swr <- merged_data_swr %>%
   arrange(year)
-
-
 
 
 # All combining anomalies
