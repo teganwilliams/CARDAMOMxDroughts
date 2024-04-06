@@ -680,3 +680,61 @@ print(combined_anomaly_plot)
 save(combined_anomaly_plot, file = "combined_anomaly_plot.png")
 
 
+
+
+
+### Models ####
+# Fit the model again
+library(lme4)
+install.packages("glmmTMB")
+library(glmmTMB)
+library(dplyr)
+
+non2000 <- non_drought %>%
+  filter(year >= 2000 & year <= 2005)
+
+non2015 <- non_drought %>%
+  filter(year >= 2015 & year <= 2020)
+
+drought <- drought1 %>%
+  filter((year %in% c(2003)))
+drought <- drought1 %>%
+  filter((year %in% c(2018)))
+drought <- drought1 %>%
+  filter((year %in% c(2003,2018)))
+
+drought <- drought %>%
+  rename(mod_gpp = gpp_z_scores, maxT = temp_z_scores, sm1 = sm1_z_scores, sm2 = sm2_z_scores,
+         sm3 = sm3_z_scores, vpd = vpd_z_scores, swr = swr_z_scores)
+
+
+model_non_drought <- glmmTMB(gpp_z_scores ~ temp_z_scores + sm2_z_scores + sm3_z_scores + swr_z_scores, 
+                             data = non_drought, 
+                             family = tweedie(link = "log"))
+summary(model_non_drought)
+
+model_non_drought2000 <- glmmTMB(gpp_z_scores ~ temp_z_scores + sm2_z_scores + sm3_z_scores + swr_z_scores + (1|year), 
+                                 data = non2000, 
+                                 family = tweedie(link = "log"))
+
+
+model_non_drought <- glm(gpp_z_scores ~  temp_z_scores * sm2_z_scores * sm3_z_scores * swr_z_scores, data = non_drought, family = gaussian(link = "identity"))
+summary(model_non_drought)
+
+residuals_lmer <- resid(model_non_drought)
+shapiro.test(residuals_lmer)
+qqnorm(residuals_lmer) 
+qqline(residuals_lmer)
+
+
+model_drought <- glm(mod_gpp ~  maxT * sm2 * sm3 * swr, data = drought, family = gaussian(link = "identity"))
+summary(model_drought)
+
+residuals_lmer <- resid(model_drought)
+shapiro.test(residuals_lmer)
+qqnorm(residuals_lmer) 
+qqline(residuals_lmer)
+
+
+
+
