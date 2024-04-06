@@ -186,51 +186,344 @@ write.csv(anomalies, "fullanomalies.csv")
 
 
 # GPP anomaly
-gpp_anomalies <- obs %>%
-  mutate(group_by = week, mean(mod_gpp)) %>% 
-  select(year, week, mod_gpp, meanGPP, sdGPP)
 
-gpp <- gpp_anomalies$mod_gpp
-meanGPP <- gpp_anomalies$meanGPP
-sdGPP <- gpp_anomalies$sdGPP
+gpp_anomalies1 <- gpp_all %>%
+  group_by(week = ceiling(as.numeric(doy)/7)) %>%
+  summarise(meanGPP = mean(mod_gpp, na.rm = TRUE),
+            sdGPP = sd(mod_gpp, na.rm = TRUE))
+
+gpp_anomalies <- cbind(gpp_anomalies1, gpp_all)
+
+gpp_anom <- subset(gpp_anomalies, select = c(date, year, week, doy, mod_gpp, meanGPP, sdGPP))
+
+gpp_anom <- gpp_anom %>%
+  arrange(year)
+
+gpp <- gpp_anom$mod_gpp
+meanGPP <- gpp_anom$meanGPP
+sdGPP <- gpp_anom$sdGPP
 gpp_z_scores <- (gpp - meanGPP) / sdGPP
 gpp_z_scores <- as.data.frame(gpp_z_scores)
 gpp_z_scores$order <- seq_len(nrow(gpp_z_scores))
-gpp_anomalies$order <- seq_len(nrow(gpp_anomalies))
-gpp <- merge(gpp_z_scores, gpp_anomalies , by = (c("order")))
+gpp_anom$order <- seq_len(nrow(gpp_anom))
+merged_data_gpp <- merge(gpp_z_scores, gpp_anom , by = (c("order")))
 # temp_z_scores <- temp_z_scores %>%
- # filter(week >= 18 & week <= 36) 
-View(gpp_z_scores)
-
-
-
-
-
-
+# filter(week >= 18 & week <= 36) 
+View(merged_data_gpp)
 
 
 # adding gpp data
-anomalies2015 <- anomalies_combined %>%
+gppanomalies2015 <- merged_data_gpp %>%
   filter(year >= 2015 & year <= 2020)
-merged_data2015 <- merged_data2015 %>%
+merged_data2015 <- x %>% 
   filter(year >= 2015 & year <= 2020) %>%
   select(date, year, week, mod_gpp, mod_gpp_unc95)
-merged_gpp2015x <- merge(anomalies2015, merged_data2015, by = c("year", "week"))
-merged_gpp2015 <- merged_gpp2015x %>%
-  arrange(date)
 
-anomalies2000 <- anomalies_combined %>%
-  filter(year >= 2000 & year <= 2005)
-merged_data2000 <- merged_data2000 %>%
-  filter(year >= 2000 & year <= 2005) %>%
-  select(date, year, week, mod_gpp, mod_gpp_unc95)
-merged_gpp2000x <- merge(anomalies2000, merged_data2000, by = c("year", "week"))
-merged_gpp2000 <- merged_gpp2000x %>%
-  arrange(date)
+merged_data_full <- cbind(merged_data_gpp, anomalies)
+merged_data <- subset(merged_data_full, select = c(date, year, month, week, doy, gpp_z_scores, temp_z_scores, sm1_z_scores, sm2_z_scores, sm3_z_scores, vpd_z_scores, swr_z_scores))
 
-fully_merged <- rbind(merged_gpp2000, merged_gpp2015)
-fully_merged_summer <- fully_merged %>%
-  filter(week >= 18 & week <= 36) 
+setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/")
+write.csv(merged_data, "fullanomalies.csv")
+
+
+fully_merged_summer <- merged_data %>%
+  filter(week >= 22 & week <= 37)
+
+
+# Visualisations ####
+
+# Scatter plot of temperature anomalies vs soil moisture anomalies
+ggplot(fully_merged_summer, aes(x = temp_z_scores, y = sm1_z_scores)) +
+  geom_point() +
+  labs(x = "Summer temperature Anomalies", y = "Summer Soil Moisture Anomalies") +
+  ggtitle("Summer Temperature Anomalies vs Soil Moisture Anomalies")
+
+ggplot(fully_merged_summer, aes(x = year, y = gpp_z_scores)) +
+  geom_point() +
+  geom_smooth(method = lm, formula = y ~ x, colour = "red", se = FALSE) +
+  labs(x = "Temperature Anomalies", y = "GPP") +
+  ggtitle("Summer Temperature Anomalies vs GPP")
+
+# Scatter plot of temperature anomalies vs GPP
+ggplot(fully_merged_summer, aes(x = temp_z_scores, y = gpp_z_scores)) +
+  geom_point() +
+  geom_smooth(method = lm, formula = y ~ x, colour = "red", se = FALSE) +
+  labs(x = "Temperature Anomalies", y = "GPP") +
+  ggtitle("Summer Temperature Anomalies vs GPP")
+
+ggplot(fully_merged_summer, aes(x = sm3_z_scores, y = gpp_z_scores)) +
+  geom_point() +
+  geom_smooth(method = lm, formula = y ~ x, colour = "red", se = FALSE) +
+  labs(x = "SM Anomalies", y = "GPP") +
+  ggtitle("Summer SM Anomalies vs GPP")
+
+hist(fully_merged_summer$gpp_z_scores)
+shapiro.test(fully_merged_summer$gpp_z_scores)
+
+drivers <- fully_merged_summer %>%
+  mutate(condition = ifelse(year %in% c(2003, 2018), "drought", "normal"))
+
+drivers$year_group <- ifelse(drivers$year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020), "normal",
+                             # ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
+                             ifelse(drivers$year %in% c(2003), "2003", 
+                                    ifelse(drivers$year %in% c(2018), "2018", NA)))
+
+non_drought <- drivers %>%
+  filter(!(year %in% c(2003, 2018)))
+
+non_drought <- non_drought %>%
+  group_by(doy) %>%
+  mutate(mean_gpp = mean(gpp_z_scores, na.rm = TRUE),
+         mean_maxT = mean(temp_z_scores, na.rm = TRUE),
+         mean_sm1 = mean(sm1_z_scores, na.rm = TRUE),
+         mean_sm2 = mean(sm2_z_scores, na.rm = TRUE),
+         mean_sm3 = mean(sm3_z_scores, na.rm = TRUE),
+         mean_vpd = mean(vpd_z_scores, na.rm = TRUE),
+         mean_swr = mean(swr_z_scores, na.rm = TRUE)) %>%
+  ungroup()
+
+drought1 <- drivers %>%
+  filter((year %in% c(2003, 2018)))
+
+drought1 <- drought1 %>%
+  group_by(year) %>%
+  mutate(mean_maxT = temp_z_scores, mean_gpp = gpp_z_scores, mean_sm1 = sm1_z_scores, mean_sm2 = sm2_z_scores, mean_sm3 = sm3_z_scores, mean_vpd = vpd_z_scores, mean_swr = swr_z_scores) %>%
+  ungroup()
+
+new <- rbind(drought1, non_drought)
+
+
+hist(non_drought$gpp_z_scores)
+shapiro.test(non_drought$gpp_z_scores)
+
+hist(drought$gpp_z_scores)
+shapiro.test(drought$gpp_z_scores)
+
+# plot z-scores ####
+palette_anomalies <- c("#D6A400", "#B80422", "darkgrey")
+
+gpp_plotz <- ggplot(new, aes(x = doy, y = mean_gpp, group = year_group, colour = year_group, linetype = condition)) +
+  geom_line(size = 0.8) +
+  labs(title = "",
+       x = "Summer months",
+       y = "GPP (gC/m²/day)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  #scale_shape_manual() + 
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+
+plot(gpp_plotz)
+
+maxT_plotz <- ggplot(new, aes(x = doy, y = mean_maxT, group = year_group, colour = year_group, linetype = condition)) +
+  geom_line(size = 0.8) +
+  labs(title = "",
+       x = "Time (months)",
+       y = "Max temperature (°C)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  #scale_shape_manual() + 
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+
+plot(maxT_plotz)
+
+sm1_plotz <- ggplot(new, aes(x = doy, y = mean_sm1, group = year_group, colour = year_group, linetype = condition)) +
+  geom_line(size = 0.8) +
+  labs(title = "",
+       x = "Time (month)",
+       y = "Soil moisture at depth 2 (X)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  #scale_shape_manual() + 
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+
+plot(sm1_plotz)
+
+
+
+sm2_plotz <- ggplot(new, aes(x = doy, y = mean_sm2, group = year_group, colour = year_group, linetype = condition)) +
+  geom_line(size = 0.8) +
+  labs(title = "",
+       x = "Time (month)",
+       y = "Soil moisture at depth 2 (X)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  #scale_shape_manual() + 
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+
+plot(sm2_plotz)
+
+sm3_plotz <- ggplot(new, aes(x = doy, y = mean_sm3, group = year_group, colour = year_group, linetype = condition)) +
+  geom_line(size = 0.8) +
+  labs(title = "",
+       x = "Time (month)",
+       y = "Soil moisture at depth 3 (X)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  #scale_shape_manual() + 
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+
+plot(sm3_plotz)
+
+
+vpd_plotz <- ggplot(new, aes(x = doy, y = mean_vpd, group = year_group, colour = year_group, linetype = condition)) +
+  geom_line(size = 0.8) +
+  labs(title = "",
+       x = "Time (month)",
+       y = "VPD (kPa)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  #scale_shape_manual() + 
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+plot(vpd_plotz)
+
+swr_plotz <- ggplot(new, aes(x = doy, y = mean_swr, group = year_group, colour = year_group, linetype = condition)) +
+  geom_line(size = 0.8) +
+  labs(title = "",
+       x = "Time (months)",
+       y = "SWR (MJ/m²/day)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  #scale_shape_manual() + 
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+plot(swr_plotz)
+
+
+### Statistical tests ####
+install.packages("ppcor")
+library(ppcor)
+library(car)
+
+drought <- drought1 %>%
+  filter((year %in% c(2003)))
+drought <- drought1 %>%
+  filter((year %in% c(2018)))
+
+drought <- drought %>%
+  rename(mod_gpp = gpp_z_scores, maxT = temp_z_scores, sm1 = sm1_z_scores, sm2 = sm2_z_scores,
+         sm3 = sm3_z_scores, vpd = vpd_z_scores, swr = swr_z_scores)
+
+
+
+pcor_test_sm3 <- pcor.test(non_drought$gpp_z_scores, non_drought$sm3_z_scores, 
+                           x = non_drought[, c("temp_z_scores", "swr_z_scores")])
+
+pcor_test_temp <- pcor.test(non_drought$gpp_z_scores, non_drought$temp_z_scores, 
+                           x = non_drought[, c("sm3_z_scores", "swr_z_scores")])
+
+
+pcor_test_swr <- pcor.test(non_drought$gpp_z_scores, non_drought$swr_z_scores, 
+                            x = non_drought[, c("sm3_z_scores", "temp_z_scores")])
+
+
+pcor_test_vpd <- pcor.test(non_drought$mod_gpp, non_drought$precip, 
+                           x = non_drought[, c("sm3", "maxT", "swr", "precip")])
+
+
+
+cor_results <- pcor(non_drought[, c("mod_gpp", "maxT","sm2", "swr")])
+print(pcor_test_sm3)
+
+# Drought
+
+pcor_test_sm3 <- pcor.test(drought$mod_gpp, drought$sm3, 
+                           x = drought[, c("maxT", "swr")])
+
+pcor_test_maxT <- pcor.test(drought$mod_gpp, drought$maxT, 
+                            x = drought[, c("sm3", "swr")])
+
+# Partial correlation between mod_gpp and vpd, controlling for sm1, sm2, sm3, maxT, swr
+pcor_test_vpd <- pcor.test(drought2003$mod_gpp, drought2003$vpd, 
+                           x = drought2003[, c("sm3", "maxT", "swr")])
+
+# Partial correlation between mod_gpp and swr, controlling for sm1, sm2, sm3, maxT, vpd
+pcor_test_swr <- pcor.test(drought$mod_gpp, drought$swr, 
+                           x = drought[, c("sm3", "maxT")])
+
+
+# Results
+pcor_results_2003 <- data.frame(
+  Variable = c("sm3", "maxT", "swr"),
+  Partial_Correlation = c(pcor_test_sm3$estimate, pcor_test_maxT$estimate, pcor_test_swr$estimate),
+  P_Value = c(pcor_test_sm3$p.value, pcor_test_maxT$p.value, pcor_test_swr$p.value)
+)
+
+print(pcor_results_nondrought)
+
+print(pcor_results2015)
+print(pcor_results2000)
+
+print(pcor_results_2003)
+print(pcor_results_2018)
+
+print(pcor_resultsdrought)
+print(pcor_results_non_drought)
+
+partial_corr_values <- pcor_results_non_drought$Partial_Correlation[3:5]
+print(partial_corr_values)
+
+pcor_results <- pcor(as.matrix(non_drought[, c("mod_gpp", "sm3", "vpd", "maxT", "swr", "precip")]), method = "pearson")
+
+print(pcor_results)
+
+
+
+
 
 
 
