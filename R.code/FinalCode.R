@@ -716,6 +716,44 @@ plot(gpp_variation_plot)
 ggsave("gpp_variation_plot.png", path = "Plots", plot = gpp_variation_plot, width = 7, height = 5, dpi = 500)
 
 
+# Same for NEE
+nee_variation_plot <- ggplot(gpp_all, aes(x = doy, y = mod_nee, colour = group, group = year)) +
+  geom_line(linewidth = 0.9) +
+  geom_hline(yintercept = 0, size = 0.4, colour = "black") +
+  labs(title = "",
+       x = "Time (month)",
+       y = "Weekly NEE (gC/m²/day)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_gpp) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(28, 56, 91, 119, 154, 182, 217, 245, 273, 308, 336), 
+                     labels = c("Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
+                     expand = c(0, 0),
+                     limits = c(7, 366)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(-10,5))
+
+plot(nee_variation_plot)
+
+# combine the correlation plots
+combined_rq1_nee <- grid.arrange(
+  gpp_variation_plot, nee_variation_plot, 
+  ncol = 2, 
+  layout_matrix = rbind(c(1,2)), 
+  heights = c(1))
+
+# Save the plot as a PNG file to GitHub
+ggsave("rq1_NEE&GPP.png", path = "Plots", plot = combined_rq1_nee, width = 10, height = 7, dpi = 500)
+
+# now.. do i switch to investigating NEE instead???
+
+
 
 ### RQ2: Drivers vs response variables ####
 drivers <- read.csv("rq2data.csv", header = TRUE)
