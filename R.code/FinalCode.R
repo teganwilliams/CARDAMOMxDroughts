@@ -304,6 +304,53 @@ ggsave("interannual_variability.png", path = "Plots", plot = combined_variabilit
 
 
 
+# inter-annual variability for NEE
+NEEvariability2003 <- ggplot(gpp_2003, aes(x = year, y = mod_nee, group = year)) +
+  geom_boxplot(aes(fill = group)) +
+  scale_fill_manual(values = palette2003) +
+  labs(x = "Year",
+       y = "NEE (gC/m²/day)",
+       colour = "Year:") +
+  theme(panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold"),
+        legend.text = element_text(size = 11),
+        legend.position = 'none') +
+  scale_x_continuous(breaks = c(2000, 2001, 2002, 2003, 2004, 2005)) +
+  scale_y_continuous(limits = c(-8, 0.5))
+
+plot(NEEvariability2003)
+
+NEEvariability2018 <- ggplot(gpp_2018, aes(x = year, y = mod_nee, group = year)) +
+  geom_boxplot(aes(fill = group)) +
+  labs(x = "Year",
+       y = "NEE (gC/m²/day)",
+       colour = "Year:") +
+  scale_fill_manual(values = palette2018) +
+  theme(panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold"),
+        legend.text = element_text(size = 11),
+        legend.position = 'none') +
+  scale_x_continuous(breaks = c(2015, 2016, 2017, 2018, 2019, 2020)) +
+  scale_y_continuous(limits = c(-8, 0.5))
+
+plot(NEEvariability2018)
+
+# combine the inter-annual variability plots
+NEEcombined_variability_plots <- grid.arrange(
+  NEEvariability2003, NEEvariability2018,
+  nrow = 1, 
+  layout_matrix = rbind(c(1,2)), 
+  heights = c(1))
+
+ggsave("NEE_interannual_variability.png", path = "Plots", plot = NEEcombined_variability_plots, width = 7, height = 4, dpi = 500)
+
+
+
+
 # Levene's test for homogeneity of variances
 levene_test <- car::leveneTest(mod_gpp ~ group, data = gpp_2003)
 print(levene_test)
