@@ -981,9 +981,6 @@ drought <- drought1 %>%
 
 # check linearity between gpp and met drivers
 
-ggplot(x = non_drought$temp_z_scores, y = non_drought$gpp_z_scores) + 
-  geom_scatter()
-
 
 drought <- drought %>%
   rename(mod_gpp = gpp_z_scores, maxT = temp_z_scores, sm1 = sm1_z_scores, sm2 = sm2_z_scores,
@@ -1008,13 +1005,22 @@ model_non_drought2000 <- glmmTMB(gpp_z_scores ~ temp_z_scores + sm2_z_scores + s
                                  family = tweedie(link = "log"))
 
 
-model_non_drought <- glm(gpp_z_scores ~  temp_z_scores * sm2_z_scores * sm3_z_scores * swr_z_scores, data = non_drought, family = gaussian(link = "identity"))
+model_non_drought <- glm(gpp_z_scores ~  vpd_z_scores * temp_z_scores * sm2_z_scores * sm3_z_scores * swr_z_scores, data = non_drought, family = gaussian(link = "identity"))
 summary(model_non_drought)
 
 residuals_lmer <- resid(model_non_drought)
 shapiro.test(residuals_lmer)
 qqnorm(residuals_lmer) 
 qqline(residuals_lmer)
+
+summary_data <- summary(model_non_drought)
+std_coef <- summary_data$coefficients / sd(non_drought$gpp_z_scores)
+print(std_coef)
+
+
+model_non_drought <- glm(gpp_z_scores ~  vpd_z_scores * temp_z_scores * sm2_z_scores * sm3_z_scores * swr_z_scores, data = non_drought, family = gaussian(link = "identity"))
+summary(model_non_drought)
+
 
 
 model_drought <- glm(mod_gpp ~  maxT * sm2 * sm3 * swr, data = drought, family = gaussian(link = "identity"))
@@ -1025,6 +1031,8 @@ shapiro.test(residuals_lmer)
 qqnorm(residuals_lmer) 
 qqline(residuals_lmer)
 
-
+summary_data <- summary(model_drought)
+std_coef <- summary_data$coefficients / sd(drought$mod_gpp)
+print(std_coef)
 
 
