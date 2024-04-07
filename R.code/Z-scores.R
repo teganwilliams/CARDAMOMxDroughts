@@ -629,6 +629,21 @@ drought <- drought %>%
          sm3 = sm3_z_scores, vpd = vpd_z_scores, swr = swr_z_scores)
 
 
+# Combined ANOVA
+
+anova_all <- aov(mod_gpp ~ maxT + sm1 + sm2 + sm3 + vpd + swr, data = drought)
+summary(anova_all)
+
+anova_maxT <- aov(gpp_z_scores ~ temp_z_scores, data = non_drought)
+anova_sm3 <- aov(mod_gpp ~ sm3, data = drought)
+anova_vpd <- aov(mod_gpp ~ vpd, data = drought)
+anova_swr <- aov(mod_gpp ~ swr, data = drought)
+anova_all <- aov(gpp_z_scores ~ temp_z_scores + sm1_z_scores + sm2_z_scores + sm3_z_scores + vpd_z_scores + swr_z_scores, data = non_drought)
+summary(anova_all)
+summary(anova_maxT)
+
+
+
 non_drought <- na.omit(non_drought)
 
 pcor_sm3 <- pcor.test(non_drought$gpp_z_scores, non_drought$sm3_z_scores, 
