@@ -13,6 +13,9 @@ zscores <- read.csv("Data/fullanomalies.csv", header = TRUE)
 summer_zscores <- zscores %>%
   filter(week >= 22 & week <= 37)
 
+neg_gpp <- zscores %>%
+  filter(gpp_z_scores < 0) # 305 out of 624 are negative
+
 zscores <- zscores %>%
   mutate(condition = ifelse(year %in% c(2003, 2018), "drought", "normal"))
 
@@ -199,7 +202,7 @@ plot(swr_plotz)
 
 # ANOVA
 # Combined ANOVA
-anova_all <- aov(gpp_z_scores ~ temp_z_scores + sm1_z_scores + sm2_z_scores + sm3_z_scores + vpd_z_scores + swr_z_scores, data = drought1)
+anova_all <- aov(gpp_z_scores ~ temp_z_scores + sm1_z_scores + sm2_z_scores + sm3_z_scores + vpd_z_scores + swr_z_scores, data = neg_gpp)
 summary(anova_all) # no significant effect
 
 anova_maxT <- aov(gpp_z_scores ~ temp_z_scores, data = nondrought)
@@ -209,6 +212,13 @@ anova_swr <- aov(mod_gpp ~ swr, data = drought)
 anova_all <- aov(gpp_z_scores ~ temp_z_scores + sm1_z_scores + sm2_z_scores + sm3_z_scores + vpd_z_scores + swr_z_scores, data = nondrought)
 summary(anova_all)
 summary(anova_maxT)
+
+
+ggplot()
+
+
+
+
 
 
 
