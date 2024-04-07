@@ -11,7 +11,7 @@ zscores <- read.csv("Data/fullanomalies.csv", header = TRUE)
 # Create subset dataframes for drought vs non drought
 
 summer_zscores <- zscores %>%
-  filter(week >= 22 & week <= 37)
+  filter(week >= 18 & week <= 43)
 
 neg_gpp <- zscores %>%
   filter(gpp_z_scores < 0) # 305 out of 624 are negative
@@ -27,6 +27,33 @@ zscores$year_group <- ifelse(zscores$year %in% c(2000, 2001, 2002, 2004, 2005, 2
 nondrought <- zscores %>%
   filter(!(year %in% c(2003, 2018)))
 
+
+# Models
+
+library(lme4)
+library(lmerTest)
+
+model <- lmer(gpp_z_scores ~  temp_z_scores + sm1_z_scores + sm2_z_scores + sm3_z_scores + swr_z_scores + vpd_z_scores + (1|condition), data = zscores)
+summary(model)
+
+residuals <- resid(model)
+shapiro.test(residuals)
+qqnorm(residuals) 
+qqline(residuals)
+
+
+model <- lmer(gpp_z_scores ~  temp_z_scores * sm1_z_scores * sm2_z_scores * sm3_z_scores * vpd_z_scores + (1|condition), data = summer_zscores)
+summary(model)
+
+residuals <- resid(model)
+shapiro.test(residuals)
+qqnorm(residuals) 
+qqline(residuals)
+
+
+
+
+#### Timeseries plots of z-scores ####
 nondrought <- nondrought %>%
   group_by(doy) %>%
   mutate(mean_gpp = mean(gpp_z_scores, na.rm = TRUE),
@@ -48,7 +75,6 @@ drought1 <- drought1 %>%
 
 new <- rbind(drought1, nondrought)
 
-#### Timeseries plots of z-scores ####
 palette_anomalies <- c("#D6A400", "#B80422", "darkgrey")
 
 gpp_plotz <- ggplot(new, aes(x = doy, y = mean_gpp, group = year_group, colour = year_group, linetype = condition)) +
