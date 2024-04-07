@@ -253,11 +253,17 @@ gpp_drought2018 <- gpp_all %>%
 gpp_drought2018 <- gpp_all %>%
   filter(doy >= 189 & doy <= 245) # 1st july - 1st september (9 weeks)
 
+gpp_drought1 <- gpp_all %>%
+  filter(doy >= 217 & doy <= 252) # based on Wei et al. 2024
+
+gpp_drought2 <- gpp_all %>%
+  filter(doy >= 182 & doy <= 273) # based on Wei et al. 2024
 
 
-gpp_2003 <- gpp_drought2018 %>%
+
+gpp_2003 <- gpp_drought1 %>%
   filter(year >= 2000 & year <= 2005)
-gpp_2018 <- gpp_drought2018 %>%
+gpp_2018 <- gpp_drought2 %>%
   filter(year >= 2015 & year <= 2020)
 
 gpp_2003$group <- as.factor(gpp_2003$group)
@@ -265,7 +271,7 @@ gpp_2003$group <- as.factor(gpp_2003$group)
 kruskal_test_2003 <- kruskal.test(mod_gpp ~ group, data = gpp_2003)
 print(kruskal_test_2003)
 
-kruskal_test_2018 <- kruskal.test(mod_gpp ~ group, data = gpp_2018)
+kruskal_test_2018 <- kruskal.test(mod_gpp ~ year, data = gpp_2018)
 print(kruskal_test_2018)
 
 
@@ -289,7 +295,7 @@ variability2003 <- ggplot(gpp_2003, aes(x = year, y = mod_gpp, group = year)) +
   labs(x = "Year",
        y = "GPP (gC/m²/day)") +
   geom_text(aes(x = 2003, y = 3.5,
-                label = paste("p-value = ", signif(kruskal_test_2003$p.value, digits = 2))), 
+                label = paste("p-value = ", signif(kruskal_test_2003$p.value, digits = 1))), 
             vjust = -1, color = "black") +  
   scale_fill_manual(values = palette2003) +
   theme(panel.background = element_blank(), axis.line = element_line(colour = "black"), 
