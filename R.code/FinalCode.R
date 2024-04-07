@@ -238,12 +238,14 @@ gpp_all$group <- ifelse(gpp_all$year %in% c(2003, 2018), as.character(gpp_all$ye
 
 gpp_all$group <- as.factor(gpp_all$group)
 
+gpp_drought2018 <- gpp_all %>%
+  filter(doy >= 154 & doy <= 259) # 7th july - 1st sep
 
 gpp_drought2018 <- gpp_all %>%
   filter(doy >= 210 & doy <= 252) # 28th july - 8th september (7 weeks)
 
 gpp_drought2018 <- gpp_all %>%
-  filter(doy >= 203 & doy <= 245) # 21st july - 1st september (7 weeks)
+  filter(doy >= 210 & doy <= 245) # 28th july - 1st september (6weeks)
 
 gpp_drought2018 <- gpp_all %>%
   filter(doy >= 203 & doy <= 259) # 21st july - 22nd september (9 weeks)
@@ -281,9 +283,9 @@ variability2003 <- ggplot(gpp_2003, aes(x = year, y = mod_gpp, group = year)) +
   geom_boxplot(aes(fill = group)) +
   labs(x = "Year",
        y = "GPP (gC/m²/day)") +
-  geom_text(aes(x = 2004.5, y = 5.3,
-                label = paste("p-value =", signif(kruskal_test_2003$p.value, digits = 2))), 
-            vjust = -1, color = "#96DB6B") +  
+  geom_text(aes(x = 2003, y = 3.5,
+                label = paste("p-value = ", signif(kruskal_test_2003$p.value, digits = 2))), 
+            vjust = -1, color = "black") +  
   scale_fill_manual(values = palette2003) +
   theme(panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         axis.title = element_text(size=11),
@@ -291,7 +293,9 @@ variability2003 <- ggplot(gpp_2003, aes(x = year, y = mod_gpp, group = year)) +
         legend.title = element_text(size = 11, face = "bold"),
         legend.text = element_text(size = 11),
         legend.position = 'none') +
-  scale_x_continuous(breaks = c(2000, 2001, 2002, 2003, 2004, 2005))
+  scale_x_continuous(breaks = c(2000, 2001, 2002, 2003, 2004, 2005)) +
+  scale_y_continuous(limits = c(1.5, 15),
+                     breaks = c(5, 10, 15))
 
 plot(variability2003)
 
@@ -299,9 +303,9 @@ variability2018 <- ggplot(gpp_2018, aes(x = year, y = mod_gpp, group = year)) +
   geom_boxplot(aes(fill = group)) +
   labs(x = "Year",
        y = "GPP (gC/m²/day)") +
-  geom_text(aes(x = 2019.5, y = 3,
+  geom_text(aes(x = 2018, y = 1.5,
                 label = paste("p-value =", signif(kruskal_test_2018$p.value, digits = 2))), 
-            vjust = -1, color = "#F2E857") + 
+            vjust = -1, color = "black") + 
   scale_fill_manual(values = palette2018) +
   theme(panel.background = element_blank(), axis.line = element_line(colour = "black"), 
                  axis.title = element_text(size=11),
@@ -309,7 +313,9 @@ variability2018 <- ggplot(gpp_2018, aes(x = year, y = mod_gpp, group = year)) +
                  legend.title = element_text(size = 11, face = "bold"),
                  legend.text = element_text(size = 11),
                  legend.position = 'none') +
-  scale_x_continuous(breaks = c(2015, 2016, 2017, 2018, 2019, 2020))
+  scale_x_continuous(breaks = c(2015, 2016, 2017, 2018, 2019, 2020)) +
+  scale_y_continuous(limits = c(1.5, 15),
+                     breaks = c(5, 10, 15))
 
 plot(variability2018)
 
