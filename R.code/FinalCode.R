@@ -2045,6 +2045,7 @@ plot(compared_simulation)
 
 ggsave("simXcal_timeseries_plot.png", path = "Plots", plot = compared_simulation, width = 7, height = 5, dpi = 500)
 
+
 # Validation (simulation)
 
 gpprmsesim <- sqrt(mean((calxsim2$obs_gpp - calxsim2$mod_gpp_sim)^2, na.rm = TRUE))
@@ -2111,9 +2112,34 @@ gppcorrelationcalxsim <- ggplot(calxsim2, aes(y = obs_gpp)) +
 
 plot(gppcorrelationcalxsim)
 
-ggsave("simXcal_correlation_plot.png", path = "Plots", plot = gppcorrelationcalxsim, width = 7, height = 5, dpi = 500)
+ggsave("simXcal_correlation_plot.png", path = "Plots", plot = gppcorrelationcalxsim, width = 5, height = 5, dpi = 500)
 
 
+
+# Now just for 2018
+
+compared_simulation2018 <- ggplot(calxsim2, aes(x = day)) +
+  # geom_ribbon(aes(ymin = obs_gpp - obs_gpp_unc, ymax = obs_gpp + obs_gpp_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
+  geom_ribbon(aes(ymin = mod_gpp_sim - 1*abs(mod_gpp_unc95_sim), ymax = mod_gpp_sim + 1*abs(mod_gpp_unc95_sim)), fill = "#00AEC974", alpha = 0.3) +
+  geom_line(aes(y = mod_gpp, colour = "Mod_cal"), linewidth = 0.5) +
+  geom_line(aes(y = mod_gpp_sim, colour = "Mod_sim"), linewidth = 0.5) +
+  geom_point(aes(y = obs_gpp, colour = "Obs"), size = 1.2) +
+  labs(x = "Time (year)", y = "GPP (gC/m²/day)", colour = "Data:") +
+  scale_color_manual(values = c("Mod_cal" = "#5D1CAD","Mod_sim" = "#00AEC974", "Obs" = "#FF730085", "Obs unc" ="#FF73001F")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold"),
+        legend.text = element_text(size = 11)) +
+  scale_x_continuous(breaks = c(182, 553, 917, 1281, 1645, 2009), 
+                     labels = c("2015", "2016", "2017", "2018", "2019", "2020"),
+                     expand = c(0, 0),
+                     limits = c(1099, 2184)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(0,17))
+
+plot(compared_simulation2018)
 
 
 
