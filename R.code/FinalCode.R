@@ -438,8 +438,7 @@ annual2$mean <- five_year_mean2
 annual2$percent_variation <- (annual2$annual_gpp / annual2$mean) * 100 - 100
 
 
-# a) plotting timeseries of modelled and obs GPP over time (5 years) 
-# ALSO need to include my calculations of annual GPP here!
+# a) plotting timeseries of modelled and obs GPP over time (5 years) ####
 
 gppdrought2003 <- ggplot(data2000, aes(x = day)) +
   geom_ribbon(aes(ymin = obs_gpp - obs_gpp_unc, ymax = obs_gpp + obs_gpp_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
@@ -2022,8 +2021,8 @@ calxsim2 <- subset(calxsim, select = c(date, day, mod_gpp_sim, mod_gpp_unc95_sim
 
 # Plot
 compared_simulation <- ggplot(calxsim2, aes(x = day)) +
-  # geom_ribbon(aes(ymin = obs_gpp.x - obs_gpp_unc.x, ymax = obs_gpp.x + obs_gpp_unc.x, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
-  geom_ribbon(aes(ymin = mod_gpp_sim - 2*abs(mod_gpp_unc95_sim), ymax = mod_gpp_sim + 3*abs(mod_gpp_unc95_sim)), fill = "#5D1CAD", alpha = 0.3) +
+  # geom_ribbon(aes(ymin = obs_gpp - obs_gpp_unc, ymax = obs_gpp + obs_gpp_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
+  geom_ribbon(aes(ymin = mod_gpp_sim - 1*abs(mod_gpp_unc95_sim), ymax = mod_gpp_sim + 1*abs(mod_gpp_unc95_sim)), fill = "#00AEC974", alpha = 0.3) +
   geom_line(aes(y = mod_gpp, colour = "Mod_cal"), linewidth = 0.5) +
   geom_line(aes(y = mod_gpp_sim, colour = "Mod_sim"), linewidth = 0.5) +
   geom_point(aes(y = obs_gpp, colour = "Obs"), size = 1.2) +
@@ -2044,10 +2043,75 @@ compared_simulation <- ggplot(calxsim2, aes(x = day)) +
 
 plot(compared_simulation)
 
-calxsim2$date <- as.factor(calxsim2$date)
+ggsave("simXcal_timeseries_plot.png", path = "Plots", plot = compared_simulation, width = 7, height = 5, dpi = 500)
+
+# Validation (simulation)
+
+gpprmsesim <- sqrt(mean((calxsim2$obs_gpp - calxsim2$mod_gpp_sim)^2, na.rm = TRUE))
+gpprmsecal <- sqrt(mean((calxsim2$obs_gpp - calxsim2$mod_gpp)^2, na.rm = TRUE))
+
+print(gpprmsesim)
+print(gpprmsecal) # missing modelled lai and nee in dataset!
 
 
+gppcorrelationsim <- cor(calxsim2$mod_gpp_sim, calxsim2$obs_gpp, use = "complete.obs")
 
+gppr_squaredsim <- gppcorrelationsim^2
+
+print(paste("R^2 value:", round(gppr_squaredsim, 3)))
+
+gppcorrelationcal <- cor(calxsim2$mod_gpp, calxsim2$obs_gpp, use = "complete.obs")
+gppr_squaredcal <- gppcorrelationcal^2
+print(paste("R^2 value:", round(gppr_squaredcal, 3)))
+
+
+# Print the values
+print(gpprmsesim)
+print(gpprmsecal) 
+print(gppr_squaredsim)
+print(gppr_squaredcal)
+
+# Plot the relationships
+gppcorrelationcalxsim <- ggplot(calxsim2, aes(y = obs_gpp)) +
+  geom_point(aes(x=mod_gpp), colour = "#5D1CAD") +
+  geom_point(aes(x=mod_gpp_sim), colour = "#00AEC974") +
+  labs(x = "Modelled GPP (gC/m²/day)", y = "Observed GPP (gC/m²/day)") +
+  geom_smooth(aes(x=mod_gpp), method = lm, se = FALSE, colour = "#5D1CAD") +
+  geom_smooth(aes(x=mod_gpp_sim), method = lm, se = FALSE, colour = "#00AEC974") +
+  # geom_abline(intercept = 0, slope = 1, color = "grey", linetype = "dashed", size = 0.6) +
+  annotate("text", x = 0, y = 13.85, 
+           label = substitute("RMSE" ~ "=" ~ value, list(value = round(gpprmsecal, 3))),
+           hjust = 0, vjust = 1,
+           size = 4, 
+           fontface = "bold", 
+           colour = "#5D1CAD") +
+  annotate("text", x = 0, y = 12.85, 
+           label = substitute("RMSE" ~ "=" ~ value, list(value = round(gpprmsesim, 3))),
+           hjust = 0, vjust = 1,
+           size = 4, 
+           fontface = "bold", 
+           colour = "#00AEC974") +
+  annotate("text", x = 4, y = 14, 
+           label = substitute("R"^2 ~ "=" ~ value, list(value = round(gppr_squaredcal, 3))),
+           hjust = 0, vjust = 1,
+           size = 4, 
+           fontface = "bold", 
+           colour = "#5D1CAD") +
+  annotate("text", x = 4, y = 13, 
+           label = substitute("R"^2 ~ "=" ~ value, list(value = round(gppr_squaredsim, 3))),
+           hjust = 0, vjust = 1,
+           size = 4, 
+           fontface = "bold", 
+           colour = "#00AEC974") +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9)) +
+  scale_x_continuous(limits = c(0,16)) +
+  scale_y_continuous(limits = c(0,16))
+
+plot(gppcorrelationcalxsim)
+
+ggsave("simXcal_correlation_plot.png", path = "Plots", plot = gppcorrelationcalxsim, width = 7, height = 5, dpi = 500)
 
 
 
