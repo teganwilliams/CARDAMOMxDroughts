@@ -53,6 +53,7 @@ fully_merged_long$driver <- as.factor(fully_merged_long$driver)
 
 # Subset data for drought years and non-drought years
 drought_years <- fully_merged_summer %>% filter(year %in% c(2003, 2018))
+
 non_drought_years <- fully_merged_summer %>% filter(!year %in% c(2003, 2018))
 drought_years2 <- fully_merged %>% filter(year %in% c(2003, 2018))
 non_drought_years2 <- fully_merged %>% filter(!year %in% c(2003, 2018))
@@ -81,6 +82,7 @@ fully_merged_summer2 <- fully_merged_summer %>%
 model_both <- lm(mod_gpp ~ temp_z_scores + sm_z_scores, data = fully_merged_summer)
 summary(model_both)
 plot(model_both)
+
 
 # Model for the effect of temperature on GPP
 model_temp <- lm(mod_gpp ~ tempAnomaly, data = fully_merged_summer)
@@ -143,6 +145,7 @@ tempcor <- cor(fully_merged_summer$mod_gpp, fully_merged_summer$temp_z_scores, u
 # Square the correlation coefficient to get R^2
 sm_r_squared <- smcor^2
 temp_r_squared <- tempcor^2
+
 
 # Print the values
 print(paste("R^2 value:", round(sm_r_squared, 3)))
@@ -248,7 +251,7 @@ gpp_drought2018 <- gpp_all %>%
   filter(doy >= 210 & doy <= 245) # 28th july - 1st september (6 weeks)
 
 gpp_drought2018 <- gpp_all %>%
-  filter(doy >= 203 & doy <= 259) # 21st july - 22nd september (9 weeks)
+  filter(doy >= 189 & doy <= 245) # 1st july - 1st september (9 weeks)
 
 
 
@@ -277,7 +280,9 @@ pairwise_comp2018 <- pairwise.wilcox.test(gpp_2018$mod_gpp, gpp_2018$group, p.ad
 print(pairwise_comp2018)
 
 palette2003 <- c("#96DB6B", "#CCCCCCA2")
+
 palette2018 <- c("#F2E857", "#CCCCCCA2")
+
 
 variability2003 <- ggplot(gpp_2003, aes(x = year, y = mod_gpp, group = year)) +
   geom_boxplot(aes(fill = group)) +
@@ -328,7 +333,7 @@ combined_variability_plots <- grid.arrange(
 
 ggsave("interannual_variability.png", path = "Plots", plot = combined_variability_plots, width = 10, height = 5, dpi = 500)
 
-
+max(gpp_2003$mod_gpp)
 
 # inter-annual variability for NEE
 NEEvariability2003 <- ggplot(gpp_2003, aes(x = year, y = mod_nee, group = year)) +
@@ -2012,7 +2017,7 @@ calxsim2 <- subset(calxsim, select = c(date, day, mod_gpp_sim, mod_gpp_unc95_sim
 # Plot
 compared_simulation <- ggplot(calxsim2, aes(x = day)) +
   # geom_ribbon(aes(ymin = obs_gpp.x - obs_gpp_unc.x, ymax = obs_gpp.x + obs_gpp_unc.x, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
-  geom_ribbon(aes(ymin = mod_gpp_sim - mod_gpp_unc95_sim, ymax = mod_gpp_sim + mod_gpp_unc95_sim ), fill = "#5D1CAD", alpha = 0.3) +
+  geom_ribbon(aes(ymin = mod_gpp_sim - 2*abs(mod_gpp_unc95_sim), ymax = mod_gpp_sim + 3*abs(mod_gpp_unc95_sim)), fill = "#5D1CAD", alpha = 0.3) +
   geom_line(aes(y = mod_gpp, colour = "Mod_cal"), linewidth = 0.5) +
   geom_line(aes(y = mod_gpp_sim, colour = "Mod_sim"), linewidth = 0.5) +
   geom_point(aes(y = obs_gpp, colour = "Obs"), size = 1.2) +
