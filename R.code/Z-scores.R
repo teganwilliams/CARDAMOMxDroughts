@@ -44,7 +44,7 @@ weekly_average_data <- met_data %>%
 
 fullmet_data1 <- cbind(weekly_average_data, met_data)
 
-fullmet <- fullmet_data1 %>%
+metfull <- fullmet_data1 %>%
   rename(date = full_date, maxT = maxt_C, sm1 = SWC_1, sm2 = SWC_2, sm3 = SWC_3, vpd = vpd_kPa, swr = swrad_MJm2day, precip = precip_kgm2s)
 
 
@@ -55,10 +55,10 @@ fullmet <- fullmet_data1 %>%
 
 # Filter for summer months
 
-fullmet <- fullmet %>%
+metfull <- fullmet %>%
   arrange(year)
 
-summer_met <- fullmet %>%
+summermet <- fullmet %>%
   filter(week >= 18 & week <= 36)
 
 # Z-scores 
@@ -172,11 +172,27 @@ merged_data_swr <- merged_data_swr %>%
   arrange(year)
 
 
+# Precip
+precip_anomalies <- metfull %>%
+  arrange(year)
+precip_anomalies <- subset(metfull, values = c(year, week, precip, meanPrecip, sdPrecip))
+precip <- metfull$precip
+meanPrecip <- metfull$meanPrecip
+sdPrecip <- metfull$sdPrecip
+precip_z_scores <- (precip - meanPrecip) / sdPrecip
+precip_z_scores <- as.data.frame(precip_z_scores)
+precip_anomalies$order <- seq_len(nrow(precip_anomalies))
+precip_z_scores$order <- seq_len(nrow(precip_z_scores))
+merged_data_precip <- merge(precip_z_scores, precip_anomalies, by = c("order"), all.x = TRUE)
+merged_data_precip <- merged_data_precip %>%
+  arrange(year)
+
+
 # All combining anomalies
-anomalies_combined <- cbind(merged_data_temp, merged_data_sm1, merged_data_sm2, merged_data_sm3, merged_data_vpd, merged_data_swr, by = (c("order")))
+anomalies_combined <- cbind(merged_data_temp, merged_data_sm1, merged_data_sm2, merged_data_sm3, merged_data_vpd, merged_data_swr,merged_data_precip, by = (c("order")))
 
 View(anomalies_combined)
-anomalies1 <- subset(anomalies_combined, select = c(date, year, month, week, doy, temp_z_scores, sm1_z_scores, sm2_z_scores, sm3_z_scores, vpd_z_scores, swr_z_scores))
+anomalies1 <- subset(anomalies_combined, select = c(date, year, month, week, doy, temp_z_scores, sm1_z_scores, sm2_z_scores, sm3_z_scores, vpd_z_scores, swr_z_scores, precip_z_scores))
 
 anomalies <- anomalies1 %>%
   filter(year >= 2000 & year <= 2005 | year >=2015 & year <= 2020)

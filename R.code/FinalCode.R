@@ -2092,13 +2092,13 @@ gppcorrelationcalxsim <- ggplot(calxsim2, aes(y = obs_gpp)) +
            size = 4, 
            fontface = "bold", 
            colour = "#00AEC974") +
-  annotate("text", x = 4, y = 14, 
+  annotate("text", x = 5, y = 14, 
            label = substitute("R"^2 ~ "=" ~ value, list(value = round(gppr_squaredcal, 3))),
            hjust = 0, vjust = 1,
            size = 4, 
            fontface = "bold", 
            colour = "#5D1CAD") +
-  annotate("text", x = 4, y = 13, 
+  annotate("text", x = 5, y = 13, 
            label = substitute("R"^2 ~ "=" ~ value, list(value = round(gppr_squaredsim, 3))),
            hjust = 0, vjust = 1,
            size = 4, 
