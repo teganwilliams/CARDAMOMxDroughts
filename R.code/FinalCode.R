@@ -239,13 +239,13 @@ gpp_all$group <- ifelse(gpp_all$year %in% c(2003, 2018), as.character(gpp_all$ye
 gpp_all$group <- as.factor(gpp_all$group)
 
 gpp_drought2018 <- gpp_all %>%
-  filter(doy >= 154 & doy <= 259) # 7th july - 1st sep
+  filter(doy >= 154 & doy <= 245) # 19th may (140), 2nd june (154) - 8th sep (252)(16 weeks; 3.5 months)
 
 gpp_drought2018 <- gpp_all %>%
   filter(doy >= 210 & doy <= 252) # 28th july - 8th september (7 weeks)
 
 gpp_drought2018 <- gpp_all %>%
-  filter(doy >= 210 & doy <= 245) # 28th july - 1st september (6weeks)
+  filter(doy >= 210 & doy <= 245) # 28th july - 1st september (6 weeks)
 
 gpp_drought2018 <- gpp_all %>%
   filter(doy >= 203 & doy <= 259) # 21st july - 22nd september (9 weeks)
@@ -304,7 +304,7 @@ variability2018 <- ggplot(gpp_2018, aes(x = year, y = mod_gpp, group = year)) +
   labs(x = "Year",
        y = "GPP (gC/m²/day)") +
   geom_text(aes(x = 2018, y = 1.5,
-                label = paste("p-value =", signif(kruskal_test_2018$p.value, digits = 2))), 
+                label = paste("p-value =", signif(kruskal_test_2018$p.value, digits = 1))), 
             vjust = -1, color = "black") + 
   scale_fill_manual(values = palette2018) +
   theme(panel.background = element_blank(), axis.line = element_line(colour = "black"), 
