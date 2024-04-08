@@ -118,9 +118,9 @@ pcor_sm2 <- pcor.test(nondrought$gpp_z_scores, nondrought$sm2_z_scores,
 pcor_sm1 <- pcor.test(nondrought$gpp_z_scores, nondrought$sm1_z_scores, 
                       x = nondrought[, c("temp_z_scores", "swr_z_scores")])
 pcor_maxT <- pcor.test(nondrought$gpp_z_scores, nondrought$temp_z_scores, 
-                       x = nondrought[, c("sm3_z_scores", "swr_z_scores", "sm1_z_scores", "sm2_z_scores")])
+                       x = nondrought[, c("sm3_z_scores", "swr_z_scores", "sm2_z_scores")])
 pcor_swr <- pcor.test(nondrought$gpp_z_scores, nondrought$swr_z_scores, 
-                      x = nondrought[, c("temp_z_scores", "sm3_z_scores", "sm1_z_scores", "sm2_z_scores")])
+                      x = nondrought[, c("temp_z_scores", "sm3_z_scores","sm2_z_scores")])
 
 
 print(pcor_sm1)
@@ -142,9 +142,9 @@ pcor_sm2 <- pcor.test(drought$gpp_z_scores, drought$sm2_z_scores,
 pcor_sm1 <- pcor.test(drought$gpp_z_scores, drought$sm1_z_scores, 
                       x = drought[, c("temp_z_scores", "swr_z_scores")])
 pcor_maxT <- pcor.test(drought$gpp_z_scores, drought$temp_z_scores, 
-                       x = drought[, c("sm3_z_scores", "swr_z_scores", "sm1_z_scores", "sm2_z_scores")])
+                       x = drought[, c("sm3_z_scores", "swr_z_scores", "sm2_z_scores")])
 pcor_swr <- pcor.test(drought$gpp_z_scores, drought$swr_z_scores, 
-                      x = drought[, c("temp_z_scores", "sm3_z_scores", "sm1_z_scores", "sm2_z_scores")])
+                      x = drought[, c("temp_z_scores", "sm3_z_scores", "sm2_z_scores")])
 
 
 print(pcor_sm1)

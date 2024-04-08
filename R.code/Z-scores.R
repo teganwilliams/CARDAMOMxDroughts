@@ -206,12 +206,12 @@ write.csv(anomalies, "fullanomalies.csv")
 gpp_all <- datafull %>%
   filter(year >= 2000 & year <= 2005 | year >= 2015 & year <= 2020)
 
-gpp_anomalies1 <- gpp_all %>%
+gpp_anomalies1 <- datafull %>%
   group_by(week = ceiling(as.numeric(doy)/7)) %>%
   summarise(meanGPP = mean(mod_gpp, na.rm = TRUE),
             sdGPP = sd(mod_gpp, na.rm = TRUE))
 
-gpp_anomalies <- cbind(gpp_anomalies1, gpp_all)
+gpp_anomalies <- cbind(gpp_anomalies1, datafull)
 
 gpp_anom <- subset(gpp_anomalies, select = c(date, year, week, doy, mod_gpp, meanGPP, sdGPP))
 
@@ -238,11 +238,10 @@ merged_data2015 <- x %>%
   filter(year >= 2015 & year <= 2020) %>%
   select(date, year, week, mod_gpp, mod_gpp_unc95)
 
-merged_data_full <- cbind(merged_data_gpp, anomalies)
+merged_data_full <- cbind(merged_data_gpp, anomalies1)
 merged_data <- subset(merged_data_full, select = c(date, year, month, week, doy, gpp_z_scores, temp_z_scores, sm1_z_scores, sm2_z_scores, sm3_z_scores, vpd_z_scores, swr_z_scores))
 
-setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/")
-write.csv(merged_data, "fullanomalies.csv")
+write.csv(merged_data_full, "fullanomalies.csv")
 
 
 fully_merged_summer <- merged_data %>%
