@@ -71,6 +71,12 @@ vif_values <- vif(model)
 print(vif_values)
 
 
+library(MuMIn)
+
+# Compute marginal and conditional R-squared
+r2_values <- r.squaredGLMM(model)
+print(r2_values)
+
 anova_drought <- anova(model)
 print(anova_drought)
 
@@ -90,12 +96,17 @@ vif_values <- vif(model2)
 print(vif_values)
 plot(model2, which = 1)
 
+r2_values <- r.squaredGLMM(model2)
+print(r2_values)
 
-# correlation test of based on these groupings
+anova_nondrought <- anova(model2)
+print(anova_nondrought)
+
+
+# Correlation test of using new groupings #####
 nondrought <- zscores %>%
   filter(year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020)) %>%
   filter(week >= 20 & week <= 39)
-
 
 
 nondrought <- na.omit(nondrought)
