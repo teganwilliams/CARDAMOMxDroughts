@@ -506,7 +506,7 @@ temp_anomaly_plot <- ggplot(zscores_full, aes(x = week, y = temp_z_scores, colou
                      limits = c(18, 36)) +
   scale_y_continuous(breaks = c(-4,-3, -2, -1, 0, 1, 2, 3),
                      expand = c(0, 0),
-                     limits = c(-4,3))
+                     limits = c(-3,3))
 
 plot(temp_anomaly_plot)
 
