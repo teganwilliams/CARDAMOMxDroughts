@@ -581,7 +581,7 @@ RQ2zscore_timeseriesALL <- grid.arrange(
   layout_matrix = rbind(c(1,2)), 
   heights = c(1))
 
-ggsave("AllZ-scores.png", path = "Plots", plot = RQ2zscore_timeseriesALL, width = 10, height = 5, dpi = 500)
+ggsave("AllZ-scores.png", path = "Plots", plot = RQ2zscore_timeseriesALL, width = 9, height = 4, dpi = 500)
 
 
 
