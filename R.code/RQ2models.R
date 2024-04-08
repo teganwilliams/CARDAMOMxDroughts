@@ -69,6 +69,10 @@ qqnorm(residuals)
 qqline(residuals)
 
 
+anova_drought <- anova(model)
+print(anova_drought)
+
+
 nondrought <- zscores %>%
   filter(year %in% c(2002, 2004, 2017, 2019)) %>%
   filter(week >= 20 & week <= 39)
@@ -82,22 +86,58 @@ qqnorm(residuals)
 qqline(residuals)
 
 
-model <- lmer(gpp_z_scores ~  temp_z_scores * sm1_z_scores * sm2_z_scores * sm3_z_scores * vpd_z_scores + (1|condition), data = summer_zscores)
-summary(model)
 
-residuals <- resid(model)
-shapiro.test(residuals)
-qqnorm(residuals) 
-qqline(residuals)
+# correlation test of based on these groupings
+nondrought <- zscores %>%
+  filter(year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020)) %>%
+  filter(week >= 20 & week <= 39)
 
 
-model <- glm(gpp_z_scores ~  temp_z_scores * sm1_z_scores * sm2_z_scores * sm3_z_scores * vpd_z_scores, data = summer_zscores)
-summary(model)
 
-residuals <- resid(model)
-shapiro.test(residuals)
-qqnorm(residuals) 
-qqline(residuals)
+nondrought <- na.omit(nondrought)
+
+pcor_sm3 <- pcor.test(nondrought$gpp_z_scores, nondrought$sm3_z_scores, 
+                      x = nondrought[, c("temp_z_scores", "swr_z_scores", "sm2_z_scores", "sm1_z_scores")])
+pcor_sm2 <- pcor.test(nondrought$gpp_z_scores, nondrought$sm2_z_scores, 
+                      x = nondrought[, c("temp_z_scores", "swr_z_scores", "sm1_z_scores", "sm3_z_scores")])
+pcor_sm1 <- pcor.test(nondrought$gpp_z_scores, nondrought$sm1_z_scores, 
+                      x = nondrought[, c("temp_z_scores", "swr_z_scores", "sm2_z_scores", "sm3_z_scores")])
+pcor_maxT <- pcor.test(nondrought$gpp_z_scores, nondrought$temp_z_scores, 
+                       x = nondrought[, c("sm3_z_scores", "swr_z_scores", "sm1_z_scores", "sm2_z_scores")])
+pcor_swr <- pcor.test(nondrought$gpp_z_scores, nondrought$swr_z_scores, 
+                      x = nondrought[, c("temp_z_scores", "sm3_z_scores", "sm1_z_scores", "sm2_z_scores")])
+
+
+print(pcor_sm1)
+print(pcor_sm2)
+print(pcor_sm3)
+print(pcor_maxT)
+print(pcor_swr)
+
+
+drought <- zscores %>%
+  filter(week >= 20 & week <= 39)
+
+drought <- na.omit(drought)
+
+pcor_sm3 <- pcor.test(drought$gpp_z_scores, drought$sm3_z_scores, 
+                      x = drought[, c("temp_z_scores", "swr_z_scores", "sm2_z_scores", "sm1_z_scores")])
+pcor_sm2 <- pcor.test(drought$gpp_z_scores, drought$sm2_z_scores, 
+                      x = drought[, c("temp_z_scores", "swr_z_scores", "sm1_z_scores", "sm3_z_scores")])
+pcor_sm1 <- pcor.test(drought$gpp_z_scores, drought$sm1_z_scores, 
+                      x = drought[, c("temp_z_scores", "swr_z_scores", "sm2_z_scores", "sm3_z_scores")])
+pcor_maxT <- pcor.test(drought$gpp_z_scores, drought$temp_z_scores, 
+                       x = drought[, c("sm3_z_scores", "swr_z_scores", "sm1_z_scores", "sm2_z_scores")])
+pcor_swr <- pcor.test(drought$gpp_z_scores, drought$swr_z_scores, 
+                      x = drought[, c("temp_z_scores", "sm3_z_scores", "sm1_z_scores", "sm2_z_scores")])
+
+
+print(pcor_sm1)
+print(pcor_sm2)
+print(pcor_sm3)
+print(pcor_maxT)
+print(pcor_swr)
+
 
 
 # Plotting modelled scatters ####
@@ -105,7 +145,7 @@ qqline(residuals)
 # Predicted values using lm and lmer models
 drought$model <- predict(model, newdata = drought, re.form = NA)
 
-drought$model2 <- predict(model2, newdata = drought, re.form = NA)
+nondrought$model2 <- predict(model2, newdata = nondrought, re.form = NA)
 
 
 drought$group <- ifelse(drought$year %in% c(2002, 2004), "Non-drought",
