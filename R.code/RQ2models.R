@@ -6,9 +6,19 @@ library(tidyverse)
 library(ggplot2) 
 
 # Load Data
-zscores <- read.csv("Data/fullanomalies.csv", header = TRUE)
+zscores_full <- read.csv("fullanomalies.csv", header = TRUE)
 
 # Create subset dataframes for drought vs non drought
+
+zscores_full$year_group <- ifelse(zscores_full$year %in% c(2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2019, 2020), "Non-drought",
+                             ifelse(zscores_full$year %in% c(2003), "2003", 
+                                    ifelse(zscores_full$year %in% c(2018), "2018", NA)))
+
+zscores_full <- zscores_full %>%
+  mutate(condition = ifelse(year %in% c(2003, 2018), "Drought", "Non-drought"))
+
+zscores <- zscores_full %>%
+  filter(year >= 2000 & year <= 2005 | year >= 2015 & year <= 2020)
 
 summer_zscores <- zscores %>%
   filter(week >= 20 & week <= 39)
@@ -16,8 +26,6 @@ summer_zscores <- zscores %>%
 neg_gpp <- zscores %>%
   filter(gpp_z_scores < 0) # 305 out of 624 are negative
 
-zscores <- zscores %>%
-  mutate(condition = ifelse(year %in% c(2003, 2018), "drought", "normal"))
 
 zscores$year_group <- ifelse(zscores$year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020), "normal",
                              # ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
@@ -45,7 +53,7 @@ drought2003 <- zscores %>%
   filter(week >= 18 & week <= 43)
 
 
-# Models
+# Models ####
 
 library(lme4)
 library(lmerTest)
@@ -279,7 +287,7 @@ ggsave("DriversTimeseries_plots.png", path = "Plots", plot = combined_rq2_plots2
 
 #### Timeseries plots of z-scores ####
 
-zscores$year_group <- ifelse(zscores$year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020), "normal",
+zscores$year_group <- ifelse(zscores$year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020), "Non-drought years",
                              # ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
                              ifelse(zscores$year %in% c(2003), "2003", 
                                     ifelse(zscores$year %in% c(2018), "2018", NA)))
@@ -473,29 +481,70 @@ timeseries_rq2_plots <- grid.arrange(
 
 
 
+#### Plotting timeseries of temperature anomalies over 20 years
+palette_anomalies <- c("#3EA85A", "#D6A400", "#D6D6D686")
 
-#### Modelling drivers relationship with GPP
+temp_anomaly_plot <- ggplot(zscores_full, aes(x = week, y = temp_z_scores, colour = year_group, group = year)) +
+  geom_line(size = 0.8) +
+  geom_hline(yintercept = 0, size = 0.4, colour = "black") +
+  # geom_text(aes(x = 34, y = 5.2, label = "95th percentile"), colour = "darkorange", size = 3) + 
+  labs(title = "",
+       x = "Time (months)",
+       y = "MaxT anomaly (z-score)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(18, 22, 27, 32, 36), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"),
+                     expand = c(0, 0),
+                     limits = c(18, 36)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(-3,3))
 
-# ANOVA
-# Combined ANOVA
-anova_all <- aov(gpp_z_scores ~ temp_z_scores + sm1_z_scores + sm2_z_scores + sm3_z_scores + vpd_z_scores + swr_z_scores, data = neg_gpp)
-summary(anova_all) # no significant effect
+plot(temp_anomaly_plot)
 
-anova_maxT <- aov(gpp_z_scores ~ temp_z_scores, data = nondrought)
-anova_sm3 <- aov(mod_gpp ~ sm3, data = drought)
-anova_vpd <- aov(mod_gpp ~ vpd, data = drought)
-anova_swr <- aov(mod_gpp ~ swr, data = drought)
-anova_all <- aov(gpp_z_scores ~ temp_z_scores + sm1_z_scores + sm2_z_scores + sm3_z_scores + vpd_z_scores + swr_z_scores, data = nondrought)
-summary(anova_all)
-summary(anova_maxT)
+sm3_anomaly_plot <- ggplot(zscores_full, aes(x = week, y = sm3_z_scores, colour = year_group, group = year)) +
+  geom_line(size = 0.8) +
+  geom_hline(yintercept = 0, size = 0.4, colour = "black") +
+  # geom_text(aes(x = 34, y = 5.2, label = "95th percentile"), colour = "darkorange", size = 3) + 
+  labs(title = "",
+       x = "Time (months)",
+       y = "SM3 anomaly (z-score)",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies) +
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(18, 22, 27, 32, 36), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"),
+                     expand = c(0, 0),
+                     limits = c(18, 36)) +
+  scale_y_continuous(expand = c(0, 0),
+                     limits = c(-4,3))
+
+plot(sm3_anomaly_plot)
+
+# Save the plots as a PNG file to GitHub
+ggsave("MaxTanomalies.png", path = "Plots", plot = temp_anomaly_plot, width = 8, height = 5, dpi = 500)
+ggsave("SM3anomalies.png", path = "Plots", plot = sm3_anomaly_plot, width = 8, height = 8, dpi = 500)
 
 
-ggplot()
 
 
-
-
-
-
+drought_anomaly_plots <- grid.arrange(
+  temp_anomaly_plot, sm3_anomaly_plot,
+  ncol = 2, 
+  layout_matrix = rbind(c(1,2)), 
+  heights = c(1,1))
 
 
