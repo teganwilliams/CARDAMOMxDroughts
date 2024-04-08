@@ -236,7 +236,7 @@ ggplot(fully_merged_long, aes(x = zscore, y = mod_gpp, colour = driver)) +
 
 # merge both gpp datasets
 gpp_all <- rbind(data2000, data2015)
-gpp_all$group <- ifelse(gpp_all$year %in% c(2003, 2018), as.character(gpp_all$year), "other")
+gpp_all$group <- ifelse(gpp_all$year %in% c(2003, 2018), as.character(gpp_all$year), "Non-drought")
 
 
 gpp_all$group <- as.factor(gpp_all$group)
@@ -793,7 +793,7 @@ gpp_variation_plot <- ggplot(gpp_all, aes(x = doy, y = mod_gpp, colour = group, 
   geom_line(linewidth = 0.9) +
   labs(title = "",
        x = "Time (month)",
-       y = "Weekly GPP (gC/m²/day)",
+       y = "GPP (gC/m²/day)",
        colour = "Year:") +
   scale_colour_manual(values = palette_gpp) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
@@ -812,17 +812,24 @@ gpp_variation_plot <- ggplot(gpp_all, aes(x = doy, y = mod_gpp, colour = group, 
 
 plot(gpp_variation_plot)
 
+combined_rq1_timeseries <- grid.arrange(
+  gpp_variation_plot, nee_variation_plot,
+  nrow = 1, 
+  layout_matrix = rbind(c(1,2)), 
+  heights = c(1))
+
+
 # Save the plot as a PNG file to GitHub
-ggsave("gpp_variation_plot.png", path = "Plots", plot = gpp_variation_plot, width = 7, height = 5, dpi = 500)
+ggsave("Combined_rq1_timeseries.png", path = "Plots", plot = combined_rq1_timeseries, width = 7, height = 5, dpi = 500)
 
 
 # Same for NEE
 nee_variation_plot <- ggplot(gpp_all, aes(x = doy, y = mod_nee, colour = group, group = year)) +
   geom_line(linewidth = 0.9) +
-  geom_hline(yintercept = 0, size = 0.4, colour = "black") +
+  geom_hline(yintercept = 0, size = 0.3, colour = "black") +
   labs(title = "",
        x = "Time (month)",
-       y = "Weekly NEE (gC/m²/day)",
+       y = "NEE (gC/m²/day)",
        colour = "Year:") +
   scale_colour_manual(values = palette_gpp) +
   theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
