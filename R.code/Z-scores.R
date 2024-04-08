@@ -246,8 +246,7 @@ write.csv(merged_data, "fullanomalies.csv")
 
 
 fully_merged_summer <- merged_data %>%
-  filter(week >= 22 & week <= 37)
-
+  filter(week >= 20 & week <= 37)
 
 # Visualisations ####
 
@@ -776,9 +775,6 @@ print(partial_corr_values)
 pcor_results <- pcor(as.matrix(non_drought[, c("mod_gpp", "sm3", "vpd", "maxT", "swr", "precip")]), method = "pearson")
 
 print(pcor_results)
-
-
-
 
 
 

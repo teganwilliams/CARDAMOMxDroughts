@@ -60,13 +60,15 @@ drought <- zscores %>%
   filter(year %in% c(2002, 2003, 2004, 2017, 2018, 2019)) %>%
   filter(week >= 20 & week <= 39)
 
-model <- lmer(gpp_z_scores ~  temp_z_scores + swr_z_scores + sm1_z_scores + sm2_z_scores + sm3_z_scores + (1|condition), data = drought)
+model <- lmer(gpp_z_scores ~  temp_z_scores + swr_z_scores + sm2_z_scores + sm3_z_scores + (1|condition), data = drought)
 summary(model)
 
 residuals <- resid(model)
 shapiro.test(residuals)
 qqnorm(residuals) 
 qqline(residuals)
+vif_values <- vif(model)
+print(vif_values)
 
 
 anova_drought <- anova(model)
@@ -77,14 +79,16 @@ nondrought <- zscores %>%
   filter(year %in% c(2002, 2004, 2017, 2019)) %>%
   filter(week >= 20 & week <= 39)
 
-model2 <- lmer(gpp_z_scores ~  temp_z_scores + swr_z_scores + sm1_z_scores + sm2_z_scores + sm3_z_scores + (1|year), data = nondrought)
+model2 <- lmer(gpp_z_scores ~  temp_z_scores + swr_z_scores + sm2_z_scores + sm3_z_scores + (1|year), data = nondrought)
 summary(model2)
 
 residuals <- resid(model2)
 shapiro.test(residuals)
 qqnorm(residuals) 
 qqline(residuals)
-
+vif_values <- vif(model2)
+print(vif_values)
+plot(model2, which = 1)
 
 
 # correlation test of based on these groupings
@@ -97,11 +101,11 @@ nondrought <- zscores %>%
 nondrought <- na.omit(nondrought)
 
 pcor_sm3 <- pcor.test(nondrought$gpp_z_scores, nondrought$sm3_z_scores, 
-                      x = nondrought[, c("temp_z_scores", "swr_z_scores", "sm2_z_scores", "sm1_z_scores")])
+                      x = nondrought[, c("temp_z_scores", "swr_z_scores")])
 pcor_sm2 <- pcor.test(nondrought$gpp_z_scores, nondrought$sm2_z_scores, 
-                      x = nondrought[, c("temp_z_scores", "swr_z_scores", "sm1_z_scores", "sm3_z_scores")])
+                      x = nondrought[, c("temp_z_scores", "swr_z_scores")])
 pcor_sm1 <- pcor.test(nondrought$gpp_z_scores, nondrought$sm1_z_scores, 
-                      x = nondrought[, c("temp_z_scores", "swr_z_scores", "sm2_z_scores", "sm3_z_scores")])
+                      x = nondrought[, c("temp_z_scores", "swr_z_scores")])
 pcor_maxT <- pcor.test(nondrought$gpp_z_scores, nondrought$temp_z_scores, 
                        x = nondrought[, c("sm3_z_scores", "swr_z_scores", "sm1_z_scores", "sm2_z_scores")])
 pcor_swr <- pcor.test(nondrought$gpp_z_scores, nondrought$swr_z_scores, 
@@ -121,11 +125,11 @@ drought <- zscores %>%
 drought <- na.omit(drought)
 
 pcor_sm3 <- pcor.test(drought$gpp_z_scores, drought$sm3_z_scores, 
-                      x = drought[, c("temp_z_scores", "swr_z_scores", "sm2_z_scores", "sm1_z_scores")])
+                      x = drought[, c("temp_z_scores", "swr_z_scores")])
 pcor_sm2 <- pcor.test(drought$gpp_z_scores, drought$sm2_z_scores, 
-                      x = drought[, c("temp_z_scores", "swr_z_scores", "sm1_z_scores", "sm3_z_scores")])
+                      x = drought[, c("temp_z_scores", "swr_z_scores")])
 pcor_sm1 <- pcor.test(drought$gpp_z_scores, drought$sm1_z_scores, 
-                      x = drought[, c("temp_z_scores", "swr_z_scores", "sm2_z_scores", "sm3_z_scores")])
+                      x = drought[, c("temp_z_scores", "swr_z_scores")])
 pcor_maxT <- pcor.test(drought$gpp_z_scores, drought$temp_z_scores, 
                        x = drought[, c("sm3_z_scores", "swr_z_scores", "sm1_z_scores", "sm2_z_scores")])
 pcor_swr <- pcor.test(drought$gpp_z_scores, drought$swr_z_scores, 
@@ -145,7 +149,7 @@ print(pcor_swr)
 # Predicted values using lm and lmer models
 drought$model <- predict(model, newdata = drought, re.form = NA)
 
-nondrought$model2 <- predict(model2, newdata = nondrought, re.form = NA)
+drought$model2 <- predict(model2, newdata = drought, re.form = NA)
 
 
 drought$group <- ifelse(drought$year %in% c(2002, 2004), "Non-drought",
@@ -154,18 +158,18 @@ drought$group <- ifelse(drought$year %in% c(2002, 2004), "Non-drought",
 
 palette_drivers <- c("#96DB6B", "#FF8400E0", "#F2E857", "#FF8400E0", "#96DB6B", "#F2E857")
 palette_drivers <- c("#96DB6B", "#F2E857", "#FF8400E0", "#2684FF", "#96DB6B", "#F2E857")
-palette_drivers <- c("#FC9F35B9", "#FF8400E0", "#139DED", "#3EABE6B2", "#2684FF")
+palette_drivers <- c("#FC9F35B9",  "#139DED","#FF8400E0", "#3EABE6B2", "#2684FF")
 
 
 maxTplot <- ggplot(drought, aes(x = temp_z_scores, y = gpp_z_scores, colour = condition)) + 
   geom_point(aes(colour = condition, shape = condition)) +
-  geom_smooth(aes(y = model, colour ="LM"), se = FALSE, method = "lm") +
-  geom_smooth(aes(y = model2, colour ="LMER 2000-2005"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = model, colour ="LMER with drought"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = model2, colour ="LMER no drought"), se = FALSE, method = "lm") +
   # geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
   # geom_smooth(se = FALSE, method = 'lm') +
   scale_color_manual(values = palette_drivers) +
   scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
-  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
@@ -178,12 +182,12 @@ plot(maxTplot)
 swrplot <- ggplot(drought, aes(x = swr_z_scores, y = gpp_z_scores, colour = condition)) + 
   geom_point(aes(colour = condition, shape = condition)) +
   geom_smooth(aes(y = model, colour ="LMER with drought"), se = FALSE, method = "lm") +
-  geom_smooth(aes(y = model2, colour ="LMER non-drought"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = model2, colour ="LMER no drought"), se = FALSE, method = "lm") +
   # geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
   # geom_smooth(se = FALSE, method = 'lm') +
   scale_color_manual(values = palette_drivers) +
   scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
-  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
@@ -192,33 +196,16 @@ swrplot <- ggplot(drought, aes(x = swr_z_scores, y = gpp_z_scores, colour = cond
 
 plot(swrplot)
 
-sm1plot <- ggplot(drought, aes(x = sm1_z_scores, y = gpp_z_scores, colour = condition)) + 
-  geom_point(aes(colour = condition, shape = condition)) +
-  #geom_smooth(se = FALSE, method = 'gam') +
-  geom_smooth(aes(y = model, colour ="LMER with drought years"), se = FALSE, method = "lm") +
-  geom_smooth(aes(y = model2, colour ="LMER non-drought"), se = FALSE, method = "lm") +
-  # geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
-  scale_color_manual(values = palette_drivers) +
-  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
-  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
-        plot.title = element_text(size=12, hjust=0.5),
-        axis.title = element_text(size=11),
-        axis.text = element_text(size=9),
-        legend.title = element_text(size = 11, face = "bold")) +
-  labs(x = "SM1 z-score", y = "GPP z-score")
-
-plot(sm1plot)
-
 
 sm2plot <- ggplot(drought, aes(x = sm2_z_scores, y = gpp_z_scores, colour = condition)) + 
   geom_point(aes(colour = condition, shape = condition)) +
   #geom_smooth(se = FALSE, method = 'gam') +
   geom_smooth(aes(y = model, colour ="LMER with drought years"), se = FALSE, method = "lm") +
-  geom_smooth(aes(y = model2, colour ="LMER non-drought"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = model2, colour ="LMER no drought"), se = FALSE, method = "lm") +
   # geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
   scale_color_manual(values = palette_drivers) +
   scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
-  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
@@ -228,14 +215,12 @@ sm2plot <- ggplot(drought, aes(x = sm2_z_scores, y = gpp_z_scores, colour = cond
 plot(sm2plot)
 
 
-
-
 sm3plot <- ggplot(drought, aes(x = sm3_z_scores, y = gpp_z_scores)) + 
   geom_point(aes(colour = condition, shape = condition)) +
   # geom_smooth(se = FALSE, ) +
   # geom_smooth(se = FALSE, method = 'lm', formula = y ~ poly(x,2)) +
   geom_smooth(aes(y = model, colour ="LMER with drought"), se = FALSE, method = "lm") +
-  geom_smooth(aes(y = model2, colour ="LMER non-drought"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = model2, colour ="LMER no drought"), se = FALSE, method = "lm") +
   # geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "gam") +
   scale_color_manual(values = palette_drivers) +
   scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
@@ -253,21 +238,24 @@ plot(sm3plot)
 # combine the correlation plots
 combined_rq2_plots1 <- grid.arrange(
   maxTplot, swrplot,
+  sm2plot, sm3plot,
   nrow = 2, 
-  layout_matrix = rbind(c(1,2)), 
+  layout_matrix = rbind(c(1,2), c(3, 4)), 
   heights = c(1,1))
+
+
 
 combined_rq2_plots2 <- grid.arrange(
-  sm1plot, sm2plot, sm3plot, 
+  maxT_plotz, swr_plotz,
+  sm2_plotz, sm3_plotz, 
   nrow = 2, 
-  layout_matrix = rbind(c(1,2), c(3, 3)), 
+  layout_matrix = rbind(c(1,2), c(3, 4)), 
   heights = c(1,1))
-
 
 
 # Save the plot as a PNG file to GitHub
-setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/droughts")
-ggsave("rq2_plots.png", path = "Plots", plot = combined_rq2_plots, width = 10, height = 7, dpi = 500)
+ggsave("GPPvsDrivers.png", path = "Plots", plot = combined_rq2_plots1, width = 10, height = 7, dpi = 500)
+ggsave("DriversTimeseries_plots.png", path = "Plots", plot = combined_rq2_plots2, width = 10, height = 7, dpi = 500)
 
 
 
@@ -279,7 +267,17 @@ ggsave("rq2_plots.png", path = "Plots", plot = combined_rq2_plots, width = 10, h
 
 
 #### Timeseries plots of z-scores ####
-nondrought <- nondrought %>%
+
+zscores$year_group <- ifelse(zscores$year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020), "normal",
+                             # ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
+                             ifelse(zscores$year %in% c(2003), "2003", 
+                                    ifelse(zscores$year %in% c(2018), "2018", NA)))
+
+
+nondrought2 <- zscores %>%
+  filter((!year %in% c(2003, 2018)))
+
+nondrought1 <- nondrought2 %>%
   group_by(doy) %>%
   mutate(mean_gpp = mean(gpp_z_scores, na.rm = TRUE),
          mean_maxT = mean(temp_z_scores, na.rm = TRUE),
@@ -295,18 +293,28 @@ drought1 <- zscores %>%
 
 drought1 <- drought1 %>%
   group_by(year) %>%
-  mutate(mean_maxT = temp_z_scores, mean_gpp = gpp_z_scores, mean_sm1 = sm1_z_scores, mean_sm2 = sm2_z_scores, mean_sm3 = sm3_z_scores, mean_vpd = vpd_z_scores, mean_swr = swr_z_scores) %>%
+  mutate(mean_gpp = gpp_z_scores,
+         mean_maxT = temp_z_scores,
+         mean_sm1 = sm1_z_scores, 
+         mean_sm2 = sm2_z_scores, 
+         mean_sm3 = sm3_z_scores, 
+         mean_vpd = vpd_z_scores, 
+         mean_swr = swr_z_scores) %>%
   ungroup()
 
-new <- rbind(drought1, nondrought)
+new1 <- rbind(drought1, nondrought1)
+
+new <- new1 %>%
+  filter(week >= 20 & week <= 39)
 
 palette_anomalies <- c("#D6A400", "#B80422", "darkgrey")
+palette_anomalies <- c("#29B071", "#D6A400", "darkgrey")
 
 gpp_plotz <- ggplot(new, aes(x = doy, y = mean_gpp, group = year_group, colour = year_group, linetype = condition)) +
   geom_line(size = 0.8) +
   labs(title = "",
        x = "Summer months",
-       y = "GPP (gC/m²/day)",
+       y = "GPP z-score",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   #scale_shape_manual() + 
@@ -326,7 +334,7 @@ maxT_plotz <- ggplot(new, aes(x = doy, y = mean_maxT, group = year_group, colour
   geom_line(size = 0.8) +
   labs(title = "",
        x = "Time (months)",
-       y = "Max temperature (°C)",
+       y = "MaxT z-score",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   #scale_shape_manual() + 
@@ -346,7 +354,7 @@ sm1_plotz <- ggplot(new, aes(x = doy, y = mean_sm1, group = year_group, colour =
   geom_line(size = 0.8) +
   labs(title = "",
        x = "Time (month)",
-       y = "Soil moisture at depth 2 (X)",
+       y = "SM1 z-score",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   #scale_shape_manual() + 
@@ -368,7 +376,7 @@ sm2_plotz <- ggplot(new, aes(x = doy, y = mean_sm2, group = year_group, colour =
   geom_line(size = 0.8) +
   labs(title = "",
        x = "Time (month)",
-       y = "Soil moisture at depth 2 (X)",
+       y = "SM2 z-score",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   #scale_shape_manual() + 
@@ -388,7 +396,7 @@ sm3_plotz <- ggplot(new, aes(x = doy, y = mean_sm3, group = year_group, colour =
   geom_line(size = 0.8) +
   labs(title = "",
        x = "Time (month)",
-       y = "Soil moisture at depth 3 (X)",
+       y = "SM3 z-score",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   #scale_shape_manual() + 
@@ -409,7 +417,7 @@ vpd_plotz <- ggplot(new, aes(x = doy, y = mean_vpd, group = year_group, colour =
   geom_line(size = 0.8) +
   labs(title = "",
        x = "Time (month)",
-       y = "VPD (kPa)",
+       y = "VPD z-score",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   #scale_shape_manual() + 
@@ -428,7 +436,7 @@ swr_plotz <- ggplot(new, aes(x = doy, y = mean_swr, group = year_group, colour =
   geom_line(size = 0.8) +
   labs(title = "",
        x = "Time (months)",
-       y = "SWR (MJ/m²/day)",
+       y = "SWR z-score",
        colour = "Year:") +
   scale_colour_manual(values = palette_anomalies) +
   #scale_shape_manual() + 
@@ -443,6 +451,12 @@ swr_plotz <- ggplot(new, aes(x = doy, y = mean_swr, group = year_group, colour =
                      labels = c("May", "Jun", "Jul", "Aug", "Sep"))
 plot(swr_plotz)
 
+timeseries_rq2_plots <- grid.arrange(
+  maxT_plotz, swr_plotz,
+  sm2_plotz, sm3_plotz, 
+  ncol = 2, 
+  layout_matrix = rbind(c(1,2), c(3, 4)), 
+  heights = c(1,1))
 
 
 
