@@ -292,6 +292,10 @@ zscores$year_group <- ifelse(zscores$year %in% c(2000, 2001, 2002, 2004, 2005, 2
                              ifelse(zscores$year %in% c(2003), "2003", 
                                     ifelse(zscores$year %in% c(2018), "2018", NA)))
 
+zscores$year_group <- ifelse(zscores$year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020), "Non-drought",
+                             # ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
+                             ifelse(zscores$year %in% c(2003, 2018), "Drought", NA))
+
 
 nondrought2 <- zscores %>%
   filter((!year %in% c(2003, 2018)))
@@ -311,14 +315,14 @@ drought1 <- zscores %>%
   filter((year %in% c(2003, 2018)))
 
 drought1 <- drought1 %>%
-  group_by(year) %>%
-  mutate(mean_gpp = gpp_z_scores,
-         mean_maxT = temp_z_scores,
-         mean_sm1 = sm1_z_scores, 
-         mean_sm2 = sm2_z_scores, 
-         mean_sm3 = sm3_z_scores, 
-         mean_vpd = vpd_z_scores, 
-         mean_swr = swr_z_scores) %>%
+  group_by(week) %>%
+  mutate(mean_gpp = mean(gpp_z_scores, na.rm = TRUE),
+         mean_maxT = mean(temp_z_scores, na.rm = TRUE),
+         mean_sm1 = mean(sm1_z_scores, na.rm = TRUE),
+         mean_sm2 = mean(sm2_z_scores, na.rm = TRUE),
+         mean_sm3 = mean(sm3_z_scores, na.rm = TRUE),
+         mean_vpd = mean(vpd_z_scores, na.rm = TRUE),
+         mean_swr = mean(swr_z_scores, na.rm = TRUE)) %>%
   ungroup()
 
 new1 <- rbind(drought1, nondrought1)
@@ -328,8 +332,9 @@ new <- new1 %>%
 
 palette_anomalies <- c("#D6A400", "#B80422", "darkgrey")
 palette_anomalies <- c("#29B071", "#D6A400", "darkgrey")
+palette_anomalies <- c("#FC8F00", "darkgrey")
 
-gpp_plotz <- ggplot(new, aes(x = doy, y = mean_gpp, group = year_group, colour = year_group, linetype = condition)) +
+gpp_plotz <- ggplot(new, aes(x = doy, y = mean_gpp, group = year_group, colour = year_group, linetype = year_group)) +
   geom_line(size = 0.8) +
   labs(title = "",
        x = "Summer months",
@@ -349,11 +354,10 @@ gpp_plotz <- ggplot(new, aes(x = doy, y = mean_gpp, group = year_group, colour =
   scale_y_continuous(limits = c(-3.1, 3),
                      breaks = c(-3, -2, -1, 0, 1, 2, 3))
 
-min(new$mean_gpp)
 
 plot(gpp_plotz)
 
-maxT_plotz <- ggplot(new, aes(x = doy, y = mean_maxT, group = year_group, colour = year_group, linetype = condition)) +
+maxT_plotz <- ggplot(new, aes(x = doy, y = mean_maxT, group = year_group, colour = year_group, linetype = year_group)) +
   geom_line(size = 0.8) +
   labs(title = "",
        x = "Time (months)",
@@ -376,7 +380,7 @@ maxT_plotz <- ggplot(new, aes(x = doy, y = mean_maxT, group = year_group, colour
 plot(maxT_plotz)
 
 
-sm2_plotz <- ggplot(new, aes(x = doy, y = mean_sm2, group = year_group, colour = year_group, linetype = condition)) +
+sm2_plotz <- ggplot(new, aes(x = doy, y = mean_sm2, group = year_group, colour = year_group, linetype = year_group)) +
   geom_line(size = 0.8) +
   labs(title = "",
        x = "Time (month)",
@@ -452,6 +456,125 @@ timeseries_rq2_plots <- grid.arrange(
 
 ggsave("DriversTimeseries_plots.png", path = "Plots", plot = timeseries_rq2_plots, width = 8, height = 6, dpi = 500)
 ggsave("GPPz-scores.png", path = "Plots", plot = gpp_plotz, width = 5, height = 5, dpi = 300)
+
+
+
+# ALL drivers on one plot? ####
+
+new2 <- new %>%
+  filter(year_group == "Drought")
+
+palette_anomalies_all <- c("#71D673", "#FF9E6E", "#70B3D4", "#4F7BAD", "yellow", "darkgrey")
+
+combined_plotz <- ggplot(new2, aes(x = doy)) +
+  geom_line(aes(y = mean_gpp, colour = "GPP"),linewidth = 0.8) +
+  geom_line(aes(y = mean_maxT, colour = "MaxT"), linewidth = 0.8) +
+  geom_line(aes(y = mean_sm1, colour = "SM1"),linewidth = 0.8) +
+  geom_line(aes(y = mean_sm2, colour = "SM2"),linewidth = 0.8) +
+  geom_line(aes(y = mean_sm3, colour = "SM3"),linewidth = 0.8) +
+  # geom_line(aes(y = mean_swr, colour = "SWR"),linewidth = 0.8) +
+  geom_abline(intercept = 0, slope = 0, color = "black", linetype = "dashed") +
+  labs(title = "",
+       x = "Time (months)",
+       y = "Z-score",
+       colour = "Year:") +
+  scale_colour_manual(values = palette_anomalies_all) +
+  #scale_shape_manual() + 
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep")) +
+  scale_y_continuous(limits = c(-3, 2.5),
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3))
+
+plot(combined_plotz)
+ggsave("combined_anomalies.png", path = "Plots", plot = drought_anomaly_plots, width = 10, height = 4, dpi = 500)
+
+# do the same for individual droughts
+new2003 <- new %>%
+  filter(year == 2003)
+
+palette_anomalies2003 <- c("#43CC68", "#F27C6A", "#70B3D4", "#4F7BAD", "yellow", "darkgrey")
+palette_anomalies2003 <- c("#FF9500", "#FFC1BF", "#8ACCD1", "#3B878C", "#4F7BAD", "yellow", "darkgrey")
+
+combined_plot2003 <- ggplot(new2003, aes(x = doy)) +
+  geom_line(aes(y = gpp_z_scores, colour = "GPP"),linewidth = 1) +
+  geom_line(aes(y = temp_z_scores, colour = "MaxT"), linewidth = 0.8) +
+  # geom_line(aes(y = sm1_z_scores, colour = "SM1"),linewidth = 0.8) +
+  geom_line(aes(y = sm2_z_scores, colour = "SM2"),linewidth = 0.8) +
+  geom_line(aes(y = sm3_z_scores, colour = "SM3"),linewidth = 0.8) +
+  # geom_line(aes(y = swr_z_scores, colour = "SWR"),linewidth = 0.8) +
+  geom_abline(intercept = 0, slope = 0, color = "black", linewidth = 0.3) +
+  labs(title = "",
+       x = "Time (months)",
+       y = "Z-score",
+       colour = "Variable:") +
+  scale_colour_manual(values = palette_anomalies2003) +
+  #scale_shape_manual() + 
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold", ),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep")) +
+  scale_y_continuous(limits = c(-3.1, 2.5),
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3))
+
+plot(combined_plot2003)
+
+
+new2018 <- new %>%
+  filter(year == 2018)
+
+palette_anomalies2018 <- c("#FF9500", "#FFC1BF", "#8ACCD1", "#3B878C", "#4F7BAD", "yellow", "darkgrey")
+
+
+combined_plot2018 <- ggplot(new2018, aes(x = doy)) +
+  geom_line(aes(y = gpp_z_scores, colour = "GPP"),linewidth = 1) +
+  geom_line(aes(y = temp_z_scores, colour = "MaxT"), linewidth = 0.8) +
+  # geom_line(aes(y = sm1_z_scores, colour = "SM1"),linewidth = 0.8) +
+  geom_line(aes(y = sm2_z_scores, colour = "SM2"),linewidth = 0.8) +
+  geom_line(aes(y = sm3_z_scores, colour = "SM3"),linewidth = 0.8) +
+  # geom_line(aes(y = swr_z_scores, colour = "SWR"),linewidth = 0.8) +
+  geom_abline(intercept = 0, slope = 0, color = "black", linewidth = 0.3) +
+  labs(title = "",
+       x = "Time (months)",
+       y = "Z-score",
+       colour = "Variable:") +
+  scale_colour_manual(values = palette_anomalies2018) +
+  #scale_shape_manual() + 
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold"),
+        legend.text = element_text(size = 11),
+        plot.margin = margin(1, 1, 1, 1, "cm")) +
+  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep")) +
+  scale_y_continuous(limits = c(-3.1, 2.5),
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3))
+
+plot(combined_plot2018)
+
+RQ2zscore_timeseriesALL <- grid.arrange(
+  combined_plot2003, combined_plot2018,
+  ncol = 2, 
+  nrow = 1,
+  layout_matrix = rbind(c(1,2)), 
+  heights = c(1))
+
+ggsave("MaxTanomalies.png", path = "Plots", plot = RQ2zscore_timeseriesALL, width = 8, height = 5, dpi = 500)
+
+
 
 
 
