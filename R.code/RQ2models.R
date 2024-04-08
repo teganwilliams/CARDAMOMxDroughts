@@ -8,8 +8,7 @@ library(ggplot2)
 # Load Data
 zscores_full <- read.csv("fullanomalies.csv", header = TRUE)
 zscores <- read.csv("Data/fullanomalies.csv", header = TRUE)
-
-zscores3 <- read.csv("fullanomalies2.csv", header = TRUE)
+zscores <- read.csv("fullanomalies2.csv", header = TRUE)
 
 # Create subset dataframes for drought vs non drought
 
@@ -45,7 +44,7 @@ zscores$condition <- ifelse(zscores$year %in% c(2000, 2001, 2002, 2004, 2005, 20
 nondrought <- zscores %>%
   filter(!(year %in% c(2003, 2018)))
 
-drought <- zscores %>%
+drought <- zscores2 %>%
   filter(year %in% c(2002, 2003, 2004, 2017, 2018, 2019)) %>%
   filter(week >= 20 & week <= 39)
 
@@ -73,20 +72,31 @@ cor(drought$temp_z_scores, drought$sm3_z_scores)
 cor(drought$temp_z_scores, drought$swr_z_scores)
 cor(drought$sm3_z_scores, drought$swr_z_scores)
 
-drought <- zscores %>%
+drought <- zscores2 %>%
   filter(year %in% c(2002, 2003, 2004, 2017, 2018, 2019)) %>%
   filter(week >= 20 & week <= 39)
 
-model <- lmer(gpp_z_scores ~  temp_z_scores + swr_z_scores + sm2_z_scores + sm3_z_scores + (1|condition), data = drought)
+drought <- zscores2 %>%
+  filter(week >= 27 & week <= 37)
+
+model <- lmer(gpp_z_scores ~  temp_z_scores + precip_z_scores + sm1_z_scores + (1|condition), data = drought)
 summary(model)
 
-model <- lmer(gpp_z_scores ~  sm3_z_scores + sm2_z_scores + sm1_z_scores + (1|year_group), data = drought)
+model2 <- lmer(gpp_z_scores ~  temp_z_scores + precip_z_scores + sm3_z_scores + (1|condition), data = drought)
+summary(model2)
+
+model3 <- lmer(gpp_z_scores ~  temp_z_scores + precip_z_scores + sm2_z_scores + (1|condition), data = drought)
+summary(model3)
+
+AIC(model, model2, model3)
+
+model <- lmer(gpp_z_scores ~  sm3_z_scores + sm2_z_scores + sm1_z_scores + (1|condition), data = drought)
 summary(model)
 
 model <- lmer(gpp_z_scores ~  swr_z_scores + temp_z_scores + (1|year_group), data = drought)
 summary(model)
 
-residuals <- resid(model)
+residuals <- resid(model3)
 shapiro.test(residuals)
 qqnorm(residuals) 
 qqline(residuals)
@@ -104,11 +114,15 @@ anova_drought <- anova(model)
 print(anova_drought)
 
 
-nondrought <- zscores %>%
+nondrought <- zscores2 %>%
   filter(year %in% c(2002, 2004, 2017, 2019)) %>%
   filter(week >= 20 & week <= 39)
 
-model2 <- lmer(gpp_z_scores ~  temp_z_scores + swr_z_scores + sm2_z_scores + sm3_z_scores + (1|year), data = nondrought)
+nondrought <- zscores2 %>%
+  filter(!year %in% c(2003, 2018)) %>%
+  filter(week >= 27 & week <= 37)
+
+model2 <- lmer(gpp_z_scores ~  temp_z_scores + precip_z_scores + sm1_z_scores + swr_z_scores + (1|year), data = nondrought)
 summary(model2)
 
 residuals <- resid(model2)
@@ -127,6 +141,7 @@ print(anova_nondrought)
 
 
 # Correlation test of using new groupings #####
+library(ppcor)
 nondrought <- zscores %>%
   filter(year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020)) %>%
   filter(week >= 20 & week <= 39)
@@ -156,16 +171,19 @@ print(pcor_swr)
 drought <- zscores %>%
   filter(week >= 20 & week <= 39)
 
+nondrought <- drought %>%
+  filter(!year %in% c(2003, 2018))
+
 drought <- na.omit(drought)
 
 pcor_sm3 <- pcor.test(drought$gpp_z_scores, drought$sm3_z_scores, 
-                      x = drought[, c("temp_z_scores", "swr_z_scores")])
+                      x = drought[, c("temp_z_scores", "swr_z_scores", "sm2_z_scores")])
 pcor_sm2 <- pcor.test(drought$gpp_z_scores, drought$sm2_z_scores, 
-                      x = drought[, c("temp_z_scores", "swr_z_scores")])
+                      x = drought[, c("temp_z_scores", "swr_z_scores", "sm3_z_scores")])
 pcor_sm1 <- pcor.test(drought$gpp_z_scores, drought$sm1_z_scores, 
                       x = drought[, c("temp_z_scores", "swr_z_scores")])
 pcor_maxT <- pcor.test(drought$gpp_z_scores, drought$temp_z_scores, 
-                       x = drought[, c("sm3_z_scores", "swr_z_scores", "sm2_z_scores")])
+                       x = drought[, c("sm3_z_scores", "swr_z_scores", "vpd_z_scores", "sm2_z_scores")])
 pcor_swr <- pcor.test(drought$gpp_z_scores, drought$swr_z_scores, 
                       x = drought[, c("temp_z_scores", "sm3_z_scores", "sm2_z_scores")])
 
@@ -477,7 +495,7 @@ ggsave("GPPz-scores.png", path = "Plots", plot = gpp_plotz, width = 5, height = 
 # ALL drivers on one plot? ####
 
 new2 <- new %>%
-  filter(year_group == "Drought")
+  filter(condition == "Drought")
 
 palette_anomalies_all <- c("#71D673", "#FF9E6E", "#70B3D4", "#4F7BAD", "yellow", "darkgrey")
 
@@ -542,7 +560,7 @@ combined_plot2003 <- ggplot(new2003, aes(x = doy)) +
         plot.margin = margin(1, 1, 1, 1, "cm")) +
   scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
                      labels = c("May", "Jun", "Jul", "Aug", "Sep")) +
-  scale_y_continuous(limits = c(-3.1, 3),
+  scale_y_continuous(limits = c(-2, 2.5),
                      breaks = c(-3, -2, -1, 0, 1, 2, 3))
 
 plot(combined_plot2003)
