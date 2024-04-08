@@ -345,7 +345,11 @@ gpp_plotz <- ggplot(new, aes(x = doy, y = mean_gpp, group = year_group, colour =
         legend.text = element_text(size = 11),
         plot.margin = margin(1, 1, 1, 1, "cm")) +
   scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
-                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep")) +
+  scale_y_continuous(limits = c(-3.1, 3),
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3))
+
+min(new$mean_gpp)
 
 plot(gpp_plotz)
 
@@ -365,30 +369,11 @@ maxT_plotz <- ggplot(new, aes(x = doy, y = mean_maxT, group = year_group, colour
         legend.text = element_text(size = 11),
         plot.margin = margin(1, 1, 1, 1, "cm")) +
   scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
-                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))+
+  scale_y_continuous(limits = c(-3.1, 3),
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3))
 
 plot(maxT_plotz)
-
-sm1_plotz <- ggplot(new, aes(x = doy, y = mean_sm1, group = year_group, colour = year_group, linetype = condition)) +
-  geom_line(size = 0.8) +
-  labs(title = "",
-       x = "Time (month)",
-       y = "SM1 z-score",
-       colour = "Year:") +
-  scale_colour_manual(values = palette_anomalies) +
-  #scale_shape_manual() + 
-  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
-        plot.title = element_text(size=12, hjust=0.5),
-        axis.title = element_text(size=11),
-        axis.text = element_text(size=9),
-        legend.title = element_text(size = 11, face = "bold", ),
-        legend.text = element_text(size = 11),
-        plot.margin = margin(1, 1, 1, 1, "cm")) +
-  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
-                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
-
-plot(sm1_plotz)
-
 
 
 sm2_plotz <- ggplot(new, aes(x = doy, y = mean_sm2, group = year_group, colour = year_group, linetype = condition)) +
@@ -407,7 +392,9 @@ sm2_plotz <- ggplot(new, aes(x = doy, y = mean_sm2, group = year_group, colour =
         legend.text = element_text(size = 11),
         plot.margin = margin(1, 1, 1, 1, "cm")) +
   scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
-                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep")) +
+  scale_y_continuous(limits = c(-3.1, 3),
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3))
 
 plot(sm2_plotz)
 
@@ -427,29 +414,12 @@ sm3_plotz <- ggplot(new, aes(x = doy, y = mean_sm3, group = year_group, colour =
         legend.text = element_text(size = 11),
         plot.margin = margin(1, 1, 1, 1, "cm")) +
   scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
-                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep")) +
+  scale_y_continuous(limits = c(-3.1, 3),
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3))
 
 plot(sm3_plotz)
 
-
-vpd_plotz <- ggplot(new, aes(x = doy, y = mean_vpd, group = year_group, colour = year_group, linetype = condition)) +
-  geom_line(size = 0.8) +
-  labs(title = "",
-       x = "Time (month)",
-       y = "VPD z-score",
-       colour = "Year:") +
-  scale_colour_manual(values = palette_anomalies) +
-  #scale_shape_manual() + 
-  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
-        plot.title = element_text(size=12, hjust=0.5),
-        axis.title = element_text(size=11),
-        axis.text = element_text(size=9),
-        legend.title = element_text(size = 11, face = "bold", ),
-        legend.text = element_text(size = 11),
-        plot.margin = margin(1, 1, 1, 1, "cm")) +
-  scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
-                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
-plot(vpd_plotz)
 
 swr_plotz <- ggplot(new, aes(x = doy, y = mean_swr, group = year_group, colour = year_group, linetype = condition)) +
   geom_line(size = 0.8) +
@@ -467,7 +437,9 @@ swr_plotz <- ggplot(new, aes(x = doy, y = mean_swr, group = year_group, colour =
         legend.text = element_text(size = 11),
         plot.margin = margin(1, 1, 1, 1, "cm")) +
   scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
-                     labels = c("May", "Jun", "Jul", "Aug", "Sep"))
+                     labels = c("May", "Jun", "Jul", "Aug", "Sep")) +
+  scale_y_continuous(limits = c(-3.1, 3),
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3))
 plot(swr_plotz)
 
 timeseries_rq2_plots <- grid.arrange(
@@ -476,6 +448,10 @@ timeseries_rq2_plots <- grid.arrange(
   ncol = 2, 
   layout_matrix = rbind(c(1,2), c(3, 4)), 
   heights = c(1,1))
+
+
+ggsave("DriversTimeseries_plots.png", path = "Plots", plot = timeseries_rq2_plots, width = 8, height = 6, dpi = 500)
+ggsave("GPPz-scores.png", path = "Plots", plot = gpp_plotz, width = 6, height = 4, dpi = 300)
 
 
 
@@ -540,7 +516,6 @@ plot(sm3_anomaly_plot)
 plot(gpp_plotz)
 
 # Save the plots as a PNG file to GitHub
-ggsave("GPPz-scores.png", path = "Plots", plot = gpp_plotz, width = 6, height = 4, dpi = 300)
 ggsave("MaxTanomalies.png", path = "Plots", plot = temp_anomaly_plot, width = 8, height = 5, dpi = 500)
 ggsave("SM3anomalies.png", path = "Plots", plot = sm3_anomaly_plot, width = 8, height = 5, dpi = 500)
 
