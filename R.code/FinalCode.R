@@ -820,7 +820,7 @@ combined_rq1_timeseries <- grid.arrange(
 
 
 # Save the plot as a PNG file to GitHub
-ggsave("Combined_rq1_timeseries.png", path = "Plots", plot = combined_rq1_timeseries, width = 7, height = 5, dpi = 500)
+ggsave("Combined_rq1_timeseries.png", path = "Plots", plot = combined_rq1_timeseries, width = 9, height = 5, dpi = 500)
 
 
 # Same for NEE

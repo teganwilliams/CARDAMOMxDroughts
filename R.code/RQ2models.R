@@ -552,7 +552,7 @@ combined_plot2018 <- ggplot(new2018, aes(x = doy)) +
   # geom_line(aes(y = vpd_z_scores, colour = "VPD"), linewidth = 0.8) +
   geom_line(aes(y = sm2_z_scores, colour = "SM2"),linewidth = 0.8) +
   geom_line(aes(y = sm3_z_scores, colour = "SM3"),linewidth = 0.8) +
-  geom_line(aes(y = swr_z_scores, colour = "SWR"),linewidth = 0.8) +
+  # geom_line(aes(y = swr_z_scores, colour = "SWR"),linewidth = 0.8) +
   geom_abline(intercept = 0, slope = 0, color = "black", linewidth = 0.3) +
   labs(title = "",
        x = "Time (months)",
@@ -581,7 +581,7 @@ RQ2zscore_timeseriesALL <- grid.arrange(
   layout_matrix = rbind(c(1,2)), 
   heights = c(1))
 
-ggsave("AllZ-scores.png", path = "Plots", plot = RQ2zscore_timeseriesALL, width = 8, height = 5, dpi = 500)
+ggsave("AllZ-scores.png", path = "Plots", plot = RQ2zscore_timeseriesALL, width = 10, height = 5, dpi = 500)
 
 
 
