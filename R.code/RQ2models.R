@@ -504,7 +504,7 @@ temp_anomaly_plot <- ggplot(zscores_full, aes(x = week, y = temp_z_scores, colou
                      labels = c("May", "Jun", "Jul", "Aug", "Sep"),
                      expand = c(0, 0),
                      limits = c(18, 36)) +
-  scale_y_continuous(breaks = c(-3, -2, -1, 0, 1, 2, 3),
+  scale_y_continuous(breaks = c(-4,-3, -2, -1, 0, 1, 2, 3),
                      expand = c(0, 0),
                      limits = c(-4,3))
 
@@ -532,9 +532,9 @@ sm3_anomaly_plot <- ggplot(zscores_full, aes(x = week, y = sm3_z_scores, colour 
                      labels = c("May", "Jun", "Jul", "Aug", "Sep"),
                      expand = c(0, 0),
                      limits = c(18, 36)) +
-  scale_y_continuous(breaks = c(-4, -3, -2, -1, 0, 1, 2),
+  scale_y_continuous(breaks = c(-4, -3, -2, -1, 0, 1, 2, 3),
                      expand = c(0, 0),
-                     limits = c(-4,2))
+                     limits = c(-4,3))
 
 plot(sm3_anomaly_plot)
 
@@ -550,6 +550,6 @@ drought_anomaly_plots <- grid.arrange(
   layout_matrix = rbind(c(1,2)), 
   heights = c(1))
 
-ggsave("combined_anomalies.png", path = "Plots", plot = drought_anomaly_plots, width = 10, height = 8, dpi = 500)
+ggsave("combined_anomalies.png", path = "Plots", plot = drought_anomaly_plots, width = 10, height = 4, dpi = 500)
 
 
