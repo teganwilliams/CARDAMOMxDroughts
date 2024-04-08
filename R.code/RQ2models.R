@@ -451,7 +451,7 @@ timeseries_rq2_plots <- grid.arrange(
 
 
 ggsave("DriversTimeseries_plots.png", path = "Plots", plot = timeseries_rq2_plots, width = 8, height = 6, dpi = 500)
-ggsave("GPPz-scores.png", path = "Plots", plot = gpp_plotz, width = 6, height = 6, dpi = 300)
+ggsave("GPPz-scores.png", path = "Plots", plot = gpp_plotz, width = 5, height = 5, dpi = 300)
 
 
 
