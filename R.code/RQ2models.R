@@ -68,7 +68,13 @@ drought <- zscores %>%
   filter(year %in% c(2002, 2003, 2004, 2017, 2018, 2019)) %>%
   filter(week >= 20 & week <= 39)
 
-model <- lmer(gpp_z_scores ~  temp_z_scores + swr_z_scores + sm2_z_scores + sm3_z_scores + (1|condition), data = drought)
+model <- lmer(gpp_z_scores ~  temp_z_scores + swr_z_scores + sm2_z_scores + sm3_z_scores + (1|year_group), data = drought)
+summary(model)
+
+model <- lmer(gpp_z_scores ~  sm3_z_scores + sm2_z_scores + sm1_z_scores + (1|year_group), data = drought)
+summary(model)
+
+model <- lmer(gpp_z_scores ~  swr_z_scores + temp_z_scores + (1|year_group), data = drought)
 summary(model)
 
 residuals <- resid(model)
@@ -469,6 +475,7 @@ palette_anomalies_all <- c("#71D673", "#FF9E6E", "#70B3D4", "#4F7BAD", "yellow",
 combined_plotz <- ggplot(new2, aes(x = doy)) +
   geom_line(aes(y = mean_gpp, colour = "GPP"),linewidth = 0.8) +
   geom_line(aes(y = mean_maxT, colour = "MaxT"), linewidth = 0.8) +
+  # geom_line(aes(y = vpd_z_scores, colour = "VPD"), linewidth = 0.8) +
   geom_line(aes(y = mean_sm1, colour = "SM1"),linewidth = 0.8) +
   geom_line(aes(y = mean_sm2, colour = "SM2"),linewidth = 0.8) +
   geom_line(aes(y = mean_sm3, colour = "SM3"),linewidth = 0.8) +
@@ -500,12 +507,13 @@ new2003 <- new %>%
   filter(year == 2003)
 
 palette_anomalies2003 <- c("#43CC68", "#F27C6A", "#70B3D4", "#4F7BAD", "yellow", "darkgrey")
-palette_anomalies2003 <- c("#FF9500", "#FFC1BF", "#8ACCD1", "#3B878C", "#4F7BAD", "yellow", "darkgrey")
+palette_anomalies2003 <- c("#FF9500", "#FFC1BF", "#8ACCD1", "#3B878C", "#F0E487", "yellow", "darkgrey")
 
 combined_plot2003 <- ggplot(new2003, aes(x = doy)) +
   geom_line(aes(y = gpp_z_scores, colour = "GPP"),linewidth = 1) +
   geom_line(aes(y = temp_z_scores, colour = "MaxT"), linewidth = 0.8) +
   # geom_line(aes(y = sm1_z_scores, colour = "SM1"),linewidth = 0.8) +
+  # geom_line(aes(y = vpd_z_scores, colour = "VPD"), linewidth = 0.8) +
   geom_line(aes(y = sm2_z_scores, colour = "SM2"),linewidth = 0.8) +
   geom_line(aes(y = sm3_z_scores, colour = "SM3"),linewidth = 0.8) +
   # geom_line(aes(y = swr_z_scores, colour = "SWR"),linewidth = 0.8) +
@@ -525,7 +533,7 @@ combined_plot2003 <- ggplot(new2003, aes(x = doy)) +
         plot.margin = margin(1, 1, 1, 1, "cm")) +
   scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
                      labels = c("May", "Jun", "Jul", "Aug", "Sep")) +
-  scale_y_continuous(limits = c(-3.1, 2.5),
+  scale_y_continuous(limits = c(-3.1, 3),
                      breaks = c(-3, -2, -1, 0, 1, 2, 3))
 
 plot(combined_plot2003)
@@ -534,16 +542,17 @@ plot(combined_plot2003)
 new2018 <- new %>%
   filter(year == 2018)
 
-palette_anomalies2018 <- c("#FF9500", "#FFC1BF", "#8ACCD1", "#3B878C", "#4F7BAD", "yellow", "darkgrey")
+palette_anomalies2018 <- c("#FF9500", "#FFC1BF", "#8ACCD1", "#3B878C", "#F0E487", "yellow", "darkgrey")
 
 
 combined_plot2018 <- ggplot(new2018, aes(x = doy)) +
   geom_line(aes(y = gpp_z_scores, colour = "GPP"),linewidth = 1) +
   geom_line(aes(y = temp_z_scores, colour = "MaxT"), linewidth = 0.8) +
   # geom_line(aes(y = sm1_z_scores, colour = "SM1"),linewidth = 0.8) +
+  # geom_line(aes(y = vpd_z_scores, colour = "VPD"), linewidth = 0.8) +
   geom_line(aes(y = sm2_z_scores, colour = "SM2"),linewidth = 0.8) +
   geom_line(aes(y = sm3_z_scores, colour = "SM3"),linewidth = 0.8) +
-  # geom_line(aes(y = swr_z_scores, colour = "SWR"),linewidth = 0.8) +
+  geom_line(aes(y = swr_z_scores, colour = "SWR"),linewidth = 0.8) +
   geom_abline(intercept = 0, slope = 0, color = "black", linewidth = 0.3) +
   labs(title = "",
        x = "Time (months)",
@@ -572,7 +581,7 @@ RQ2zscore_timeseriesALL <- grid.arrange(
   layout_matrix = rbind(c(1,2)), 
   heights = c(1))
 
-ggsave("MaxTanomalies.png", path = "Plots", plot = RQ2zscore_timeseriesALL, width = 8, height = 5, dpi = 500)
+ggsave("AllZ-scores.png", path = "Plots", plot = RQ2zscore_timeseriesALL, width = 8, height = 5, dpi = 500)
 
 
 
