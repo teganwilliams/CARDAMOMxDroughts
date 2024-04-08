@@ -539,6 +539,7 @@ sm3_anomaly_plot <- ggplot(zscores_full, aes(x = week, y = sm3_z_scores, colour 
 plot(sm3_anomaly_plot)
 
 # Save the plots as a PNG file to GitHub
+ggsave("GPPz-scores.png", path = "Plots", plot = gpp_plotz, width = 8, height = 6, dpi = 500)
 ggsave("MaxTanomalies.png", path = "Plots", plot = temp_anomaly_plot, width = 8, height = 5, dpi = 500)
 ggsave("SM3anomalies.png", path = "Plots", plot = sm3_anomaly_plot, width = 8, height = 5, dpi = 500)
 
