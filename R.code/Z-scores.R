@@ -202,16 +202,20 @@ write.csv(anomalies, "fullanomalies.csv")
 
 
 # GPP anomaly
+data2000 <- read.csv("Data/newdata2000-2005.csv", header = TRUE)
+data2015 <- read.csv("Data/newdata2015-2020.csv", header = TRUE)
 
-gpp_all <- datafull %>%
+fulldata <- rbind(data2000, data2015)
+
+gpp_all <- fulldata %>%
   filter(year >= 2000 & year <= 2005 | year >= 2015 & year <= 2020)
 
-gpp_anomalies1 <- datafull %>%
+gpp_anomalies1 <- fulldata %>%
   group_by(week = ceiling(as.numeric(doy)/7)) %>%
   summarise(meanGPP = mean(mod_gpp, na.rm = TRUE),
             sdGPP = sd(mod_gpp, na.rm = TRUE))
 
-gpp_anomalies <- cbind(gpp_anomalies1, datafull)
+gpp_anomalies <- cbind(gpp_anomalies1, fulldata)
 
 gpp_anom <- subset(gpp_anomalies, select = c(date, year, week, doy, mod_gpp, meanGPP, sdGPP))
 
@@ -238,10 +242,10 @@ merged_data2015 <- x %>%
   filter(year >= 2015 & year <= 2020) %>%
   select(date, year, week, mod_gpp, mod_gpp_unc95)
 
-merged_data_full <- cbind(merged_data_gpp, anomalies1)
-merged_data <- subset(merged_data_full, select = c(date, year, month, week, doy, gpp_z_scores, temp_z_scores, sm1_z_scores, sm2_z_scores, sm3_z_scores, vpd_z_scores, swr_z_scores))
+merged_data_full <- cbind(merged_data_gpp, anomalies)
+merged_data <- subset(merged_data_full, select = c(date, year, month, week, doy, gpp_z_scores, temp_z_scores, sm1_z_scores, sm2_z_scores, sm3_z_scores, vpd_z_scores, swr_z_scores, precip_z_scores))
 
-write.csv(merged_data_full, "fullanomalies.csv")
+write.csv(merged_data, "fullanomalies2.csv")
 
 
 fully_merged_summer <- merged_data %>%
@@ -249,7 +253,7 @@ fully_merged_summer <- merged_data %>%
 
 # Visualisations ####
 
-fully_merged <- read.csv("Data/fullanomalies.csv", header = TRUE)
+fully_merged <- read.csv("fullanomalies.csv", header = TRUE)
 fully_merged_summer <- fully_merged %>%
   filter(week >= 22 & week <= 40)
 
