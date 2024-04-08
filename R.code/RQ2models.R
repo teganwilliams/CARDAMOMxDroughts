@@ -504,10 +504,13 @@ temp_anomaly_plot <- ggplot(zscores_full, aes(x = week, y = temp_z_scores, colou
                      labels = c("May", "Jun", "Jul", "Aug", "Sep"),
                      expand = c(0, 0),
                      limits = c(18, 36)) +
-  scale_y_continuous(expand = c(0, 0),
-                     limits = c(-3,3))
+  scale_y_continuous(breaks = c(-3, -2, -1, 0, 1, 2, 3),
+                     expand = c(0, 0),
+                     limits = c(-4,3))
 
 plot(temp_anomaly_plot)
+
+zscores_full <- na.omit(zscores_full)
 
 sm3_anomaly_plot <- ggplot(zscores_full, aes(x = week, y = sm3_z_scores, colour = year_group, group = year)) +
   geom_line(size = 0.8) +
@@ -529,22 +532,24 @@ sm3_anomaly_plot <- ggplot(zscores_full, aes(x = week, y = sm3_z_scores, colour 
                      labels = c("May", "Jun", "Jul", "Aug", "Sep"),
                      expand = c(0, 0),
                      limits = c(18, 36)) +
-  scale_y_continuous(expand = c(0, 0),
-                     limits = c(-4,3))
+  scale_y_continuous(breaks = c(-4, -3, -2, -1, 0, 1, 2),
+                     expand = c(0, 0),
+                     limits = c(-4,2))
 
 plot(sm3_anomaly_plot)
 
 # Save the plots as a PNG file to GitHub
 ggsave("MaxTanomalies.png", path = "Plots", plot = temp_anomaly_plot, width = 8, height = 5, dpi = 500)
-ggsave("SM3anomalies.png", path = "Plots", plot = sm3_anomaly_plot, width = 8, height = 8, dpi = 500)
-
-
+ggsave("SM3anomalies.png", path = "Plots", plot = sm3_anomaly_plot, width = 8, height = 5, dpi = 500)
 
 
 drought_anomaly_plots <- grid.arrange(
   temp_anomaly_plot, sm3_anomaly_plot,
   ncol = 2, 
+  nrow = 1,
   layout_matrix = rbind(c(1,2)), 
-  heights = c(1,1))
+  heights = c(1))
+
+ggsave("combined_anomalies.png", path = "Plots", plot = drought_anomaly_plots, width = 10, height = 8, dpi = 500)
 
 
