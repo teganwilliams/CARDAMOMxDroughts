@@ -60,7 +60,7 @@ drought <- zscores %>%
   filter(year %in% c(2002, 2003, 2004, 2017, 2018, 2019)) %>%
   filter(week >= 20 & week <= 39)
 
-model <- lmer(gpp_z_scores ~  temp_z_scores + sm2_z_scores + sm3_z_scores + swr_z_scores + (1|condition), data = drought)
+model <- lmer(gpp_z_scores ~  temp_z_scores + swr_z_scores + sm1_z_scores + sm2_z_scores + sm3_z_scores + (1|condition), data = drought)
 summary(model)
 
 residuals <- resid(model)
@@ -68,11 +68,12 @@ shapiro.test(residuals)
 qqnorm(residuals) 
 qqline(residuals)
 
+
 nondrought <- zscores %>%
   filter(year %in% c(2002, 2004, 2017, 2019)) %>%
   filter(week >= 20 & week <= 39)
 
-model2 <- lmer(gpp_z_scores ~  temp_z_scores + sm2_z_scores + sm3_z_scores + swr_z_scores + (1|year), data = nondrought)
+model2 <- lmer(gpp_z_scores ~  temp_z_scores + swr_z_scores + sm1_z_scores + sm2_z_scores + sm3_z_scores + (1|year), data = nondrought)
 summary(model2)
 
 residuals <- resid(model2)
@@ -151,12 +152,29 @@ swrplot <- ggplot(drought, aes(x = swr_z_scores, y = gpp_z_scores, colour = cond
 
 plot(swrplot)
 
+sm1plot <- ggplot(drought, aes(x = sm1_z_scores, y = gpp_z_scores, colour = condition)) + 
+  geom_point(aes(colour = condition, shape = condition)) +
+  #geom_smooth(se = FALSE, method = 'gam') +
+  geom_smooth(aes(y = model, colour ="LMER with drought years"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = model2, colour ="LMER non-drought"), se = FALSE, method = "lm") +
+  # geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
+  scale_color_manual(values = palette_drivers) +
+  scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
+  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+        plot.title = element_text(size=12, hjust=0.5),
+        axis.title = element_text(size=11),
+        axis.text = element_text(size=9),
+        legend.title = element_text(size = 11, face = "bold")) +
+  labs(x = "SM1 z-score", y = "GPP z-score")
+
+plot(sm1plot)
+
 
 sm2plot <- ggplot(drought, aes(x = sm2_z_scores, y = gpp_z_scores, colour = condition)) + 
   geom_point(aes(colour = condition, shape = condition)) +
   #geom_smooth(se = FALSE, method = 'gam') +
-  geom_smooth(aes(y = model, colour ="LM drought years"), se = FALSE, method = "lm") +
-  geom_smooth(aes(y = model2, colour ="LMER 2000-2005"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = model, colour ="LMER with drought years"), se = FALSE, method = "lm") +
+  geom_smooth(aes(y = model2, colour ="LMER non-drought"), se = FALSE, method = "lm") +
   # geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "lm") +
   scale_color_manual(values = palette_drivers) +
   scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
@@ -169,6 +187,9 @@ sm2plot <- ggplot(drought, aes(x = sm2_z_scores, y = gpp_z_scores, colour = cond
 
 plot(sm2plot)
 
+
+
+
 sm3plot <- ggplot(drought, aes(x = sm3_z_scores, y = gpp_z_scores)) + 
   geom_point(aes(colour = condition, shape = condition)) +
   # geom_smooth(se = FALSE, ) +
@@ -178,7 +199,7 @@ sm3plot <- ggplot(drought, aes(x = sm3_z_scores, y = gpp_z_scores)) +
   # geom_smooth(aes(y = pred_gpp_2015, colour ="LMER 2015-2020"), se = FALSE, method = "gam") +
   scale_color_manual(values = palette_drivers) +
   scale_shape_manual(values = c("normal" = 16, "drought" = 17)) +
-  theme(legend.position = "none", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+  theme(legend.position = "bottom", panel.background = element_blank(), axis.line = element_line(colour = "black"), 
         plot.title = element_text(size=12, hjust=0.5),
         axis.title = element_text(size=11),
         axis.text = element_text(size=9),
@@ -190,11 +211,19 @@ plot(sm3plot)
 
 
 # combine the correlation plots
-combined_rq2_plots <- grid.arrange(
-  maxTplot, sm2plot, sm3plot, swrplot, 
+combined_rq2_plots1 <- grid.arrange(
+  maxTplot, swrplot,
   nrow = 2, 
-  layout_matrix = rbind(c(1,2), c(3, 4)), 
+  layout_matrix = rbind(c(1,2)), 
   heights = c(1,1))
+
+combined_rq2_plots2 <- grid.arrange(
+  sm1plot, sm2plot, sm3plot, 
+  nrow = 2, 
+  layout_matrix = rbind(c(1,2), c(3, 3)), 
+  heights = c(1,1))
+
+
 
 # Save the plot as a PNG file to GitHub
 setwd("/exports/csce/datastore/geos/groups/gcel/for_Tegan/droughts")
