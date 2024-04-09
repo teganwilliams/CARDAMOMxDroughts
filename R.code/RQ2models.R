@@ -27,7 +27,7 @@ zscores2 <- zscores_full %>%
 
 summer_zscores <- zscores_full %>%
   filter(week >= 20 & week <= 39)
-summer_zscores <- zscores %>%
+summer_zscores2 <- zscores2 %>%
   filter(week >= 20 & week <= 39)
 
 neg_gpp <- zscores %>%
@@ -291,7 +291,7 @@ drought$group <- ifelse(drought$year %in% c(2002, 2004), "Non-drought",
 
 palette_drivers <- c("#96DB6B", "#FF8400E0", "#F2E857", "#FF8400E0", "#96DB6B", "#F2E857")
 palette_drivers <- c("#96DB6B", "#F2E857", "#FF8400E0", "#2684FF", "#96DB6B", "#F2E857")
-palette_drivers <- c("#FC9F35B9",  "#139DED","#FF8400E0", "#3EABE6B2", "#2684FF")
+palette_drivers <- c("#FC9F35B9", "#3EABE6B2", "#139DED","#FF8400E0", "#3EABE6B2", "#2684FF")
 
 
 
@@ -426,9 +426,8 @@ library(gridExtra)
 
 combined_rq2_plots1 <- grid.arrange(
   swrplot, sm3plot, maxTplot,
-  ncol = 3, 
-  layout_matrix = rbind(c(1,2,3)), 
-  heights = c(1, 1,1))
+  nrow = 3, 
+  layout_matrix = rbind(c(1,2,3)))
 
 combined_rq2_plots1 <- gridExtra::grid.arrange(
   swrplot, sm3plot, maxTplot,
@@ -457,8 +456,6 @@ combined_rq2_plots2 <- grid.arrange(
 # Save the plot as a PNG file to GitHub
 ggsave("GPPvsDrivers.png", path = "Plots", plot = combined_rq2_plots1, width = 8, height = 5, dpi = 500)
 ggsave("DriversTimeseries_plots.png", path = "Plots", plot = combined_rq2_plots2, width = 10, height = 7, dpi = 500)
-
-
 
 
 
