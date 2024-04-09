@@ -454,7 +454,7 @@ combined_rq2_plots2 <- grid.arrange(
 
 
 # Save the plot as a PNG file to GitHub
-ggsave("GPPvsDrivers.png", path = "Plots", plot = combined_rq2_plots1, width = 10, height = 5, dpi = 500)
+ggsave("GPPvsDrivers.png", path = "Plots", plot = combined_rq2_plots1, width = 10, height = 4, dpi = 500)
 ggsave("DriversTimeseries_plots.png", path = "Plots", plot = combined_rq2_plots2, width = 10, height = 7, dpi = 500)
 
 
