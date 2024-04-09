@@ -295,7 +295,7 @@ palette_drivers <- c("#FC9F35B9", "#3EABE6B2", "#139DED","#FF8400E0", "#3EABE6B2
 
 
 
-maxTplot <- ggplot(summer_zscores, aes(x = temp_z_scores, y = gpp_z_scores, colour = condition)) + 
+maxTplot <- ggplot(summer_zscores2, aes(x = temp_z_scores, y = gpp_z_scores, colour = condition)) + 
   geom_point(aes(colour = condition, shape = condition)) +
   # geom_smooth(aes(y = model, colour ="LMER with drought"), se = FALSE, method = "lm") +
   # geom_smooth(aes(y = modelnon, colour ="LMER no drought"), se = FALSE, method = "lm") +
@@ -329,7 +329,7 @@ precipplot <- ggplot(zscores2, aes(x = precip_z_scores, y = gpp_z_scores, colour
 
 plot(precipplot)
 
-swrplot <- ggplot(summer_zscores, aes(x = swr_z_scores, y = gpp_z_scores, colour = condition)) + 
+swrplot <- ggplot(summer_zscores2, aes(x = swr_z_scores, y = gpp_z_scores, colour = condition)) + 
   geom_point(aes(colour = condition, shape = condition)) +
   # geom_smooth(aes(y = model, colour ="LMER with drought"), se = FALSE, method = "lm") +
   # geom_smooth(aes(y = modelnon, colour ="LMER no drought"), se = FALSE, method = "lm") +
@@ -365,7 +365,7 @@ sm2plot <- ggplot(drought, aes(x = sm2_z_scores, y = gpp_z_scores, colour = cond
 plot(sm2plot)
 
 
-sm3plot <- ggplot(summer_zscores, aes(x = sm3_z_scores, y = gpp_z_scores, colour = condition)) + 
+sm3plot <- ggplot(summer_zscores2, aes(x = sm3_z_scores, y = gpp_z_scores, colour = condition)) + 
   geom_point(aes(colour = condition, shape = condition)) +
   # geom_smooth(aes(y = model, colour ="LMER with drought"), se = FALSE, method = "lm") +
   # geom_smooth(aes(y = modelnon, colour ="LMER no drought"), se = FALSE, method = "lm") +
