@@ -2018,7 +2018,9 @@ ggplot(nmds_coords, aes(x = NMDS1, y = NMDS2)) +
 
 
 
-### RQ3: Drivers vs response variables ####
+
+
+### RQ3: Simulation vs calibration ####
 
 sim <- subset(sim, select = c(date, mod_gpp_sim, mod_gpp_unc95_sim, mod_lai_sim, mod_lai_unc95_sim, mod_nee_sim))
 calxsim <- merge(sim, data2015, by = c("date"))
@@ -2028,8 +2030,8 @@ calxsim2 <- subset(calxsim, select = c(date, day, mod_gpp_sim, mod_gpp_unc95_sim
 
 # Plot
 compared_simulation <- ggplot(calxsim2, aes(x = day)) +
-  # geom_ribbon(aes(ymin = obs_gpp - obs_gpp_unc, ymax = obs_gpp + obs_gpp_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
-  geom_ribbon(aes(ymin = mod_gpp_sim - 1*abs(mod_gpp_unc95_sim), ymax = mod_gpp_sim + 1*abs(mod_gpp_unc95_sim)), fill = "#00AEC974", alpha = 0.3) +
+  geom_ribbon(aes(ymin = obs_gpp - obs_gpp_unc, ymax = obs_gpp + obs_gpp_unc, colour = "Obs unc"), fill = "#FF730085", alpha = 0.3) +
+  geom_ribbon(aes(ymin = mod_gpp_sim - mod_gpp_unc95_sim, ymax = mod_gpp_sim + mod_gpp_unc95_sim), fill = "#00AEC974", alpha = 0.3) +
   geom_line(aes(y = mod_gpp, colour = "Mod_cal"), linewidth = 0.5) +
   geom_line(aes(y = mod_gpp_sim, colour = "Mod_sim"), linewidth = 0.5) +
   geom_point(aes(y = obs_gpp, colour = "Obs"), size = 1.2) +
@@ -2050,7 +2052,7 @@ compared_simulation <- ggplot(calxsim2, aes(x = day)) +
 
 plot(compared_simulation)
 
-ggsave("simXcal_timeseries_plot.png", path = "Plots", plot = compared_simulation, width = 7, height = 5, dpi = 500)
+ggsave("simXcal_timeseries_plot_withunc.png", path = "Plots", plot = compared_simulation, width = 7, height = 5, dpi = 500)
 
 
 # Validation (simulation)
