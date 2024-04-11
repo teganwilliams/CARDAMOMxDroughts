@@ -241,6 +241,8 @@ gpp_all$group <- ifelse(gpp_all$year %in% c(2003, 2018), as.character(gpp_all$ye
 
 gpp_all$group <- as.factor(gpp_all$group)
 
+max(data2015$mod_gpp)
+
 gpp_drought2018 <- gpp_all %>%
   filter(doy >= 154 & doy <= 245) # 19th may (140), 2nd june (154) - 8th sep (252)(16 weeks; 3.5 months)
 
@@ -2054,6 +2056,7 @@ plot(compared_simulation)
 
 ggsave("simXcal_timeseries_plot_withunc.png", path = "Plots", plot = compared_simulation, width = 7, height = 5, dpi = 500)
 
+citation()
 
 # Validation (simulation)
 
