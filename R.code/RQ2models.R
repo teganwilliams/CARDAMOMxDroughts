@@ -528,18 +528,18 @@ ggsave("DriversTimeseries_plots.png", path = "Plots", plot = combined_rq2_plots2
 
 #### Timeseries plots of z-scores ####
 
-zscores$year_group <- ifelse(zscores$year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020), "Non-drought years",
+zscores2$year_group <- ifelse(zscores$year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020), "Non-drought years",
                              # ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
                              ifelse(zscores$year %in% c(2003), "2003", 
                                     ifelse(zscores$year %in% c(2018), "2018", NA)))
 
-zscores$year_group <- ifelse(zscores$year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020), "Non-drought",
+zscores2$year_group <- ifelse(zscores$year %in% c(2000, 2001, 2002, 2004, 2005, 2015, 2016, 2017, 2019, 2020), "Non-drought",
                              # ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
                              ifelse(zscores$year %in% c(2003, 2018), "Drought", NA))
 
 library(dplyr)
 
-nondrought2 <- zscores %>%
+nondrought2 <- zscores2 %>%
   filter((!year %in% c(2003, 2018)))
 
 nondrought1 <- nondrought2 %>%
@@ -553,7 +553,7 @@ nondrought1 <- nondrought2 %>%
          mean_swr = mean(swr_z_scores, na.rm = TRUE)) %>%
   ungroup()
 
-drought1 <- zscores %>%
+drought1 <- zscores2 %>%
   filter((year %in% c(2003, 2018)))
 
 drought1 <- drought1 %>%
