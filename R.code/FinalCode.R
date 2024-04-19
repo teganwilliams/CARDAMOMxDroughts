@@ -262,7 +262,6 @@ gpp_drought2 <- gpp_all %>%
   filter(doy >= 182 & doy <= 273) # based on Wei et al. 2024
 
 
-
 gpp_2003 <- gpp_drought1 %>%
   filter(year >= 2000 & year <= 2005)
 gpp_2018 <- gpp_drought2 %>%

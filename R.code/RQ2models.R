@@ -97,40 +97,91 @@ drought <- zscores2 %>%
 # FINAL
 
 drought <- zscores2 %>%
-  filter(year %in% c(2003, 2018))
+  filter(year %in% c(2003, 2018))%>%
+  filter(week >= 20 & week <= 39)
 
 nondrought <- zscores2 %>%
   filter(!year %in% c(2003, 2018))
 
-nondrought1 <- zscores2 %>%
-  filter(!year %in% c(2000, 2001, 2002, 2004, 2005))%>%
-  filter(week >= 20 & week <= 40)
+nondrought <- zscores2 %>%
+  filter(!year %in% c(2003, 2018))%>%
+  filter(week >= 20 & week <= 39)
 
 both <- zscores2
 
-model <- lm(gpp_z_scores ~  swr_z_scores + sm3_z_scores, data = drought)
+model <- glm(gpp_z_scores ~  swr_z_scores + temp_z_scores + sm3_z_scores,
+            family = gaussian,
+            data = drought)
 summary(model)
 
-modelnon <- lmer(gpp_z_scores ~  temp_z_scores + sm3_z_scores + precip_z_scores + (1|year), data = nondrought)
+modelnull <- glm(gpp_z_scores ~ 1, family = gaussian, data = drought)
+
+hist(drought$gpp_z_scores)
+hist(nondrought$gpp_z_scores)
+
+modelnon <- lmer(gpp_z_scores ~  swr_z_scores + temp_z_scores + sm3_z_scores + (1|year),
+                  data = nondrought)
 summary(modelnon)
+
+modelnullnon <- glm(gpp_z_scores ~ 1, data = nondrought)
+summary(modelnullnon)
 
 modelboth <- lmer(gpp_z_scores ~  temp_z_scores + sm3_z_scores + precip_z_scores + (1|year), data = both)
 summary(modelboth) # does not fit the data (skewed)
 
 
+logLik_fitted <- logLik(model)
+logLik_null <- logLik(modelnull)
+
+# Compute McFadden's R^2
+mcfadden_r2 <- 1 - (logLik_fitted/logLik_null)
+# Compute Cox & Snell R^2
+n <- nrow(drought)
+cox_snell_r2 <- 1 - (logLik_fitted/logLik_null)^(2/n)
+
+# Print the pseudo-R^2 values
+print(mcfadden_r2)
+print(cox_snell_r2)
+
+
+logLik_fitted <- logLik(modelnon)
+logLik_null <- logLik(modelnullnon)
+
+# Compute McFadden's R^2
+mcfadden_r2 <- 1 - (logLik_fitted/logLik_null)
+# Compute Cox & Snell R^2
+n <- nrow(nondrought)
+cox_snell_r2 <- 1 - (logLik_fitted/logLik_null)^(2/n)
+
+# Print the pseudo-R^2 values
+print(mcfadden_r2)
+print(cox_snell_r2)
+
+
+
 # THESE TWO 
+
+model <- lmer(gpp_z_scores ~  temp_z_scores + sm2_z_scores + swr_z_scores +
+                (1|year), data = nondrought)
+summary(model)
+
 model <- lmer(gpp_z_scores ~  temp_z_scores + sm3_z_scores + (1|year), data = nondrought)
 summary(model)
 
-model <- lm(gpp_z_scores ~  swr_z_scores + sm3_z_scores + temp_z_scores, data = drought)
+
+
+
+model <- glm(gpp_z_scores ~  swr_z_scores + sm3_z_scores + temp_z_scores, data = drought)
 summary(model)
 
 modelnon <- lmer(gpp_z_scores ~  swr_z_scores + sm3_z_scores + temp_z_scores + (1|year), data = nondrought1)
 summary(modelnon)
 
+
+
+
 model <- lm(gpp_z_scores ~  temp_z_scores + swr_z_scores + vpd_z_scores, data = drought)
 summary(model)
-
 
 
 modelnon <- lm(gpp_z_scores ~  temp_z_scores + sm3_z_scores, data = nondrought)
@@ -140,7 +191,7 @@ summary(modelnon)
 model3 <- lmer(gpp_z_scores ~  temp_z_scores + swr_z_scores + precip_z_scores + sm3_z_scores + (1|year), data = drought)
 summary(model3)
 
-AIC(model, model2, model3)
+AIC(model, modelnon, model_null)
 
 model <- lmer(gpp_z_scores ~  sm3_z_scores + sm2_z_scores + sm1_z_scores + (1|condition), data = drought)
 summary(model)
@@ -152,10 +203,21 @@ residuals <- resid(modelnon)
 shapiro.test(residuals)
 qqnorm(residuals) 
 qqline(residuals)
+
+# install.packages("car")
+library(car)
 vif_values <- vif(model)
 print(vif_values)
 
+
+
+# Print the pseudo-R^2 values
+print(mcfadden_r2)
+print(cox_snell_r2)
+
+
 r2_values <- r.squaredGLMM(model)
+rsquared(model)
 print(r2_values)
 
 library(MuMIn)
@@ -293,7 +355,7 @@ palette_drivers <- c("#96DB6B", "#FF8400E0", "#F2E857", "#FF8400E0", "#96DB6B", 
 palette_drivers <- c("#96DB6B", "#F2E857", "#FF8400E0", "#2684FF", "#96DB6B", "#F2E857")
 palette_drivers <- c("#FC9F35B9", "#3EABE6B2", "#139DED","#FF8400E0", "#3EABE6B2", "#2684FF")
 
-
+library(ggplot2)
 
 maxTplot <- ggplot(summer_zscores2, aes(x = temp_z_scores, y = gpp_z_scores, colour = condition)) + 
   geom_point(aes(colour = condition, shape = condition)) +
@@ -425,7 +487,7 @@ plot(sm1plot)
 library(gridExtra)
 
 combined_rq2_plots1 <- grid.arrange(
-  swrplot, sm3plot, maxTplot,
+  swrplot, maxTplot, sm3plot,
   nrow = 3, 
   layout_matrix = rbind(c(1,2,3)))
 
