@@ -537,6 +537,7 @@ zscores$year_group <- ifelse(zscores$year %in% c(2000, 2001, 2002, 2004, 2005, 2
                              # ifelse(drivers$year %in% c(2015, 2016, 2017, 2019, 2020), "2015-2020",
                              ifelse(zscores$year %in% c(2003, 2018), "Drought", NA))
 
+library(dplyr)
 
 nondrought2 <- zscores %>%
   filter((!year %in% c(2003, 2018)))
@@ -768,7 +769,7 @@ combined_plot2003 <- ggplot(new2003, aes(x = doy)) +
         plot.margin = margin(1, 1, 1, 1, "cm")) +
   scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
                      labels = c("May", "Jun", "Jul", "Aug", "Sep")) +
-  scale_y_continuous(limits = c(-2, 2.5),
+  scale_y_continuous(limits = c(-3, 3),
                      breaks = c(-3, -2, -1, 0, 1, 2, 3))
 
 plot(combined_plot2003)
@@ -804,7 +805,7 @@ combined_plot2018 <- ggplot(new2018, aes(x = doy)) +
         plot.margin = margin(1, 1, 1, 1, "cm")) +
   scale_x_continuous(breaks = c(126, 154, 182, 217, 252), 
                      labels = c("May", "Jun", "Jul", "Aug", "Sep")) +
-  scale_y_continuous(limits = c(-3.1, 2.5),
+  scale_y_continuous(limits = c(-3.1, 3),
                      breaks = c(-3, -2, -1, 0, 1, 2, 3))
 
 plot(combined_plot2018)
